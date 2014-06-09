@@ -1,0 +1,18 @@
+*.sublime*
+.DS_Store
+
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+target/
+.classpath
+.project
+.settings
+
+settings.xml
+release.properties
+*.releaseBackup
