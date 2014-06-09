@@ -27,7 +27,7 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>test</finalName>
+		<finalName>caliper-java-example</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
