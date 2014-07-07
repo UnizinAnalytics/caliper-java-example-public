@@ -12,6 +12,6 @@
   </servlet>
   <servlet-mapping>
   	<servlet-name>TestServlet</servlet-name>
-  	<url-pattern>/testservlet</url-pattern>
+  	<url-pattern>/generateReadingSequence</url-pattern>
   </servlet-mapping>
 </web-app>
