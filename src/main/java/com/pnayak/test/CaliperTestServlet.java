@@ -15,6 +15,7 @@ import org.imsglobal.caliper.entities.Course;
 import org.imsglobal.caliper.entities.DigitalResource;
 import org.imsglobal.caliper.entities.Organization;
 import org.imsglobal.caliper.entities.SoftwareApplication;
+import org.imsglobal.caliper.events.annotation.HilightedEvent;
 import org.imsglobal.caliper.events.reading.NavigationEvent;
 import org.imsglobal.caliper.events.reading.UsedEvent;
 import org.imsglobal.caliper.events.reading.ViewedEvent;
@@ -125,7 +126,7 @@ public class CaliperTestServlet extends HttpServlet {
 		Agent alice = new Agent(
 				"https://some-university.edu/students/jones-alice-554433");
 		alice.setLastModifiedAt(now.minus(Weeks.weeks(3)).getMillis());
-		
+
 		output.append(">> generated learning context data\n");
 
 		// ----------------------------------------------------------------
@@ -148,7 +149,7 @@ public class CaliperTestServlet extends HttpServlet {
 				.setName("The American Revolution: A Concise History | 978-0-19-531295-9");
 		courseSmartReading.setLastModifiedAt(now.minus(Weeks.weeks(22))
 				.getMillis());
-		
+
 		output.append(">> generated activity context data\n");
 
 		// ----------------------------------------------------------------
@@ -165,25 +166,28 @@ public class CaliperTestServlet extends HttpServlet {
 		globalAppState.put("coursesmartEdApp", courseSmart);
 		globalAppState.put("courseSmartReading", courseSmartReading);
 		globalAppState.put("student", alice);
-		
+
 		output.append(">> populated Event Generator\'s global state\n");
 
 		// ----------------------------------------------------------------
-		// Step 3: Execute reading sequence
+		// Step 4: Execute reading sequence
 		// ----------------------------------------------------------------
 		output.append(">> sending events\n");
-		
+
 		navigateToFirstReading(globalAppState);
 		output.append(">>>>>> sent NavigateEvent\n");
-		
+
 		viewPageInReading(globalAppState, "1");
 		output.append(">>>>>> sent ViewedEvent\n");
-		
+
 		viewPageInReading(globalAppState, "2");
 		output.append(">>>>>> sent ViewedEvent\n");
-		
+
 		usePageInReading(globalAppState, "3");
 		output.append(">>>>>> sent UsedEvent\n");
+
+		hilightTermsInReading(globalAppState, 455, 489);
+		output.append(">>>>>> sent HilightedEvent\n");
 
 	}
 
@@ -255,5 +259,29 @@ public class CaliperTestServlet extends HttpServlet {
 
 		Caliper.measure(usePageEvent);
 
+	}
+
+	private void hilightTermsInReading(HashMap<String, Object> globalAppState,
+			int startIndex, int endIndex) {
+
+		HilightedEvent hilightTermsEvent = HilightedEvent.forHilight();
+		// action is set in navEvent constructor... now set agent and object
+		hilightTermsEvent.setAgent((Agent) globalAppState.get("student"));
+		DigitalResource reading = (DigitalResource) globalAppState
+				.get("readiumReading");
+		reading.getProperties().put("hilightStartIndex", startIndex);
+		reading.getProperties().put("hilightEndIndex", endIndex);
+		hilightTermsEvent.setObject((DigitalResource) globalAppState
+				.get("readiumReading"));
+		// add (learning) context for event
+		hilightTermsEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("readiumEdApp"));
+		hilightTermsEvent.setOrganization((Organization) globalAppState
+				.get("currentCourse"));
+
+		// set time and any event specific properties
+		hilightTermsEvent.setStartedAt(DateTime.now().getMillis());
+
+		Caliper.measure(hilightTermsEvent);
 	}
 }
