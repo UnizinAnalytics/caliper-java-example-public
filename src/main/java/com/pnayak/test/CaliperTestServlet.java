@@ -58,10 +58,17 @@ public class CaliperTestServlet extends HttpServlet {
 		//
 		// Invoke the Caliper sensor, send a set of Caliper Events
 		//
+		StringBuffer output = new StringBuffer();
 
-		generateReadingAnnotationEventSeqeuence();
+		output.append("=========================================================================\n");
+		output.append("Caliper Event Generator: Generating Reading and Annotation Sequence\n");
+		output.append("=========================================================================\n");
 
-		response.getWriter().write(Caliper.getStatistics().toString());
+		generateReadingAnnotationEventSeqeuence(output);
+
+		output.append(Caliper.getStatistics().toString());
+
+		response.getWriter().write(output.toString());
 	}
 
 	/**
@@ -73,7 +80,7 @@ public class CaliperTestServlet extends HttpServlet {
 		// TODO Auto-generated method stub
 	}
 
-	private void generateReadingAnnotationEventSeqeuence() {
+	private void generateReadingAnnotationEventSeqeuence(StringBuffer output) {
 
 		// ================================================================
 		// ------------------------Reading sequence------------------------
@@ -118,9 +125,11 @@ public class CaliperTestServlet extends HttpServlet {
 		Agent alice = new Agent(
 				"https://some-university.edu/students/jones-alice-554433");
 		alice.setLastModifiedAt(now.minus(Weeks.weeks(3)).getMillis());
+		
+		output.append(">> generated learning context data\n");
 
 		// ----------------------------------------------------------------
-		// Step 3: Set up activity context elements (i.e. the two Readings)
+		// Step 2: Set up activity context elements (i.e. the two Readings)
 		// ----------------------------------------------------------------
 		DigitalResource readiumReading = new DigitalResource();
 		readiumReading
@@ -139,6 +148,8 @@ public class CaliperTestServlet extends HttpServlet {
 				.setName("The American Revolution: A Concise History | 978-0-19-531295-9");
 		courseSmartReading.setLastModifiedAt(now.minus(Weeks.weeks(22))
 				.getMillis());
+		
+		output.append(">> generated activity context data\n");
 
 		// ----------------------------------------------------------------
 		// Step 3: Populate Global App State for Event Generator
@@ -154,14 +165,25 @@ public class CaliperTestServlet extends HttpServlet {
 		globalAppState.put("coursesmartEdApp", courseSmart);
 		globalAppState.put("courseSmartReading", courseSmartReading);
 		globalAppState.put("student", alice);
+		
+		output.append(">> populated Event Generator\'s global state\n");
 
 		// ----------------------------------------------------------------
 		// Step 3: Execute reading sequence
 		// ----------------------------------------------------------------
+		output.append(">> sending events\n");
+		
 		navigateToFirstReading(globalAppState);
+		output.append(">>>>>> sent NavigateEvent\n");
+		
 		viewPageInReading(globalAppState, "1");
+		output.append(">>>>>> sent ViewedEvent\n");
+		
 		viewPageInReading(globalAppState, "2");
+		output.append(">>>>>> sent ViewedEvent\n");
+		
 		usePageInReading(globalAppState, "3");
+		output.append(">>>>>> sent UsedEvent\n");
 
 	}
 
