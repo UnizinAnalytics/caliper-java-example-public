@@ -163,7 +163,8 @@ public class CaliperTestServlet extends HttpServlet {
 		// Note - global app state - this is a simulation of the "state" of the
 		// application that the Java sensor is installed into. In this case, it
 		// is this Tomcat application. It is a utility data structure that is
-		// used by subsequent event generation code
+		// used by subsequent event generation code and NOT part of the Caliper
+		// standard
 		HashMap<String, Object> globalAppState = Maps.newHashMap();
 		globalAppState.put("currentCourse", americanHistoryCourse);
 		globalAppState.put("readiumEdApp", readium);
