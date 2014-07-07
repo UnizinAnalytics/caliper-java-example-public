@@ -16,6 +16,8 @@ import org.imsglobal.caliper.entities.DigitalResource;
 import org.imsglobal.caliper.entities.Organization;
 import org.imsglobal.caliper.entities.SoftwareApplication;
 import org.imsglobal.caliper.events.reading.NavigationEvent;
+import org.imsglobal.caliper.events.reading.UsedEvent;
+import org.imsglobal.caliper.events.reading.ViewedEvent;
 import org.joda.time.DateTime;
 import org.joda.time.Weeks;
 
@@ -157,9 +159,9 @@ public class CaliperTestServlet extends HttpServlet {
 		// Step 3: Execute reading sequence
 		// ----------------------------------------------------------------
 		navigateToFirstReading(globalAppState);
-		viewPageInReading(globalAppState, 1);
-		viewPageInReading(globalAppState, 2);
-		usePageInReading(globalAppState, 3);
+		viewPageInReading(globalAppState, "1");
+		viewPageInReading(globalAppState, "2");
+		usePageInReading(globalAppState, "3");
 
 	}
 
@@ -184,13 +186,52 @@ public class CaliperTestServlet extends HttpServlet {
 
 	}
 
-	private void viewPageInReading(HashMap<String, Object> globalAppState, int i) {
-		// TODO Auto-generated method stub
+	private void viewPageInReading(HashMap<String, Object> globalAppState,
+			String pageId) {
+
+		ViewedEvent viewPageEvent = new ViewedEvent();
+		// action is set in navEvent constructor... now set agent and object
+		viewPageEvent.setAgent((Agent) globalAppState.get("student"));
+		DigitalResource reading = (DigitalResource) globalAppState
+				.get("readiumReading");
+		reading.getProperties().put("pageId", pageId);
+		viewPageEvent.setObject((DigitalResource) globalAppState
+				.get("readiumReading"));
+		// add (learning) context for event
+		viewPageEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("readiumEdApp"));
+		viewPageEvent.setOrganization((Organization) globalAppState
+				.get("currentCourse"));
+
+		// set time and any event specific properties
+		viewPageEvent.setStartedAt(DateTime.now().getMillis());
+
+		Caliper.measure(viewPageEvent);
 
 	}
 
-	private void usePageInReading(HashMap<String, Object> globalAppState, int i) {
-		// TODO Auto-generated method stub
+	private void usePageInReading(HashMap<String, Object> globalAppState,
+			String pageId) {
+
+		UsedEvent usePageEvent = new UsedEvent();
+		// action is set in navEvent constructor... now set agent and object
+		usePageEvent.setAgent((Agent) globalAppState.get("student"));
+		DigitalResource reading = (DigitalResource) globalAppState
+				.get("readiumReading");
+		reading.getProperties().put("pageId", pageId);
+		usePageEvent.setObject((DigitalResource) globalAppState
+				.get("readiumReading"));
+		// add (learning) context for event
+		usePageEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("readiumEdApp"));
+		usePageEvent.setOrganization((Organization) globalAppState
+				.get("currentCourse"));
+
+		// set time and any event specific properties
+		usePageEvent.setStartedAt(DateTime.now().getMillis());
+		usePageEvent.setEndedAt(DateTime.now().plusMinutes(3).getMillis());
+
+		Caliper.measure(usePageEvent);
 
 	}
 }
