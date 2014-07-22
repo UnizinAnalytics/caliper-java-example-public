@@ -11,17 +11,16 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.imsglobal.caliper.Caliper;
 import org.imsglobal.caliper.Options;
-import org.imsglobal.caliper.entities.Agent;
+import org.imsglobal.caliper.entities.CaliperDigitalResource;
 import org.imsglobal.caliper.entities.Course;
-import org.imsglobal.caliper.entities.DigitalResource;
-import org.imsglobal.caliper.entities.Organization;
+import org.imsglobal.caliper.entities.LISOrganization;
+import org.imsglobal.caliper.entities.LISPerson;
 import org.imsglobal.caliper.entities.SoftwareApplication;
 import org.imsglobal.caliper.events.annotation.BookmarkedEvent;
 import org.imsglobal.caliper.events.annotation.HilightedEvent;
 import org.imsglobal.caliper.events.annotation.SharedEvent;
 import org.imsglobal.caliper.events.annotation.TaggedEvent;
 import org.imsglobal.caliper.events.reading.NavigationEvent;
-import org.imsglobal.caliper.events.reading.UsedEvent;
 import org.imsglobal.caliper.events.reading.ViewedEvent;
 import org.joda.time.DateTime;
 import org.joda.time.Weeks;
@@ -91,7 +90,7 @@ public class CaliperTestServlet extends HttpServlet {
 		// ================================================================
 		// ------------------------Reading sequence------------------------
 		// ================================================================
-		// Student in a course interacts with two readings.
+		// Student in a course interacts with two readings from two edApps.
 		// In the process of interacting, she performs various reading
 		// activities as well as annotation activities. These are defined in
 		// the Caliper Reading and Annotation profiles respectively
@@ -115,20 +114,20 @@ public class CaliperTestServlet extends HttpServlet {
 				.getMillis());
 
 		// edApp that provides the first reading
-		SoftwareApplication readium = new SoftwareApplication();
+		SoftwareApplication readium = new SoftwareApplication(
+				"https://github.com/readium/readium-js-viewer");
 		readium.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/epub-reader");
-		readium.setId("https://github.com/readium/readium-js-viewer");
 		readium.setLastModifiedAt(now.minus(Weeks.weeks(8)).getMillis());
 
 		// edApp that provides the second reading
-		SoftwareApplication courseSmart = new SoftwareApplication();
+		SoftwareApplication courseSmart = new SoftwareApplication(
+				"http://www.coursesmart.com/reader");
 		courseSmart
-				.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/Reading");
-		courseSmart.setId("http://www.coursesmart.com/reader");
+				.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/epub-reader");
 		courseSmart.setLastModifiedAt(now.minus(Weeks.weeks(6)).getMillis());
 
 		// Student - performs interaction with reading activities
-		Agent alice = new Agent(
+		LISPerson alice = new LISPerson(
 				"https://some-university.edu/students/jones-alice-554433");
 		alice.setLastModifiedAt(now.minus(Weeks.weeks(3)).getMillis());
 
@@ -137,7 +136,7 @@ public class CaliperTestServlet extends HttpServlet {
 		// ----------------------------------------------------------------
 		// Step 2: Set up activity context elements (i.e. the two Readings)
 		// ----------------------------------------------------------------
-		DigitalResource readiumReading = new DigitalResource();
+		CaliperDigitalResource readiumReading = new CaliperDigitalResource();
 		readiumReading
 				.setId("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)");
 		readiumReading.setType("EpubFragment");
@@ -146,7 +145,7 @@ public class CaliperTestServlet extends HttpServlet {
 		readiumReading
 				.setLastModifiedAt(now.minus(Weeks.weeks(53)).getMillis());
 
-		DigitalResource courseSmartReading = new DigitalResource();
+		CaliperDigitalResource courseSmartReading = new CaliperDigitalResource();
 		courseSmartReading
 				.setId("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322");
 		courseSmartReading.setType("EpubFragment");
@@ -189,8 +188,8 @@ public class CaliperTestServlet extends HttpServlet {
 		viewPageInReading(globalAppState, "readium", "2");
 		output.append(">>>>>> Viewed Page with pageId 2 in Readium Reading... sent ViewedEvent\n");
 
-		usePageInReading(globalAppState, "readium", "3");
-		output.append(">>>>>> Used Page with pageId 3 in Readium Reading... sent UsedEvent\n");
+		// usePageInReading(globalAppState, "readium", "3");
+		// output.append(">>>>>> Used Page with pageId 3 in Readium Reading... sent UsedEvent\n");
 
 		hilightTermsInReading(globalAppState, "readium", "3", 455, 489);
 		output.append(">>>>>> Hilighted fragment in pageId 3 from index 455 to 489 in Readium Reading... sent HilightedEvent\n");
@@ -198,8 +197,8 @@ public class CaliperTestServlet extends HttpServlet {
 		viewPageInReading(globalAppState, "readium", "2");
 		output.append(">>>>>> Viewed Page with pageId 2 in Readium Reading... sent ViewedEvent\n");
 
-		usePageInReading(globalAppState, "readium", "2");
-		output.append(">>>>>> Used Page with pageId 2 in Readium Reading... sent UsedEvent\n");
+		// usePageInReading(globalAppState, "readium", "2");
+		// output.append(">>>>>> Used Page with pageId 2 in Readium Reading... sent UsedEvent\n");
 
 		bookmarkPageInReading(globalAppState, "readium", "2");
 		output.append(">>>>>> Bookmarked Page with pageId 2 in Readium Reading... sent BookmarkedEvent\n");
@@ -214,7 +213,7 @@ public class CaliperTestServlet extends HttpServlet {
 				Lists.newArrayList("to-read", "1776",
 						"shared-with-project-team"));
 		output.append(">>>>>> Tagged Page with pageId aXfsadf12 with tags [to-read, 1776, shared-with-project-team] in CourseSmart Reading... sent TaggedEvent\n");
-		
+
 		sharePageInReading(
 				globalAppState,
 				"coursesmart",
@@ -235,20 +234,19 @@ public class CaliperTestServlet extends HttpServlet {
 		NavigationEvent navEvent = new NavigationEvent();
 
 		// action is set in navEvent constructor... now set agent and object
-		navEvent.setAgent((Agent) globalAppState.get("student"));
-		navEvent.setObject((DigitalResource) globalAppState.get(edApp
+		navEvent.setActor((LISPerson) globalAppState.get("student"));
+		navEvent.setObject((CaliperDigitalResource) globalAppState.get(edApp
 				+ "Reading"));
 
 		// add (learning) context for event
 		navEvent.setEdApp((SoftwareApplication) globalAppState.get(edApp
 				+ "EdApp"));
-		navEvent.setOrganization((Organization) globalAppState
+		navEvent.setLisOrganization((LISOrganization) globalAppState
 				.get("currentCourse"));
 
 		// set time and any event specific properties
 		navEvent.setStartedAt(DateTime.now().getMillis());
-		navEvent.setOperationType("link"); // TODO - should this be part of
-											// Metric Profile?
+
 		// Send event to EventStore
 		Caliper.measure(navEvent);
 
@@ -260,17 +258,17 @@ public class CaliperTestServlet extends HttpServlet {
 		ViewedEvent viewPageEvent = new ViewedEvent();
 
 		// action is set in navEvent constructor... now set agent and object
-		viewPageEvent.setAgent((Agent) globalAppState.get("student"));
-		DigitalResource reading = (DigitalResource) globalAppState.get(edApp
-				+ "Reading");
+		viewPageEvent.setActor((LISPerson) globalAppState.get("student"));
+		CaliperDigitalResource reading = (CaliperDigitalResource) globalAppState
+				.get(edApp + "Reading");
 		reading.getProperties().put("pageId", pageId);
-		viewPageEvent.setObject((DigitalResource) globalAppState.get(edApp
-				+ "Reading"));
+		viewPageEvent.setObject((CaliperDigitalResource) globalAppState
+				.get(edApp + "Reading"));
 
 		// add (learning) context for event
 		viewPageEvent.setEdApp((SoftwareApplication) globalAppState.get(edApp
 				+ "EdApp"));
-		viewPageEvent.setOrganization((Organization) globalAppState
+		viewPageEvent.setLisOrganization((LISOrganization) globalAppState
 				.get("currentCourse"));
 
 		// set time and any event specific properties
@@ -284,56 +282,56 @@ public class CaliperTestServlet extends HttpServlet {
 
 	}
 
-	private void usePageInReading(HashMap<String, Object> globalAppState,
-			String edApp, String pageId) {
-
-		UsedEvent usePageEvent = new UsedEvent();
-
-		// action is set in navEvent constructor... now set agent and object
-		usePageEvent.setAgent((Agent) globalAppState.get("student"));
-		DigitalResource reading = (DigitalResource) globalAppState.get(edApp
-				+ "Reading");
-		reading.getProperties().put("pageId", pageId);
-		usePageEvent.setObject((DigitalResource) globalAppState.get(edApp
-				+ "Reading"));
-
-		// add (learning) context for event
-		usePageEvent.setEdApp((SoftwareApplication) globalAppState.get(edApp
-				+ "EdApp"));
-		usePageEvent.setOrganization((Organization) globalAppState
-				.get("currentCourse"));
-
-		// set time and any event specific properties
-		usePageEvent.setStartedAt(DateTime.now().getMillis());
-		usePageEvent.setEndedAt(DateTime.now().plusMinutes(3).getMillis());
-
-		// Send event to EventStore
-		Caliper.measure(usePageEvent);
-
-		// clean up
-		reading.getProperties().remove("pageId");
-
-	}
+	// private void usePageInReading(HashMap<String, Object> globalAppState,
+	// String edApp, String pageId) {
+	//
+	// UsedEvent usePageEvent = new UsedEvent();
+	//
+	// // action is set in navEvent constructor... now set agent and object
+	// usePageEvent.setActor((LISPerson) globalAppState.get("student"));
+	// CaliperDigitalResource reading = (CaliperDigitalResource) globalAppState
+	// .get(edApp + "Reading");
+	// reading.getProperties().put("pageId", pageId);
+	// usePageEvent.setObject((CaliperDigitalResource) globalAppState
+	// .get(edApp + "Reading"));
+	//
+	// // add (learning) context for event
+	// usePageEvent.setEdApp((SoftwareApplication) globalAppState.get(edApp
+	// + "EdApp"));
+	// usePageEvent.setLisOrganization((LISOrganization) globalAppState
+	// .get("currentCourse"));
+	//
+	// // set time and any event specific properties
+	// usePageEvent.setStartedAt(DateTime.now().getMillis());
+	// usePageEvent.setEndedAt(DateTime.now().plusMinutes(3).getMillis());
+	//
+	// // Send event to EventStore
+	// Caliper.measure(usePageEvent);
+	//
+	// // clean up
+	// reading.getProperties().remove("pageId");
+	//
+	// }
 
 	private void hilightTermsInReading(HashMap<String, Object> globalAppState,
 			String edApp, String pageId, int startIndex, int endIndex) {
 
-		HilightedEvent hilightTermsEvent = HilightedEvent.forHilight();
+		HilightedEvent hilightTermsEvent = HilightedEvent.forAction("created");
 
 		// action is set in navEvent constructor... now set agent and object
-		hilightTermsEvent.setAgent((Agent) globalAppState.get("student"));
-		DigitalResource reading = (DigitalResource) globalAppState.get(edApp
-				+ "Reading");
+		hilightTermsEvent.setActor((LISPerson) globalAppState.get("student"));
+		CaliperDigitalResource reading = (CaliperDigitalResource) globalAppState
+				.get(edApp + "Reading");
 		reading.getProperties().put("pageId", pageId);
 		reading.getProperties().put("hilightStartIndex", startIndex);
 		reading.getProperties().put("hilightEndIndex", endIndex);
-		hilightTermsEvent.setObject((DigitalResource) globalAppState.get(edApp
-				+ "Reading"));
+		hilightTermsEvent.setObject((CaliperDigitalResource) globalAppState
+				.get(edApp + "Reading"));
 
 		// add (learning) context for event
 		hilightTermsEvent.setEdApp((SoftwareApplication) globalAppState
 				.get(edApp + "EdApp"));
-		hilightTermsEvent.setOrganization((Organization) globalAppState
+		hilightTermsEvent.setLisOrganization((LISOrganization) globalAppState
 				.get("currentCourse"));
 
 		// set time and any event specific properties
@@ -351,20 +349,21 @@ public class CaliperTestServlet extends HttpServlet {
 	private void bookmarkPageInReading(HashMap<String, Object> globalAppState,
 			String edApp, String pageId) {
 
-		BookmarkedEvent bookmarkPageEvent = BookmarkedEvent.forMark();
+		BookmarkedEvent bookmarkPageEvent = BookmarkedEvent
+				.forAction("created");
 
 		// action is set in navEvent constructor... now set agent and object
-		bookmarkPageEvent.setAgent((Agent) globalAppState.get("student"));
-		DigitalResource reading = (DigitalResource) globalAppState.get(edApp
-				+ "Reading");
+		bookmarkPageEvent.setActor((LISPerson) globalAppState.get("student"));
+		CaliperDigitalResource reading = (CaliperDigitalResource) globalAppState
+				.get(edApp + "Reading");
 		reading.getProperties().put("pageId", pageId);
-		bookmarkPageEvent.setObject((DigitalResource) globalAppState.get(edApp
-				+ "Reading"));
+		bookmarkPageEvent.setObject((CaliperDigitalResource) globalAppState
+				.get(edApp + "Reading"));
 
 		// add (learning) context for event
 		bookmarkPageEvent.setEdApp((SoftwareApplication) globalAppState
 				.get(edApp + "EdApp"));
-		bookmarkPageEvent.setOrganization((Organization) globalAppState
+		bookmarkPageEvent.setLisOrganization((LISOrganization) globalAppState
 				.get("currentCourse"));
 
 		// set time and any event specific properties
@@ -380,21 +379,21 @@ public class CaliperTestServlet extends HttpServlet {
 	private void tagPageInReading(HashMap<String, Object> globalAppState,
 			String edApp, String pageId, List<String> tags) {
 
-		TaggedEvent tagPageEvent = TaggedEvent.forTag();
+		TaggedEvent tagPageEvent = TaggedEvent.forAction("created");
 
 		// action is set in navEvent constructor... now set agent and object
-		tagPageEvent.setAgent((Agent) globalAppState.get("student"));
-		DigitalResource reading = (DigitalResource) globalAppState.get(edApp
-				+ "Reading");
+		tagPageEvent.setActor((LISPerson) globalAppState.get("student"));
+		CaliperDigitalResource reading = (CaliperDigitalResource) globalAppState
+				.get(edApp + "Reading");
 		reading.getProperties().put("pageId", pageId);
 		reading.getProperties().put("tags", tags);
-		tagPageEvent.setObject((DigitalResource) globalAppState.get(edApp
-				+ "Reading"));
+		tagPageEvent.setObject((CaliperDigitalResource) globalAppState
+				.get(edApp + "Reading"));
 
 		// add (learning) context for event
 		tagPageEvent.setEdApp((SoftwareApplication) globalAppState.get(edApp
 				+ "EdApp"));
-		tagPageEvent.setOrganization((Organization) globalAppState
+		tagPageEvent.setLisOrganization((LISOrganization) globalAppState
 				.get("currentCourse"));
 
 		// set time and any event specific properties
@@ -411,21 +410,21 @@ public class CaliperTestServlet extends HttpServlet {
 	private void sharePageInReading(HashMap<String, Object> globalAppState,
 			String edApp, String pageId, List<String> sharedWithIds) {
 
-		SharedEvent sharePageEvent = SharedEvent.forShare();
+		SharedEvent sharePageEvent = SharedEvent.forAction("created");
 
 		// action is set in navEvent constructor... now set agent and object
-		sharePageEvent.setAgent((Agent) globalAppState.get("student"));
-		DigitalResource reading = (DigitalResource) globalAppState.get(edApp
-				+ "Reading");
+		sharePageEvent.setActor((LISPerson) globalAppState.get("student"));
+		CaliperDigitalResource reading = (CaliperDigitalResource) globalAppState
+				.get(edApp + "Reading");
 		reading.getProperties().put("pageId", pageId);
 		reading.getProperties().put("sharedWith", sharedWithIds);
-		sharePageEvent.setObject((DigitalResource) globalAppState.get(edApp
-				+ "Reading"));
+		sharePageEvent.setObject((CaliperDigitalResource) globalAppState
+				.get(edApp + "Reading"));
 
 		// add (learning) context for event
 		sharePageEvent.setEdApp((SoftwareApplication) globalAppState.get(edApp
 				+ "EdApp"));
-		sharePageEvent.setOrganization((Organization) globalAppState
+		sharePageEvent.setLisOrganization((LISOrganization) globalAppState
 				.get("currentCourse"));
 
 		// set time and any event specific properties
