@@ -124,6 +124,7 @@ public class CaliperTestServlet extends HttpServlet {
 
 		WebPage courseWebPage = new WebPage("AmRev-101-landingPage");
 		courseWebPage.setName("American Revolution 101 Landing Page");
+		courseWebPage.setParentRef(americanHistoryCourse);
 
 		// edApp that provides the first reading
 		SoftwareApplication readium = new SoftwareApplication(
@@ -218,7 +219,7 @@ public class CaliperTestServlet extends HttpServlet {
 		globalAppState.put("readiumReadingPage3", readiumReadingPage3);
 		globalAppState.put("coursesmartEdApp", courseSmart);
 		globalAppState.put("coursesmartReading", courseSmartReading);
-		globalAppState.put("courseSmartReadingPageaXfsadf12",
+		globalAppState.put("coursesmartReadingPageaXfsadf12",
 				courseSmartReadingPageaXfsadf12);
 		globalAppState.put("student", alice);
 
@@ -228,36 +229,46 @@ public class CaliperTestServlet extends HttpServlet {
 		// Step 4: Execute reading sequence
 		// ----------------------------------------------------------------
 		output.append(">> sending events\n");
-
+		
+		// Event # 1 - NavigationEvent
 		navigateToReading(globalAppState, "readium");
 		output.append(">>>>>> Navigated to Reading provided by Readium... sent NavigateEvent\n");
 
+		// Event # 2 - ViewedEvent
 		viewPageInReading(globalAppState, "readium", "1");
 		output.append(">>>>>> Viewed Page with pageId 1 in Readium Reading... sent ViewedEvent\n");
-
+		
+		// Event # 3 - ViewedEvent
 		viewPageInReading(globalAppState, "readium", "2");
 		output.append(">>>>>> Viewed Page with pageId 2 in Readium Reading... sent ViewedEvent\n");
 
+		// Event # 4 - HighlitedEvent
 		hilightTermsInReading(globalAppState, "readium", "2", 455, 489);
-		output.append(">>>>>> Hilighted fragment in pageId 3 from index 455 to 489 in Readium Reading... sent HilightedEvent\n");
+		output.append(">>>>>> Hilighted fragment in pageId 2 from index 455 to 489 in Readium Reading... sent HilightedEvent\n");
 
+		// Event # 5 - Viewed Event
 		viewPageInReading(globalAppState, "readium", "3");
-		output.append(">>>>>> Viewed Page with pageId 2 in Readium Reading... sent ViewedEvent\n");
+		output.append(">>>>>> Viewed Page with pageId 3 in Readium Reading... sent ViewedEvent\n");
 
+		// Event # 6 - BookmarkedEvent
 		bookmarkPageInReading(globalAppState, "readium", "3");
-		output.append(">>>>>> Bookmarked Page with pageId 2 in Readium Reading... sent BookmarkedEvent\n");
+		output.append(">>>>>> Bookmarked Page with pageId 3 in Readium Reading... sent BookmarkedEvent\n");
 
+		// Event # 7 - NavigationEvent
 		navigateToReading(globalAppState, "coursesmart");
 		output.append(">>>>>> Navigated to Reading provided by CourseSmart... sent NavigateEvent\n");
 
+		// Event # 8 - ViewedEvent
 		viewPageInReading(globalAppState, "coursesmart", "aXfsadf12");
 		output.append(">>>>>> Viewed Page with pageId aXfsadf12 in CourseSmart Reading... sent ViewedEvent\n");
 
+		// Event # 9 - TaggedEvent
 		tagPageInReading(globalAppState, "coursesmart", "aXfsadf12",
 				Lists.newArrayList("to-read", "1776",
 						"shared-with-project-team"));
 		output.append(">>>>>> Tagged Page with pageId aXfsadf12 with tags [to-read, 1776, shared-with-project-team] in CourseSmart Reading... sent TaggedEvent\n");
 
+		// Event # 10 - SharedEvent
 		sharePageInReading(
 				globalAppState,
 				"coursesmart",
@@ -282,7 +293,7 @@ public class CaliperTestServlet extends HttpServlet {
 		navEvent.setObject((CaliperDigitalResource) globalAppState.get(edApp
 				+ "Reading"));
 		navEvent.setFromResource((CaliperDigitalResource) globalAppState
-				.get("currentCourse"));
+				.get("courseWebPage"));
 
 		// add (learning) context for event
 		navEvent.setEdApp((SoftwareApplication) globalAppState.get(edApp
@@ -361,7 +372,10 @@ public class CaliperTestServlet extends HttpServlet {
 	 */
 	private HighlightAnnotation getHighlight(int startIndex, int endIndex,
 			String selectionText, CaliperDigitalResource target) {
-		HighlightAnnotation highlightAnnotation = new HighlightAnnotation(UUID
+		
+		String baseUrl = "https://someEduApp.edu/highlights/";
+		
+		HighlightAnnotation highlightAnnotation = new HighlightAnnotation(baseUrl + UUID
 				.randomUUID().toString());
 		highlightAnnotation.getSelection().setStart(
 				Integer.toString(startIndex));
@@ -401,7 +415,10 @@ public class CaliperTestServlet extends HttpServlet {
 	}
 
 	private Object getBookmark(CaliperDigitalResource target) {
-		BookmarkAnnotation bookmarkAnnotation = new BookmarkAnnotation(UUID
+		
+		String baseUrl = "https://someEduApp.edu/bookmarks/";
+		
+		BookmarkAnnotation bookmarkAnnotation = new BookmarkAnnotation(baseUrl + UUID
 				.randomUUID().toString());
 		bookmarkAnnotation.setTarget(target);
 		return bookmarkAnnotation;
@@ -437,7 +454,10 @@ public class CaliperTestServlet extends HttpServlet {
 	}
 
 	private Object getTag(List<String> tags, CaliperDigitalResource target) {
-		TagAnnotation tagAnnotation = new TagAnnotation(UUID.randomUUID()
+		
+		String baseUrl = "https://someEduApp.edu/tags/";
+		
+		TagAnnotation tagAnnotation = new TagAnnotation(baseUrl + UUID.randomUUID()
 				.toString());
 		tagAnnotation.setTags(tags);
 		tagAnnotation.setTarget(target);
@@ -475,7 +495,10 @@ public class CaliperTestServlet extends HttpServlet {
 
 	private Object getShareAnnotation(List<String> sharedWithIds,
 			CaliperDigitalResource target) {
-		ShareAnnotation shareAnnotation = new ShareAnnotation(UUID.randomUUID()
+		
+		String baseUrl = "https://someBookmarkingApp.edu/shares/";
+		
+		ShareAnnotation shareAnnotation = new ShareAnnotation(baseUrl + UUID.randomUUID()
 				.toString());
 		shareAnnotation.setUsers(sharedWithIds);
 		shareAnnotation.setTarget(target);
