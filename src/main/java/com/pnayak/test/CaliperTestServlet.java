@@ -16,7 +16,7 @@ import org.imsglobal.caliper.entities.CaliperDigitalResource;
 import org.imsglobal.caliper.entities.SoftwareApplication;
 import org.imsglobal.caliper.entities.annotation.BookmarkAnnotation;
 import org.imsglobal.caliper.entities.annotation.HighlightAnnotation;
-import org.imsglobal.caliper.entities.annotation.ShareAnnotation;
+import org.imsglobal.caliper.entities.annotation.SharedAnnotation;
 import org.imsglobal.caliper.entities.annotation.TagAnnotation;
 import org.imsglobal.caliper.entities.lis.LISCourseSection;
 import org.imsglobal.caliper.entities.lis.LISOrganization;
@@ -24,10 +24,7 @@ import org.imsglobal.caliper.entities.lis.LISPerson;
 import org.imsglobal.caliper.entities.reading.EPubSubChapter;
 import org.imsglobal.caliper.entities.reading.EPubVolume;
 import org.imsglobal.caliper.entities.schemadotorg.WebPage;
-import org.imsglobal.caliper.events.annotation.BookmarkedEvent;
-import org.imsglobal.caliper.events.annotation.HighlightedEvent;
-import org.imsglobal.caliper.events.annotation.SharedEvent;
-import org.imsglobal.caliper.events.annotation.TaggedEvent;
+import org.imsglobal.caliper.events.annotation.AnnotationEvent;
 import org.imsglobal.caliper.events.reading.NavigationEvent;
 import org.imsglobal.caliper.events.reading.ViewedEvent;
 import org.joda.time.DateTime;
@@ -44,6 +41,10 @@ public class CaliperTestServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	private static String HOST = "http://localhost:1080/1.0/event/put";
+
+	// RequestBin HOST for testing/recording
+	// private static String HOST = "http://requestb.in/uc7mt9uct";
+
 	private static String API_KEY = "FEFNtMyXRZqwAH4svMakTw";
 
 	private void initialize() {
@@ -229,7 +230,7 @@ public class CaliperTestServlet extends HttpServlet {
 		// Step 4: Execute reading sequence
 		// ----------------------------------------------------------------
 		output.append(">> sending events\n");
-		
+
 		// Event # 1 - NavigationEvent
 		navigateToReading(globalAppState, "readium");
 		output.append(">>>>>> Navigated to Reading provided by Readium... sent NavigateEvent\n");
@@ -237,7 +238,7 @@ public class CaliperTestServlet extends HttpServlet {
 		// Event # 2 - ViewedEvent
 		viewPageInReading(globalAppState, "readium", "1");
 		output.append(">>>>>> Viewed Page with pageId 1 in Readium Reading... sent ViewedEvent\n");
-		
+
 		// Event # 3 - ViewedEvent
 		viewPageInReading(globalAppState, "readium", "2");
 		output.append(">>>>>> Viewed Page with pageId 2 in Readium Reading... sent ViewedEvent\n");
@@ -336,21 +337,21 @@ public class CaliperTestServlet extends HttpServlet {
 	private void hilightTermsInReading(HashMap<String, Object> globalAppState,
 			String edApp, String pageId, int startIndex, int endIndex) {
 
-		HighlightedEvent hilightTermsEvent = HighlightedEvent
-				.forAction("created");
+		AnnotationEvent hilightTermsEvent = AnnotationEvent
+				.forAction("highlighted");
 
 		// action is set in navEvent constructor... now set actor and object
 		hilightTermsEvent.setActor((LISPerson) globalAppState.get("student"));
-		hilightTermsEvent.setObject(getHighlight(
+		hilightTermsEvent.setObject((CaliperDigitalResource) globalAppState
+				.get(edApp + "ReadingPage" + pageId));
+
+		// highlight create action generates a HighlightAnnotation
+		hilightTermsEvent.setGenerated(getHighlight(
 				startIndex,
 				endIndex,
 				"Life, Liberty and the pursuit of Happiness",
 				(CaliperDigitalResource) globalAppState.get(edApp
 						+ "ReadingPage" + pageId)));
-
-		// set target of highlight create action
-		hilightTermsEvent.setTarget((CaliperDigitalResource) globalAppState
-				.get(edApp + "ReadingPage" + pageId));
 
 		// add (learning) context for event
 		hilightTermsEvent.setEdApp((SoftwareApplication) globalAppState
@@ -372,11 +373,11 @@ public class CaliperTestServlet extends HttpServlet {
 	 */
 	private HighlightAnnotation getHighlight(int startIndex, int endIndex,
 			String selectionText, CaliperDigitalResource target) {
-		
+
 		String baseUrl = "https://someEduApp.edu/highlights/";
-		
-		HighlightAnnotation highlightAnnotation = new HighlightAnnotation(baseUrl + UUID
-				.randomUUID().toString());
+
+		HighlightAnnotation highlightAnnotation = new HighlightAnnotation(
+				baseUrl + UUID.randomUUID().toString());
 		highlightAnnotation.getSelection().setStart(
 				Integer.toString(startIndex));
 		highlightAnnotation.getSelection().setEnd(Integer.toString(endIndex));
@@ -388,18 +389,18 @@ public class CaliperTestServlet extends HttpServlet {
 	private void bookmarkPageInReading(HashMap<String, Object> globalAppState,
 			String edApp, String pageId) {
 
-		BookmarkedEvent bookmarkPageEvent = BookmarkedEvent
-				.forAction("created");
+		AnnotationEvent bookmarkPageEvent = AnnotationEvent
+				.forAction("bookmarked");
 
 		// action is set in navEvent constructor... now set actor, object
 		bookmarkPageEvent.setActor((LISPerson) globalAppState.get("student"));
-		bookmarkPageEvent
-				.setObject(getBookmark((CaliperDigitalResource) globalAppState
-						.get(edApp + "ReadingPage" + pageId)));
-
-		// set target of bookmark create action
-		bookmarkPageEvent.setTarget((CaliperDigitalResource) globalAppState
+		bookmarkPageEvent.setObject((CaliperDigitalResource) globalAppState
 				.get(edApp + "ReadingPage" + pageId));
+
+		// bookmark create action generates a BookmarkAnnotation
+		bookmarkPageEvent
+				.setGenerated(getBookmark((CaliperDigitalResource) globalAppState
+						.get(edApp + "ReadingPage" + pageId)));
 
 		// add (learning) context for event
 		bookmarkPageEvent.setEdApp((SoftwareApplication) globalAppState
@@ -415,11 +416,11 @@ public class CaliperTestServlet extends HttpServlet {
 	}
 
 	private Object getBookmark(CaliperDigitalResource target) {
-		
+
 		String baseUrl = "https://someEduApp.edu/bookmarks/";
-		
-		BookmarkAnnotation bookmarkAnnotation = new BookmarkAnnotation(baseUrl + UUID
-				.randomUUID().toString());
+
+		BookmarkAnnotation bookmarkAnnotation = new BookmarkAnnotation(baseUrl
+				+ UUID.randomUUID().toString());
 		bookmarkAnnotation.setTarget(target);
 		return bookmarkAnnotation;
 	}
@@ -427,18 +428,18 @@ public class CaliperTestServlet extends HttpServlet {
 	private void tagPageInReading(HashMap<String, Object> globalAppState,
 			String edApp, String pageId, List<String> tags) {
 
-		TaggedEvent tagPageEvent = TaggedEvent.forAction("created");
+		AnnotationEvent tagPageEvent = AnnotationEvent.forAction("tagged");
 
 		// action is set in navEvent constructor... now set actor and object
 		tagPageEvent.setActor((LISPerson) globalAppState.get("student"));
-		tagPageEvent.setObject(getTag(
+		tagPageEvent.setObject((CaliperDigitalResource) globalAppState
+				.get(edApp + "ReadingPage" + pageId));
+
+		// tag create action generates a TagAnnotation
+		tagPageEvent.setGenerated(getTag(
 				tags,
 				(CaliperDigitalResource) globalAppState.get(edApp
 						+ "ReadingPage" + pageId)));
-
-		// set target of tag create action
-		tagPageEvent.setTarget((CaliperDigitalResource) globalAppState
-				.get(edApp + "ReadingPage" + pageId));
 
 		// add (learning) context for event
 		tagPageEvent.setEdApp((SoftwareApplication) globalAppState.get(edApp
@@ -454,11 +455,11 @@ public class CaliperTestServlet extends HttpServlet {
 	}
 
 	private Object getTag(List<String> tags, CaliperDigitalResource target) {
-		
+
 		String baseUrl = "https://someEduApp.edu/tags/";
-		
-		TagAnnotation tagAnnotation = new TagAnnotation(baseUrl + UUID.randomUUID()
-				.toString());
+
+		TagAnnotation tagAnnotation = new TagAnnotation(baseUrl
+				+ UUID.randomUUID().toString());
 		tagAnnotation.setTags(tags);
 		tagAnnotation.setTarget(target);
 		return tagAnnotation;
@@ -467,18 +468,18 @@ public class CaliperTestServlet extends HttpServlet {
 	private void sharePageInReading(HashMap<String, Object> globalAppState,
 			String edApp, String pageId, List<String> sharedWithIds) {
 
-		SharedEvent sharePageEvent = SharedEvent.forAction("created");
+		AnnotationEvent sharePageEvent = AnnotationEvent.forAction("shared");
 
 		// action is set in navEvent constructor... now set actor and object
 		sharePageEvent.setActor((LISPerson) globalAppState.get("student"));
-		sharePageEvent.setObject(getShareAnnotation(
+		sharePageEvent.setObject((CaliperDigitalResource) globalAppState
+				.get(edApp + "ReadingPage" + pageId));
+
+		// tag create action generates a SharedAnnotation
+		sharePageEvent.setGenerated(getShareAnnotation(
 				sharedWithIds,
 				(CaliperDigitalResource) globalAppState.get(edApp
 						+ "ReadingPage" + pageId)));
-
-		// set target of tag create action
-		sharePageEvent.setTarget((CaliperDigitalResource) globalAppState
-				.get(edApp + "ReadingPage" + pageId));
 
 		// add (learning) context for event
 		sharePageEvent.setEdApp((SoftwareApplication) globalAppState.get(edApp
@@ -495,14 +496,14 @@ public class CaliperTestServlet extends HttpServlet {
 
 	private Object getShareAnnotation(List<String> sharedWithIds,
 			CaliperDigitalResource target) {
-		
+
 		String baseUrl = "https://someBookmarkingApp.edu/shares/";
-		
-		ShareAnnotation shareAnnotation = new ShareAnnotation(baseUrl + UUID.randomUUID()
-				.toString());
-		shareAnnotation.setUsers(sharedWithIds);
-		shareAnnotation.setTarget(target);
-		return shareAnnotation;
+
+		SharedAnnotation sharedAnnotation = new SharedAnnotation(baseUrl
+				+ UUID.randomUUID().toString());
+		sharedAnnotation.setUsers(sharedWithIds);
+		sharedAnnotation.setTarget(target);
+		return sharedAnnotation;
 	}
 
 	private void pauseFor(int time) {
