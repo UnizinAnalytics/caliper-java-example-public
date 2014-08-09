@@ -13,7 +13,7 @@ sudo mv ~/Downloads/apache-tomcat-7.0.47 /usr/local/tomcat
 ```
 * Make all scripts executable:
 ```
-sudo chmod +x /Library/Tomcat/bin/*.sh
+sudo chmod +x /usr/local/tomcat/bin/*.sh
 ```
 * Fire up Tomcat
 ```
