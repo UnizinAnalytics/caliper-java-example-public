@@ -3,6 +3,7 @@ package com.pnayak.test;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import javax.servlet.ServletException;
@@ -46,6 +47,8 @@ public class CaliperTestServlet extends HttpServlet {
 	// private static String HOST = "http://requestb.in/uc7mt9uct";
 
 	private static String API_KEY = "FEFNtMyXRZqwAH4svMakTw";
+	
+	private Random r;
 
 	private void initialize() {
 
@@ -54,6 +57,8 @@ public class CaliperTestServlet extends HttpServlet {
 		options.setHost(HOST);
 		options.setApiKey(API_KEY);
 		Caliper.initialize(options);
+		
+		r = new Random();
 	}
 
 	/**
@@ -328,6 +333,8 @@ public class CaliperTestServlet extends HttpServlet {
 
 		// set time and any event specific properties
 		viewPageEvent.setStartedAt(DateTime.now().getMillis());
+		int duration = randomSecsDurationBetween(5, 120);
+		viewPageEvent.setDuration("PT" + duration + "S");
 
 		// Send event to EventStore
 		Caliper.measure(viewPageEvent);
@@ -514,5 +521,9 @@ public class CaliperTestServlet extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	private int randomSecsDurationBetween(int start, int end) {
+		return r.nextInt((end-start) + start);
 	}
 }
