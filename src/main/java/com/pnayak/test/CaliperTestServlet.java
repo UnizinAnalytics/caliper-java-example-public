@@ -161,14 +161,12 @@ public class CaliperTestServlet extends HttpServlet {
 				.setName("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)");
 		readiumReading
 				.setLastModifiedAt(now.minus(Weeks.weeks(53)).getMillis());
-		readiumReading.setLanguage("English");
 
 		EPubSubChapter readiumReadingPage1 = new EPubSubChapter(
 				"https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)/1");
 		readiumReadingPage1.setName("Key Figures: George Washington)");
 		readiumReadingPage1.setLastModifiedAt(now.minus(Weeks.weeks(53))
 				.getMillis());
-		readiumReading.setLanguage("English");
 		readiumReadingPage1.setParentRef(readiumReading);
 
 		EPubSubChapter readiumReadingPage2 = new EPubSubChapter(
@@ -176,7 +174,6 @@ public class CaliperTestServlet extends HttpServlet {
 		readiumReadingPage2.setName("Key Figures: Lord Cornwalis)");
 		readiumReadingPage2.setLastModifiedAt(now.minus(Weeks.weeks(53))
 				.getMillis());
-		readiumReading.setLanguage("English");
 		readiumReadingPage2.setParentRef(readiumReading);
 
 		EPubSubChapter readiumReadingPage3 = new EPubSubChapter(
@@ -184,7 +181,6 @@ public class CaliperTestServlet extends HttpServlet {
 		readiumReadingPage3.setName("Key Figures: Paul Revere)");
 		readiumReadingPage3.setLastModifiedAt(now.minus(Weeks.weeks(53))
 				.getMillis());
-		readiumReading.setLanguage("English");
 		readiumReadingPage3.setParentRef(readiumReading);
 
 		// ........................................................................
@@ -195,14 +191,12 @@ public class CaliperTestServlet extends HttpServlet {
 				.setName("The American Revolution: A Concise History | 978-0-19-531295-9");
 		courseSmartReading.setLastModifiedAt(now.minus(Weeks.weeks(22))
 				.getMillis());
-		courseSmartReading.setLanguage("English");
 
 		EPubSubChapter courseSmartReadingPageaXfsadf12 = new EPubSubChapter(
 				"http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322/aXfsadf12");
 		courseSmartReadingPageaXfsadf12.setName("The Boston Tea Party");
 		courseSmartReading.setLastModifiedAt(now.minus(Weeks.weeks(22))
 				.getMillis());
-		courseSmartReadingPageaXfsadf12.setLanguage("English");
 		courseSmartReadingPageaXfsadf12.setParentRef(courseSmartReading);
 
 		output.append(">> generated activity context data\n");
