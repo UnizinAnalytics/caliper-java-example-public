@@ -1,16 +1,7 @@
 package com.pnayak.test;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.imsglobal.caliper.CaliperSensor;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
@@ -31,8 +22,15 @@ import org.imsglobal.caliper.events.reading.ViewedEvent;
 import org.joda.time.DateTime;
 import org.joda.time.Weeks;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
 /**
  * Servlet implementation class CaliperTestServlet
@@ -83,7 +81,7 @@ public class CaliperTestServlet extends HttpServlet {
 		output.append("Caliper Event Generator: Generating Reading and Annotation Sequence\n");
 		output.append("=========================================================================\n");
 
-		generateReadingAnnotationEventSeqeuence(output);
+		generateReadingAnnotationEventSequence(output);
 
 		output.append(CaliperSensor.getStatistics().toString());
 
@@ -99,7 +97,7 @@ public class CaliperTestServlet extends HttpServlet {
 		// TODO Auto-generated method stub
 	}
 
-	private void generateReadingAnnotationEventSeqeuence(StringBuffer output) {
+	private void generateReadingAnnotationEventSequence(StringBuffer output) {
 
 		// ================================================================
 		// ------------------------Reading sequence------------------------
@@ -243,8 +241,8 @@ public class CaliperTestServlet extends HttpServlet {
 		output.append(">>>>>> Viewed Page with pageId 2 in Readium Reading... sent ViewedEvent\n");
 
 		// Event # 4 - HighlitedEvent
-		hilightTermsInReading(globalAppState, "readium", "2", 455, 489);
-		output.append(">>>>>> Hilighted fragment in pageId 2 from index 455 to 489 in Readium Reading... sent HilightedEvent\n");
+		highlightTermsInReading(globalAppState, "readium", "2", 455, 489);
+		output.append(">>>>>> Highlighted fragment in pageId 2 from index 455 to 489 in Readium Reading... sent HighlightedEvent\n");
 
 		// Event # 5 - Viewed Event
 		viewPageInReading(globalAppState, "readium", "3");
@@ -335,19 +333,19 @@ public class CaliperTestServlet extends HttpServlet {
 
 	}
 
-	private void hilightTermsInReading(HashMap<String, Object> globalAppState,
+	private void highlightTermsInReading(HashMap<String, Object> globalAppState,
 			String edApp, String pageId, int startIndex, int endIndex) {
 
-		AnnotationEvent hilightTermsEvent = AnnotationEvent
+		AnnotationEvent highlightTermsEvent = AnnotationEvent
 				.forAction("highlighted");
 
 		// action is set in navEvent constructor... now set actor and object
-		hilightTermsEvent.setActor((LISPerson) globalAppState.get("student"));
-		hilightTermsEvent.setObject((CaliperDigitalResource) globalAppState
+		highlightTermsEvent.setActor((LISPerson) globalAppState.get("student"));
+		highlightTermsEvent.setObject((CaliperDigitalResource) globalAppState
 				.get(edApp + "ReadingPage" + pageId));
 
 		// highlight create action generates a HighlightAnnotation
-		hilightTermsEvent.setGenerated(getHighlight(
+		highlightTermsEvent.setGenerated(getHighlight(
 				startIndex,
 				endIndex,
 				"Life, Liberty and the pursuit of Happiness",
@@ -355,16 +353,16 @@ public class CaliperTestServlet extends HttpServlet {
 						+ "ReadingPage" + pageId)));
 
 		// add (learning) context for event
-		hilightTermsEvent.setEdApp((SoftwareApplication) globalAppState
+		highlightTermsEvent.setEdApp((SoftwareApplication) globalAppState
 				.get(edApp + "EdApp"));
-		hilightTermsEvent.setLisOrganization((LISOrganization) globalAppState
+		highlightTermsEvent.setLisOrganization((LISOrganization) globalAppState
 				.get("currentCourse"));
 
 		// set time and any event specific properties
-		hilightTermsEvent.setStartedAt(DateTime.now().getMillis());
+		highlightTermsEvent.setStartedAt(DateTime.now().getMillis());
 
 		// Send event to EventStore
-		CaliperSensor.send(hilightTermsEvent);
+		CaliperSensor.send(highlightTermsEvent);
 	}
 
 	/**
