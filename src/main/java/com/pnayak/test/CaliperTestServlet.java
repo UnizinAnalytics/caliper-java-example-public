@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.imsglobal.caliper.Caliper;
+import org.imsglobal.caliper.CaliperSensor;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
 import org.imsglobal.caliper.entities.SoftwareApplication;
@@ -56,7 +56,7 @@ public class CaliperTestServlet extends HttpServlet {
 		Options options = new Options();
 		options.setHost(HOST);
 		options.setApiKey(API_KEY);
-		Caliper.initialize(options);
+		CaliperSensor.initialize(options);
 		
 		r = new Random();
 	}
@@ -85,7 +85,7 @@ public class CaliperTestServlet extends HttpServlet {
 
 		generateReadingAnnotationEventSeqeuence(output);
 
-		output.append(Caliper.getStatistics().toString());
+		output.append(CaliperSensor.getStatistics().toString());
 
 		response.getWriter().write(output.toString());
 	}
@@ -305,7 +305,7 @@ public class CaliperTestServlet extends HttpServlet {
 		navEvent.setStartedAt(DateTime.now().getMillis());
 
 		// Send event to EventStore
-		Caliper.measure(navEvent);
+		CaliperSensor.send(navEvent);
 
 	}
 
@@ -331,7 +331,7 @@ public class CaliperTestServlet extends HttpServlet {
 		viewPageEvent.setDuration("PT" + duration + "S");
 
 		// Send event to EventStore
-		Caliper.measure(viewPageEvent);
+		CaliperSensor.send(viewPageEvent);
 
 	}
 
@@ -364,7 +364,7 @@ public class CaliperTestServlet extends HttpServlet {
 		hilightTermsEvent.setStartedAt(DateTime.now().getMillis());
 
 		// Send event to EventStore
-		Caliper.measure(hilightTermsEvent);
+		CaliperSensor.send(hilightTermsEvent);
 	}
 
 	/**
@@ -413,7 +413,7 @@ public class CaliperTestServlet extends HttpServlet {
 		bookmarkPageEvent.setStartedAt(DateTime.now().getMillis());
 
 		// Send event to EventStore
-		Caliper.measure(bookmarkPageEvent);
+		CaliperSensor.send(bookmarkPageEvent);
 	}
 
 	private Object getBookmark(CaliperDigitalResource target) {
@@ -452,7 +452,7 @@ public class CaliperTestServlet extends HttpServlet {
 		tagPageEvent.setStartedAt(DateTime.now().getMillis());
 
 		// Send event to EventStore
-		Caliper.measure(tagPageEvent);
+		CaliperSensor.send(tagPageEvent);
 	}
 
 	private Object getTag(List<String> tags, CaliperDigitalResource target) {
@@ -492,7 +492,7 @@ public class CaliperTestServlet extends HttpServlet {
 		sharePageEvent.setStartedAt(DateTime.now().getMillis());
 
 		// Send event to EventStore
-		Caliper.measure(sharePageEvent);
+		CaliperSensor.send(sharePageEvent);
 	}
 
 	private Object getShareAnnotation(List<String> sharedWithIds,
