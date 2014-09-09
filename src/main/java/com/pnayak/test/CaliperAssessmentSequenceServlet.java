@@ -20,6 +20,7 @@ import org.imsglobal.caliper.entities.annotation.HighlightAnnotation;
 import org.imsglobal.caliper.entities.annotation.SharedAnnotation;
 import org.imsglobal.caliper.entities.annotation.TagAnnotation;
 import org.imsglobal.caliper.entities.assessment.CaliperAssessment;
+import org.imsglobal.caliper.entities.assessment.CaliperAssessmentItem;
 import org.imsglobal.caliper.entities.assignable.Attempt;
 import org.imsglobal.caliper.entities.assignable.CaliperAssignableDigitalResource;
 import org.imsglobal.caliper.entities.lis.LISCourseSection;
@@ -27,6 +28,8 @@ import org.imsglobal.caliper.entities.lis.LISOrganization;
 import org.imsglobal.caliper.entities.lis.LISPerson;
 import org.imsglobal.caliper.entities.schemadotorg.WebPage;
 import org.imsglobal.caliper.events.annotation.AnnotationEvent;
+import org.imsglobal.caliper.events.assessment.AssessmentEvent;
+import org.imsglobal.caliper.events.assessment.AssessmentItemEvent;
 import org.imsglobal.caliper.events.assignable.AssignableEvent;
 import org.imsglobal.caliper.events.assignable.AssignableEvent.Action;
 import org.imsglobal.caliper.events.reading.NavigationEvent;
@@ -136,6 +139,14 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		WebPage courseWebPage = new WebPage("AmRev-101-landingPage");
 		courseWebPage.setName("American Revolution 101 Landing Page");
 		courseWebPage.setParentRef(americanHistoryCourse);
+		
+		// edApp that provides the course
+		SoftwareApplication canvasLMS = new SoftwareApplication(
+				"https://canvas.instructure.com");
+		canvasLMS
+				.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms");
+		canvasLMS.setLastModifiedAt(now.minus(Weeks.weeks(8))
+				.getMillis());
 
 		// edApp that provides the assessment
 		SoftwareApplication superAssessmentTool = new SoftwareApplication(
@@ -168,6 +179,11 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		assessment.setMaxSubmits(2);
 		assessment.setParentRef(americanHistoryCourse);
 
+		CaliperAssessmentItem assessmentItem = new CaliperAssessmentItem(
+				"https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item1");
+		assessmentItem.setName("Assessment Item 1");
+		assessmentItem.setParentRef(assessment);
+
 		output.append(">> generated activity context data\n");
 
 		// ----------------------------------------------------------------
@@ -179,10 +195,12 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		// used by subsequent event generation code and NOT part of the Caliper
 		// standard
 		HashMap<String, Object> globalAppState = Maps.newHashMap();
+		globalAppState.put("canvas", canvasLMS);
 		globalAppState.put("currentCourse", americanHistoryCourse);
 		globalAppState.put("courseWebPage", courseWebPage);
 		globalAppState.put("assessmentEdApp", superAssessmentTool);
 		globalAppState.put("assessment1", assessment);
+		globalAppState.put("assessment1item1", assessmentItem);
 		// globalAppState.put("readiumReadingPage1", readiumReadingPage1);
 		// globalAppState.put("readiumReadingPage2", readiumReadingPage2);
 		// globalAppState.put("readiumReadingPage3", readiumReadingPage3);
@@ -207,53 +225,36 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		// viewPageInReading(globalAppState, "readium", "1");
 		// output.append(">>>>>> Viewed Page with pageId 1 in Readium Reading... sent ViewedEvent\n");
 		//
-		// // Event # 3 - Start Assignable Event
-		startAssignment(globalAppState, "readium");
+		// Event # 3 - Start Assignable Event
+		startAssignment(globalAppState);
 		output.append(">>>>>> Started Assigned Assessment in Super Assessment App... sent AssignableEvent[started]\n");
-		//
-		// // Event # 4 - HighlitedEvent
-		// highlightTermsInReading(globalAppState, "readium", "2", 455, 489);
-		// output.append(">>>>>> Highlighted fragment in pageId 2 from index 455 to 489 in Readium Reading... sent HighlightedEvent\n");
-		//
-		// // Event # 5 - Viewed Event
-		// viewPageInReading(globalAppState, "readium", "3");
-		// output.append(">>>>>> Viewed Page with pageId 3 in Readium Reading... sent ViewedEvent\n");
-		//
-		// // Event # 6 - BookmarkedEvent
-		// bookmarkPageInReading(globalAppState, "readium", "3");
-		// output.append(">>>>>> Bookmarked Page with pageId 3 in Readium Reading... sent BookmarkedEvent\n");
-		//
-		// // Event # 7 - NavigationEvent
-		// navigateToReading(globalAppState, "coursesmart");
-		// output.append(">>>>>> Navigated to Reading provided by CourseSmart... sent NavigateEvent\n");
-		//
-		// // Event # 8 - ViewedEvent
-		// viewPageInReading(globalAppState, "coursesmart", "aXfsadf12");
-		// output.append(">>>>>> Viewed Page with pageId aXfsadf12 in CourseSmart Reading... sent ViewedEvent\n");
-		//
-		// // Event # 9 - TaggedEvent
-		// tagPageInReading(globalAppState, "coursesmart", "aXfsadf12",
-		// Lists.newArrayList("to-read", "1776",
-		// "shared-with-project-team"));
-		// output.append(">>>>>> Tagged Page with pageId aXfsadf12 with tags [to-read, 1776, shared-with-project-team] in CourseSmart Reading... sent TaggedEvent\n");
-		//
-		// // Event # 10 - SharedEvent
-		// sharePageInReading(
-		// globalAppState,
-		// "coursesmart",
-		// "aXfsadf12",
-		// Lists.newArrayList(
-		// "https://some-university.edu/students/smith-bob-554433",
-		// "https://some-university.edu/students/lam-eve-554433"));
-		// output.append(">>>>>> Shared Page with pageId aXfsadf12 with students [bob, eve] in CourseSmart Reading... sent SharedEvent\n");
+
+		// Event # 4 - Start Assessment Event
+		startAssessment(globalAppState);
+		output.append(">>>>>> Started Assessment in Super Assessment App... sent AssessmentEvent[started]\n");
+
+		// Event # 5 - Start AssessmentItem Event
+		startAssessmentItem(globalAppState);
+		output.append(">>>>>> Started AssessmentItem in Super Assessment App... sent AssessmentItemEvent[started]\n");
+
+		// Event # 6 - Completed AssessmentItem Event
+		completeAssessmentItem(globalAppState);
+		output.append(">>>>>> Completed AssessmentItem in Super Assessment App... sent AssessmentItemEvent[completed]\n");
+
+		// Event # 7 - Submitted Assessment Event
+		submitAssessment(globalAppState);
+		output.append(">>>>>> Submitted Assessment in Super Assessment App... sent AssessmentEvent[submitted]\n");
+		
+		// Event # 8 - Start Assignable Event
+		submitAssignment(globalAppState);
+		output.append(">>>>>> Submitted Assigned Assessment in Super Assessment App... sent AssignableEvent[submitted]\n");
 	}
 
 	// Methods below are utility methods for generating events... These are NOT
 	// part of Caliper standards work and are here only as a utility in this
 	// sample App
 
-	private void startAssignment(HashMap<String, Object> globalAppState,
-			String edApp) {
+	private void startAssignment(HashMap<String, Object> globalAppState) {
 
 		AssignableEvent assignableStartEvent = AssignableEvent
 				.forAction(Action.started);
@@ -264,6 +265,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		attempt.setCount(1);
 		attempt.setAssignable((CaliperAssignableDigitalResource) globalAppState
 				.get("assessment1"));
+		globalAppState.put("assignment1attempt1", attempt);
 
 		// action is set in navEvent constructor... now set actor and object
 		assignableStartEvent
@@ -275,7 +277,142 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
 		// add (learning) context for event
 		assignableStartEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("canvas"));
+		assignableStartEvent
+				.setLisOrganization((LISOrganization) globalAppState
+						.get("currentCourse"));
+
+		// set time and any event specific properties
+		assignableStartEvent.setStartedAt(DateTime.now().getMillis());
+
+		// Send event to EventStore
+		CaliperSensor.send(assignableStartEvent);
+
+	}
+
+	private void startAssessment(HashMap<String, Object> globalAppState) {
+
+		AssessmentEvent assessmentStartEvent = AssessmentEvent
+				.forAction(org.imsglobal.caliper.events.assessment.AssessmentEvent.Action.started);
+
+		// action is set in navEvent constructor... now set actor and object
+		assessmentStartEvent
+				.setActor((LISPerson) globalAppState.get("student"));
+		assessmentStartEvent
+				.setObject((CaliperAssignableDigitalResource) globalAppState
+						.get("assessment1"));
+
+		// add (learning) context for event
+		assessmentStartEvent.setEdApp((SoftwareApplication) globalAppState
 				.get("assessmentEdApp"));
+		assessmentStartEvent
+				.setLisOrganization((LISOrganization) globalAppState
+						.get("currentCourse"));
+
+		// set time and any event specific properties
+		assessmentStartEvent.setStartedAt(DateTime.now().getMillis());
+
+		// Send event to EventStore
+		CaliperSensor.send(assessmentStartEvent);
+
+	}
+
+	private void startAssessmentItem(HashMap<String, Object> globalAppState) {
+
+		AssessmentItemEvent assessmentItemStartEvent = AssessmentItemEvent
+				.forAction(org.imsglobal.caliper.events.assessment.AssessmentItemEvent.Action.started);
+
+		// action is set in navEvent constructor... now set actor and object
+		assessmentItemStartEvent.setActor((LISPerson) globalAppState
+				.get("student"));
+		assessmentItemStartEvent
+				.setObject((CaliperAssignableDigitalResource) globalAppState
+						.get("assessment1item1"));
+
+		// add (learning) context for event
+		assessmentItemStartEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("assessmentEdApp"));
+		assessmentItemStartEvent
+				.setLisOrganization((LISOrganization) globalAppState
+						.get("currentCourse"));
+
+		// set time and any event specific properties
+		assessmentItemStartEvent.setStartedAt(DateTime.now().getMillis());
+
+		// Send event to EventStore
+		CaliperSensor.send(assessmentItemStartEvent);
+
+	}
+
+	private void completeAssessmentItem(HashMap<String, Object> globalAppState) {
+
+		AssessmentItemEvent assessmentItemCompletedEvent = AssessmentItemEvent
+				.forAction(org.imsglobal.caliper.events.assessment.AssessmentItemEvent.Action.completed);
+
+		// action is set in navEvent constructor... now set actor and object
+		assessmentItemCompletedEvent.setActor((LISPerson) globalAppState
+				.get("student"));
+		assessmentItemCompletedEvent
+				.setObject((CaliperAssignableDigitalResource) globalAppState
+						.get("assessment1item1"));
+
+		// add (learning) context for event
+		assessmentItemCompletedEvent
+				.setEdApp((SoftwareApplication) globalAppState
+						.get("assessmentEdApp"));
+		assessmentItemCompletedEvent
+				.setLisOrganization((LISOrganization) globalAppState
+						.get("currentCourse"));
+
+		// set time and any event specific properties
+		assessmentItemCompletedEvent.setStartedAt(DateTime.now().getMillis());
+
+		// Send event to EventStore
+		CaliperSensor.send(assessmentItemCompletedEvent);
+
+	}
+
+	private void submitAssessment(HashMap<String, Object> globalAppState) {
+
+		AssessmentEvent assessmentStartEvent = AssessmentEvent
+				.forAction(org.imsglobal.caliper.events.assessment.AssessmentEvent.Action.submitted);
+
+		// action is set in navEvent constructor... now set actor and object
+		assessmentStartEvent
+				.setActor((LISPerson) globalAppState.get("student"));
+		assessmentStartEvent
+				.setObject((CaliperAssignableDigitalResource) globalAppState
+						.get("assessment1"));
+
+		// add (learning) context for event
+		assessmentStartEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("assessmentEdApp"));
+		assessmentStartEvent
+				.setLisOrganization((LISOrganization) globalAppState
+						.get("currentCourse"));
+
+		// set time and any event specific properties
+		assessmentStartEvent.setStartedAt(DateTime.now().getMillis());
+
+		// Send event to EventStore
+		CaliperSensor.send(assessmentStartEvent);
+
+	}
+
+	private void submitAssignment(HashMap<String, Object> globalAppState) {
+
+		AssignableEvent assignableStartEvent = AssignableEvent
+				.forAction(Action.submitted);
+
+		// action is set in navEvent constructor... now set actor and object
+		assignableStartEvent
+				.setActor((LISPerson) globalAppState.get("student"));
+		assignableStartEvent.setObject((Attempt) globalAppState
+				.get("assignment1attempt1"));
+
+		// add (learning) context for event
+		assignableStartEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("canvas"));
 		assignableStartEvent
 				.setLisOrganization((LISOrganization) globalAppState
 						.get("currentCourse"));
