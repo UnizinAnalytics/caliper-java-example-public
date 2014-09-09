@@ -1,7 +1,16 @@
 package com.pnayak.test;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.imsglobal.caliper.CaliperSensor;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
@@ -10,27 +19,23 @@ import org.imsglobal.caliper.entities.annotation.BookmarkAnnotation;
 import org.imsglobal.caliper.entities.annotation.HighlightAnnotation;
 import org.imsglobal.caliper.entities.annotation.SharedAnnotation;
 import org.imsglobal.caliper.entities.annotation.TagAnnotation;
+import org.imsglobal.caliper.entities.assessment.CaliperAssessment;
+import org.imsglobal.caliper.entities.assignable.Attempt;
+import org.imsglobal.caliper.entities.assignable.CaliperAssignableDigitalResource;
 import org.imsglobal.caliper.entities.lis.LISCourseSection;
 import org.imsglobal.caliper.entities.lis.LISOrganization;
 import org.imsglobal.caliper.entities.lis.LISPerson;
-import org.imsglobal.caliper.entities.reading.EPubSubChapter;
-import org.imsglobal.caliper.entities.reading.EPubVolume;
 import org.imsglobal.caliper.entities.schemadotorg.WebPage;
 import org.imsglobal.caliper.events.annotation.AnnotationEvent;
+import org.imsglobal.caliper.events.assignable.AssignableEvent;
+import org.imsglobal.caliper.events.assignable.AssignableEvent.Action;
 import org.imsglobal.caliper.events.reading.NavigationEvent;
 import org.imsglobal.caliper.events.reading.ViewedEvent;
 import org.joda.time.DateTime;
+import org.joda.time.Days;
 import org.joda.time.Weeks;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import com.google.common.collect.Maps;
 
 /**
  * Servlet implementation class CaliperReadingSequenceServlet
@@ -45,7 +50,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 	// private static String HOST = "http://requestb.in/uc7mt9uct";
 
 	private static String API_KEY = "FEFNtMyXRZqwAH4svMakTw";
-	
+
 	private Random r;
 
 	private void initialize() {
@@ -55,7 +60,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		options.setHost(HOST);
 		options.setApiKey(API_KEY);
 		CaliperSensor.initialize(options);
-		
+
 		r = new Random();
 	}
 
@@ -103,7 +108,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		// ------------Assignable, Assessment, Outcome Sequence------------
 		// ================================================================
 		// Student in a course interacts with assignable entities within
-		// the course.  The assignable here is an Assessment.
+		// the course. The assignable here is an Assessment.
 		// In the process of interacting, she performs various assignable
 		// and assessement related interactions. These are defined in
 		// the Caliper Assignable, Assessment and Outcomes profiles respectively
@@ -123,6 +128,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 				null);
 		americanHistoryCourse.setCourseNumber("AmRev-101");
 		americanHistoryCourse.setLabel("American Revolution 101");
+		americanHistoryCourse.setTitle("American Revolution 101");
 		americanHistoryCourse.setSemester("Spring-2014");
 		americanHistoryCourse.setLastModifiedAt(now.minus(Weeks.weeks(4))
 				.getMillis());
@@ -134,8 +140,10 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		// edApp that provides the assessment
 		SoftwareApplication superAssessmentTool = new SoftwareApplication(
 				"https://com.sat/super-assessment-tool");
-		superAssessmentTool.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/assessment");
-		superAssessmentTool.setLastModifiedAt(now.minus(Weeks.weeks(8)).getMillis());
+		superAssessmentTool
+				.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/assessment");
+		superAssessmentTool.setLastModifiedAt(now.minus(Weeks.weeks(8))
+				.getMillis());
 
 		// Student - performs interaction with reading activities
 		LISPerson alice = new LISPerson(
@@ -145,9 +153,20 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		output.append(">> generated learning context data\n");
 
 		// -------------------------------------------------------------------------
-		// Step 2: Set up activity context elements (i.e. the Assignable Assessment)
+		// Step 2: Set up activity context elements (i.e. the Assignable
+		// Assessment)
 		// -------------------------------------------------------------------------
-
+		CaliperAssessment assessment = new CaliperAssessment(
+				"https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1");
+		assessment.setName("American Revolution - Key Figures Assessment");
+		assessment.setDateCreated(now.minus(Weeks.weeks(1)).getMillis());
+		assessment.setDatePublished(now.minus(Weeks.weeks(1)).getMillis());
+		assessment.setDateToActivate(now.minus(Days.days(1)).getMillis());
+		assessment.setDateToShow(now.minus(Days.days(1)).getMillis());
+		assessment.setDateToSubmit(now.minus(Days.days(10)).getMillis());
+		assessment.setMaxAttempts(2);
+		assessment.setMaxSubmits(2);
+		assessment.setParentRef(americanHistoryCourse);
 
 		output.append(">> generated activity context data\n");
 
@@ -163,14 +182,14 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		globalAppState.put("currentCourse", americanHistoryCourse);
 		globalAppState.put("courseWebPage", courseWebPage);
 		globalAppState.put("assessmentEdApp", superAssessmentTool);
-//		globalAppState.put("readiumReading", readiumReading);
-//		globalAppState.put("readiumReadingPage1", readiumReadingPage1);
-//		globalAppState.put("readiumReadingPage2", readiumReadingPage2);
-//		globalAppState.put("readiumReadingPage3", readiumReadingPage3);
-//		globalAppState.put("coursesmartEdApp", courseSmart);
-//		globalAppState.put("coursesmartReading", courseSmartReading);
-//		globalAppState.put("coursesmartReadingPageaXfsadf12",
-//				courseSmartReadingPageaXfsadf12);
+		globalAppState.put("assessment1", assessment);
+		// globalAppState.put("readiumReadingPage1", readiumReadingPage1);
+		// globalAppState.put("readiumReadingPage2", readiumReadingPage2);
+		// globalAppState.put("readiumReadingPage3", readiumReadingPage3);
+		// globalAppState.put("coursesmartEdApp", courseSmart);
+		// globalAppState.put("coursesmartReading", courseSmartReading);
+		// globalAppState.put("coursesmartReadingPageaXfsadf12",
+		// courseSmartReadingPageaXfsadf12);
 		globalAppState.put("student", alice);
 
 		output.append(">> populated Event Generator\'s global state\n");
@@ -180,58 +199,94 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		// ----------------------------------------------------------------
 		output.append(">> sending events\n");
 
-//		// Event # 1 - NavigationEvent
-//		navigateToReading(globalAppState, "readium");
-//		output.append(">>>>>> Navigated to Reading provided by Readium... sent NavigateEvent\n");
-//
-//		// Event # 2 - ViewedEvent
-//		viewPageInReading(globalAppState, "readium", "1");
-//		output.append(">>>>>> Viewed Page with pageId 1 in Readium Reading... sent ViewedEvent\n");
-//
-//		// Event # 3 - ViewedEvent
-//		viewPageInReading(globalAppState, "readium", "2");
-//		output.append(">>>>>> Viewed Page with pageId 2 in Readium Reading... sent ViewedEvent\n");
-//
-//		// Event # 4 - HighlitedEvent
-//		highlightTermsInReading(globalAppState, "readium", "2", 455, 489);
-//		output.append(">>>>>> Highlighted fragment in pageId 2 from index 455 to 489 in Readium Reading... sent HighlightedEvent\n");
-//
-//		// Event # 5 - Viewed Event
-//		viewPageInReading(globalAppState, "readium", "3");
-//		output.append(">>>>>> Viewed Page with pageId 3 in Readium Reading... sent ViewedEvent\n");
-//
-//		// Event # 6 - BookmarkedEvent
-//		bookmarkPageInReading(globalAppState, "readium", "3");
-//		output.append(">>>>>> Bookmarked Page with pageId 3 in Readium Reading... sent BookmarkedEvent\n");
-//
-//		// Event # 7 - NavigationEvent
-//		navigateToReading(globalAppState, "coursesmart");
-//		output.append(">>>>>> Navigated to Reading provided by CourseSmart... sent NavigateEvent\n");
-//
-//		// Event # 8 - ViewedEvent
-//		viewPageInReading(globalAppState, "coursesmart", "aXfsadf12");
-//		output.append(">>>>>> Viewed Page with pageId aXfsadf12 in CourseSmart Reading... sent ViewedEvent\n");
-//
-//		// Event # 9 - TaggedEvent
-//		tagPageInReading(globalAppState, "coursesmart", "aXfsadf12",
-//				Lists.newArrayList("to-read", "1776",
-//						"shared-with-project-team"));
-//		output.append(">>>>>> Tagged Page with pageId aXfsadf12 with tags [to-read, 1776, shared-with-project-team] in CourseSmart Reading... sent TaggedEvent\n");
-//
-//		// Event # 10 - SharedEvent
-//		sharePageInReading(
-//				globalAppState,
-//				"coursesmart",
-//				"aXfsadf12",
-//				Lists.newArrayList(
-//						"https://some-university.edu/students/smith-bob-554433",
-//						"https://some-university.edu/students/lam-eve-554433"));
-//		output.append(">>>>>> Shared Page with pageId aXfsadf12 with students [bob, eve] in CourseSmart Reading... sent SharedEvent\n");
+		// // Event # 1 - NavigationEvent
+		// navigateToReading(globalAppState, "readium");
+		// output.append(">>>>>> Navigated to Reading provided by Readium... sent NavigateEvent\n");
+		//
+		// // Event # 2 - ViewedEvent
+		// viewPageInReading(globalAppState, "readium", "1");
+		// output.append(">>>>>> Viewed Page with pageId 1 in Readium Reading... sent ViewedEvent\n");
+		//
+		// // Event # 3 - Start Assignable Event
+		startAssignment(globalAppState, "readium");
+		output.append(">>>>>> Started Assigned Assessment in Super Assessment App... sent AssignableEvent[started]\n");
+		//
+		// // Event # 4 - HighlitedEvent
+		// highlightTermsInReading(globalAppState, "readium", "2", 455, 489);
+		// output.append(">>>>>> Highlighted fragment in pageId 2 from index 455 to 489 in Readium Reading... sent HighlightedEvent\n");
+		//
+		// // Event # 5 - Viewed Event
+		// viewPageInReading(globalAppState, "readium", "3");
+		// output.append(">>>>>> Viewed Page with pageId 3 in Readium Reading... sent ViewedEvent\n");
+		//
+		// // Event # 6 - BookmarkedEvent
+		// bookmarkPageInReading(globalAppState, "readium", "3");
+		// output.append(">>>>>> Bookmarked Page with pageId 3 in Readium Reading... sent BookmarkedEvent\n");
+		//
+		// // Event # 7 - NavigationEvent
+		// navigateToReading(globalAppState, "coursesmart");
+		// output.append(">>>>>> Navigated to Reading provided by CourseSmart... sent NavigateEvent\n");
+		//
+		// // Event # 8 - ViewedEvent
+		// viewPageInReading(globalAppState, "coursesmart", "aXfsadf12");
+		// output.append(">>>>>> Viewed Page with pageId aXfsadf12 in CourseSmart Reading... sent ViewedEvent\n");
+		//
+		// // Event # 9 - TaggedEvent
+		// tagPageInReading(globalAppState, "coursesmart", "aXfsadf12",
+		// Lists.newArrayList("to-read", "1776",
+		// "shared-with-project-team"));
+		// output.append(">>>>>> Tagged Page with pageId aXfsadf12 with tags [to-read, 1776, shared-with-project-team] in CourseSmart Reading... sent TaggedEvent\n");
+		//
+		// // Event # 10 - SharedEvent
+		// sharePageInReading(
+		// globalAppState,
+		// "coursesmart",
+		// "aXfsadf12",
+		// Lists.newArrayList(
+		// "https://some-university.edu/students/smith-bob-554433",
+		// "https://some-university.edu/students/lam-eve-554433"));
+		// output.append(">>>>>> Shared Page with pageId aXfsadf12 with students [bob, eve] in CourseSmart Reading... sent SharedEvent\n");
 	}
 
 	// Methods below are utility methods for generating events... These are NOT
 	// part of Caliper standards work and are here only as a utility in this
 	// sample App
+
+	private void startAssignment(HashMap<String, Object> globalAppState,
+			String edApp) {
+
+		AssignableEvent assignableStartEvent = AssignableEvent
+				.forAction(Action.started);
+
+		Attempt attempt = new Attempt(
+				"https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/attempt1");
+		attempt.setActor((LISPerson) globalAppState.get("student"));
+		attempt.setCount(1);
+		attempt.setAssignable((CaliperAssignableDigitalResource) globalAppState
+				.get("assessment1"));
+
+		// action is set in navEvent constructor... now set actor and object
+		assignableStartEvent
+				.setActor((LISPerson) globalAppState.get("student"));
+		assignableStartEvent
+				.setObject((CaliperAssignableDigitalResource) globalAppState
+						.get("assessment1"));
+		assignableStartEvent.setGenerated(attempt);
+
+		// add (learning) context for event
+		assignableStartEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("assessmentEdApp"));
+		assignableStartEvent
+				.setLisOrganization((LISOrganization) globalAppState
+						.get("currentCourse"));
+
+		// set time and any event specific properties
+		assignableStartEvent.setStartedAt(DateTime.now().getMillis());
+
+		// Send event to EventStore
+		CaliperSensor.send(assignableStartEvent);
+
+	}
 
 	private void navigateToReading(HashMap<String, Object> globalAppState,
 			String edApp) {
@@ -285,8 +340,9 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
 	}
 
-	private void highlightTermsInReading(HashMap<String, Object> globalAppState,
-			String edApp, String pageId, int startIndex, int endIndex) {
+	private void highlightTermsInReading(
+			HashMap<String, Object> globalAppState, String edApp,
+			String pageId, int startIndex, int endIndex) {
 
 		AnnotationEvent highlightTermsEvent = AnnotationEvent
 				.forAction("highlighted");
@@ -466,8 +522,8 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private int randomSecsDurationBetween(int start, int end) {
-		return r.nextInt((end-start) + start);
+		return r.nextInt((end - start) + start);
 	}
 }
