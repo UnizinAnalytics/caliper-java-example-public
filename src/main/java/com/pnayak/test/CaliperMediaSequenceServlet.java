@@ -13,6 +13,7 @@ import org.imsglobal.caliper.CaliperSensor;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.entities.CaliperAgent;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
+import org.imsglobal.caliper.entities.LearningObjective;
 import org.imsglobal.caliper.entities.SoftwareApplication;
 import org.imsglobal.caliper.entities.assessment.Attempt;
 import org.imsglobal.caliper.entities.assessment.CaliperAssessment;
@@ -21,12 +22,15 @@ import org.imsglobal.caliper.entities.assignable.CaliperAssignableDigitalResourc
 import org.imsglobal.caliper.entities.lis.LISCourseSection;
 import org.imsglobal.caliper.entities.lis.LISOrganization;
 import org.imsglobal.caliper.entities.lis.LISPerson;
+import org.imsglobal.caliper.entities.media.CaliperVideoObject;
+import org.imsglobal.caliper.entities.media.MediaLocation;
 import org.imsglobal.caliper.entities.outcome.Result;
 import org.imsglobal.caliper.entities.schemadotorg.WebPage;
 import org.imsglobal.caliper.events.assessment.AssessmentEvent;
 import org.imsglobal.caliper.events.assessment.AssessmentItemEvent;
 import org.imsglobal.caliper.events.assignable.AssignableEvent;
 import org.imsglobal.caliper.events.assignable.AssignableEvent.Action;
+import org.imsglobal.caliper.events.media.MediaEvent;
 import org.imsglobal.caliper.events.outcome.OutcomeEvent;
 import org.imsglobal.caliper.events.reading.NavigationEvent;
 import org.imsglobal.caliper.events.reading.ViewedEvent;
@@ -34,12 +38,13 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.joda.time.Weeks;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
  * Servlet implementation class CaliperReadingSequenceServlet
  */
-public class CaliperAssessmentSequenceServlet extends HttpServlet {
+public class CaliperMediaSequenceServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
@@ -66,7 +71,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 	/**
 	 * Default constructor.
 	 */
-	public CaliperAssessmentSequenceServlet() {
+	public CaliperMediaSequenceServlet() {
 		initialize();
 	}
 
@@ -82,10 +87,10 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		StringBuffer output = new StringBuffer();
 
 		output.append("=============================================================================\n");
-		output.append("Caliper Event Generator: Generating Assignable, Assessment, Outcome Sequence\n");
+		output.append("Caliper Event Generator: Generating Media interaction Sequence\n");
 		output.append("=============================================================================\n");
 
-		generateAAOSequence(output);
+		generateMediaSequence(output);
 
 		output.append(CaliperSensor.getStatistics().toString());
 
@@ -101,16 +106,14 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		// TODO Auto-generated method stub
 	}
 
-	private void generateAAOSequence(StringBuffer output) {
+	private void generateMediaSequence(StringBuffer output) {
 
-		// ================================================================
-		// ------------Assignable, Assessment, Outcome Sequence------------
-		// ================================================================
-		// Student in a course interacts with assignable entities within
-		// the course. The assignable here is an Assessment.
-		// In the process of interacting, she performs various assignable
-		// and assessement related interactions. These are defined in
-		// the Caliper Assignable, Assessment and Outcomes profiles respectively
+		// ===============================================================
+		// ------------------ Media Interaction Sequence------------------
+		// ===============================================================
+		// Student in a course interacts with multi-media entities within
+		// the course. The events and entities referenced here are defined in
+		// the Caliper Media Metric Profile
 
 		// For reference, the current time
 		DateTime now = DateTime.now();
@@ -141,56 +144,36 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		canvasLMS.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms");
 		canvasLMS.setLastModifiedAt(now.minus(Weeks.weeks(8)).getMillis());
 
-		// edApp that provides the assessment (likely an LTI based tool
+		// edApp that provides the Media (likely an LTI based tool
 		// provider)
-		SoftwareApplication superAssessmentTool = new SoftwareApplication(
-				"https://com.sat/super-assessment-tool");
-		superAssessmentTool
-				.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/assessment");
-		superAssessmentTool.setLastModifiedAt(now.minus(Weeks.weeks(8))
-				.getMillis());
+		SoftwareApplication superMediaTool = new SoftwareApplication(
+				"https://com.sat/super-media-tool");
+		superMediaTool
+				.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/media");
+		superMediaTool.setLastModifiedAt(now.minus(Weeks.weeks(8)).getMillis());
 
-		// Student - performs interaction with assignable, assessment activities
+		// Student - performs interaction with media activities
 		LISPerson alice = new LISPerson(
 				"https://some-university.edu/students/jones-alice-554433");
 		alice.setLastModifiedAt(now.minus(Weeks.weeks(3)).getMillis());
 
-		// The entity that automatically grades our assessment submissions
-		CaliperAgent superAssessmentToolGradingEngine = superAssessmentTool;
-
 		output.append(">> generated learning context data\n");
 
 		// -------------------------------------------------------------------------
-		// Step 2: Set up activity context elements (i.e. the Assignable in
-		// the LMS and the Assessment it uses that is provided by the LTI tool)
+		// Step 2: Set up activity context elements (i.e. Video provided by the
+		// LTI tool). We also assign a single learning objective to the video
 		// -------------------------------------------------------------------------
-		CaliperAssignableDigitalResource assignment = new CaliperAssignableDigitalResource(
-				"https://canvas.instructure.com/course/american-revolution-101/assignment/assignment1");
-		assignment.setName("American Revolution - Key Figures Assignment");
-		assignment.setDateCreated(now.minus(Weeks.weeks(1)).getMillis());
-		assignment.setDatePublished(now.minus(Weeks.weeks(1)).getMillis());
-		assignment.setDateToActivate(now.minus(Days.days(1)).getMillis());
-		assignment.setDateToShow(now.minus(Days.days(1)).getMillis());
-		assignment.setDateToSubmit(now.minus(Days.days(10)).getMillis());
-		assignment.setMaxAttempts(2);
-		assignment.setMaxSubmits(2);
-		assignment.setMaxScore(5.0d);
-		assignment.setParentRef(americanHistoryCourse);
 
-		CaliperAssessment assessment = new CaliperAssessment(
-				"https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1");
-		assessment.setName("American Revolution - Key Figures Assessment");
-		assessment.setDateCreated(now.minus(Weeks.weeks(3)).getMillis());
-		assessment.setDatePublished(now.minus(Weeks.weeks(3)).getMillis());
-		assessment.setMaxAttempts(2);
-		assessment.setMaxSubmits(2);
-		assessment.setMaxScore(5.0d);
-		assessment.setParentRef(assignment);
+		LearningObjective comprehendVideoObjective = new LearningObjective(
+				"http://blooms-sucks.com/lo1");
 
-		CaliperAssessmentItem assessmentItem = new CaliperAssessmentItem(
-				"https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item1");
-		assessmentItem.setName("Assessment Item 1");
-		assessmentItem.setParentRef(assessment);
+		CaliperVideoObject video = new CaliperVideoObject(
+				"https://com.sat/super-media-tool/video/video1");
+		video.setName("American Revolution - Key Figures Assignment");
+		video.setDuration(1420);
+		video.setAlignedLearningObjectives(Lists
+				.newArrayList(comprehendVideoObjective));
+		video.setParentRef(americanHistoryCourse);
 
 		output.append(">> generated activity context data\n");
 
@@ -206,11 +189,8 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		globalAppState.put("canvas", canvasLMS);
 		globalAppState.put("currentCourse", americanHistoryCourse);
 		globalAppState.put("courseWebPage", courseWebPage);
-		globalAppState.put("assessmentEdApp", superAssessmentTool);
-		globalAppState.put("assignment1", assignment);
-		globalAppState.put("assessment1", assessment);
-		globalAppState.put("assessment1item1", assessmentItem);
-		globalAppState.put("gradingEngine", superAssessmentToolGradingEngine);
+		globalAppState.put("mediaEdApp", superMediaTool);
+		globalAppState.put("video1", video);
 		globalAppState.put("student", alice);
 
 		output.append(">> populated Event Generator\'s global state\n");
@@ -221,217 +201,191 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		output.append(">> sending events\n");
 
 		// Event # 1 - NavigationEvent
-		navigateToAssignable(globalAppState);
-		output.append(">>>>>> Navigated to Assignable in Canvas LMS edApp... sent NavigateEvent\n");
+		navigateToVideo(globalAppState);
+		output.append(">>>>>> Navigated to video in Canvas LMS edApp... sent NavigateEvent\n");
 
 		// Event # 2 - ViewedEvent
-		viewAssignable(globalAppState);
-		output.append(">>>>>> Viewed Assignable in Canvas LMS edApp... sent ViewedEvent\n");
+		viewVideo(globalAppState);
+		output.append(">>>>>> Viewed video in Super Media edApp... sent ViewedEvent\n");
 
-		// Event # 3 - Start Assignable Event
-		startAssignment(globalAppState);
-		output.append(">>>>>> Started Assignable in Canvas LMS edApp... sent AssignableEvent[started]\n");
+		// Event # 3 - Start playing video
+		startPlayingVideo(globalAppState);
+		output.append(">>>>>> Started playing Video in Super Media edApp... sent AssignableEvent[started]\n");
 
-		// Event # 4 - Start Assessment Event
-		startAssessment(globalAppState);
-		output.append(">>>>>> Started Assessment in Super Assessment edApp... sent AssessmentEvent[started]\n");
+		// Event # 4 - Pause playing video Event
+		pausePlayingVideo(globalAppState);
+		output.append(">>>>>> Paused playing video in Super Media edApp... sent AssessmentEvent[started]\n");
 
-		// Event # 5 - Start AssessmentItem Event
-		startAssessmentItem(globalAppState);
-		output.append(">>>>>> Started AssessmentItem in Super Assessment edApp... sent AssessmentItemEvent[started]\n");
+		// Event # 5 - Resume playing video Event
+		resumePlayingVideo(globalAppState);
+		output.append(">>>>>> Resumed playing video in Super Media edApp... sent AssessmentItemEvent[started]\n");
 
-		// Event # 6 - Completed AssessmentItem Event
-		completeAssessmentItem(globalAppState);
-		output.append(">>>>>> Completed AssessmentItem in Super Assessment edApp... sent AssessmentItemEvent[completed]\n");
-
-		// Event # 7 - Submitted Assessment Event
-		submitAssessment(globalAppState);
-		output.append(">>>>>> Submitted Assessment in Super Assessment edApp... sent AssessmentEvent[submitted]\n");
-
-		// Event # 8 - Start Assignable Event
-		completeAssignment(globalAppState);
-		output.append(">>>>>> Submitted Assignable in Canvas LMS edApp... sent AssignableEvent[submitted]\n");
-
-		// Event # 9 - Outcome Event (grade)
-		autoGradeAssessmentSubmission(globalAppState);
-		output.append(">>>>>> Attempt auto-graded in Super Assessment edApp... sent OutcomeEvent[graded]\n");
+		// Event # 6 - Completed playing video Event
+		completePlayingVideo(globalAppState);
+		output.append(">>>>>> Completed playing video in Super Media edApp... sent AssessmentItemEvent[completed]\n");
 	}
 
 	// Methods below are utility methods for generating events... These are NOT
 	// part of Caliper standards work and are here only as a utility in this
 	// sample App
 
-	private void navigateToAssignable(HashMap<String, Object> globalAppState) {
+	private void navigateToVideo(HashMap<String, Object> globalAppState) {
 
-		NavigationEvent navToAssignableEvent = new NavigationEvent();
+		NavigationEvent navToVideoEvent = new NavigationEvent();
 
 		// action is set in navEvent constructor... now set actor and object
-		navToAssignableEvent
-				.setActor((LISPerson) globalAppState.get("student"));
-		navToAssignableEvent
-				.setObject((CaliperAssignableDigitalResource) globalAppState
-						.get("assignment1"));
-		navToAssignableEvent
-				.setFromResource((CaliperDigitalResource) globalAppState
-						.get("courseWebPage"));
+		navToVideoEvent.setActor((LISPerson) globalAppState.get("student"));
+		navToVideoEvent.setObject((CaliperVideoObject) globalAppState
+				.get("video1"));
+		navToVideoEvent.setFromResource((CaliperDigitalResource) globalAppState
+				.get("courseWebPage"));
 
 		// add (learning) context for event
-		navToAssignableEvent.setEdApp((SoftwareApplication) globalAppState
+		navToVideoEvent.setEdApp((SoftwareApplication) globalAppState
 				.get("canvas"));
-		navToAssignableEvent
-				.setLisOrganization((LISOrganization) globalAppState
-						.get("currentCourse"));
-
-		// set time and any event specific properties
-		navToAssignableEvent.setStartedAt(DateTime.now().getMillis());
-
-		// Send event to EventStore
-		CaliperSensor.send(navToAssignableEvent);
-
-	}
-
-	private void viewAssignable(HashMap<String, Object> globalAppState) {
-
-		ViewedEvent viewAssignableEvent = new ViewedEvent();
-
-		// action is set in viewed event constructor... now set actor and object
-		viewAssignableEvent.setActor((LISPerson) globalAppState.get("student"));
-		viewAssignableEvent
-				.setObject((CaliperAssignableDigitalResource) globalAppState
-						.get("assignment1"));
-
-		// add (learning) context for event
-		viewAssignableEvent.setEdApp((SoftwareApplication) globalAppState
-				.get("canvas"));
-		viewAssignableEvent.setLisOrganization((LISOrganization) globalAppState
+		navToVideoEvent.setLisOrganization((LISOrganization) globalAppState
 				.get("currentCourse"));
 
 		// set time and any event specific properties
-		viewAssignableEvent.setStartedAt(DateTime.now().getMillis());
-		int duration = randomSecsDurationBetween(5, 120);
-		viewAssignableEvent.setDuration("PT" + duration + "S");
+		navToVideoEvent.setStartedAt(DateTime.now().getMillis());
 
 		// Send event to EventStore
-		CaliperSensor.send(viewAssignableEvent);
+		CaliperSensor.send(navToVideoEvent);
 
 	}
 
-	private void startAssignment(HashMap<String, Object> globalAppState) {
+	private void viewVideo(HashMap<String, Object> globalAppState) {
 
-		AssignableEvent assignableStartEvent = AssignableEvent
-				.forAction(Action.started);
+		ViewedEvent viewVideoEvent = new ViewedEvent();
 
-		// action is set in navEvent constructor... now set actor and object
-		assignableStartEvent
-				.setActor((LISPerson) globalAppState.get("student"));
-		assignableStartEvent
-				.setObject((CaliperAssignableDigitalResource) globalAppState
-						.get("assignment1"));
+		// action is set in viewed event constructor... now set actor and object
+		viewVideoEvent.setActor((LISPerson) globalAppState.get("student"));
+		viewVideoEvent.setObject((CaliperVideoObject) globalAppState
+				.get("video1"));
 
 		// add (learning) context for event
-		assignableStartEvent.setEdApp((SoftwareApplication) globalAppState
-				.get("canvas"));
-		assignableStartEvent
-				.setLisOrganization((LISOrganization) globalAppState
-						.get("currentCourse"));
+		viewVideoEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("mediaEdApp"));
+		viewVideoEvent.setLisOrganization((LISOrganization) globalAppState
+				.get("currentCourse"));
 
 		// set time and any event specific properties
-		assignableStartEvent.setStartedAt(DateTime.now().getMillis());
+		viewVideoEvent.setStartedAt(DateTime.now().getMillis());
 
 		// Send event to EventStore
-		CaliperSensor.send(assignableStartEvent);
+		CaliperSensor.send(viewVideoEvent);
 
 	}
 
-	private void startAssessment(HashMap<String, Object> globalAppState) {
+	private void startPlayingVideo(HashMap<String, Object> globalAppState) {
 
-		AssessmentEvent assessmentStartEvent = AssessmentEvent
-				.forAction(org.imsglobal.caliper.events.assessment.AssessmentEvent.Action.started);
+		MediaEvent startPlayingVideoEvent = MediaEvent
+				.forAction(org.imsglobal.caliper.events.media.MediaEvent.Action.started);
 
-		// The attempt generated
-		Attempt attempt = new Attempt(
-				"https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/attempt1");
-		attempt.setActor((LISPerson) globalAppState.get("student"));
-		attempt.setCount(1);
-		attempt.setAssignable((CaliperAssignableDigitalResource) globalAppState
-				.get("assessment1"));
-		globalAppState.put("assignment1attempt1", attempt);
-
-		// action is set in navEvent constructor... now set actor and object
-		assessmentStartEvent
-				.setActor((LISPerson) globalAppState.get("student"));
-		assessmentStartEvent
-				.setObject((CaliperAssignableDigitalResource) globalAppState
-						.get("assessment1"));
-		assessmentStartEvent.setGenerated(attempt);
-
-		// add (learning) context for event
-		assessmentStartEvent.setEdApp((SoftwareApplication) globalAppState
-				.get("assessmentEdApp"));
-		assessmentStartEvent
-				.setLisOrganization((LISOrganization) globalAppState
-						.get("currentCourse"));
-
-		// set time and any event specific properties
-		assessmentStartEvent.setStartedAt(DateTime.now().getMillis());
-
-		// Send event to EventStore
-		CaliperSensor.send(assessmentStartEvent);
-
-	}
-
-	private void startAssessmentItem(HashMap<String, Object> globalAppState) {
-
-		AssessmentItemEvent assessmentItemStartEvent = AssessmentItemEvent
-				.forAction(org.imsglobal.caliper.events.assessment.AssessmentItemEvent.Action.started);
-
-		// action is set in navEvent constructor... now set actor and object
-		assessmentItemStartEvent.setActor((LISPerson) globalAppState
+		// action is set in media event constructor... now set actor and object
+		startPlayingVideoEvent.setActor((LISPerson) globalAppState
 				.get("student"));
-		assessmentItemStartEvent
-				.setObject((CaliperAssignableDigitalResource) globalAppState
-						.get("assessment1item1"));
+		startPlayingVideoEvent.setObject((CaliperVideoObject) globalAppState
+				.get("video1"));
+		
+		startPlayingVideoEvent.setMediaLocation(new MediaLocation(0));
 
 		// add (learning) context for event
-		assessmentItemStartEvent.setEdApp((SoftwareApplication) globalAppState
-				.get("assessmentEdApp"));
-		assessmentItemStartEvent
+		startPlayingVideoEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("mediaEdApp"));
+		startPlayingVideoEvent
 				.setLisOrganization((LISOrganization) globalAppState
 						.get("currentCourse"));
 
 		// set time and any event specific properties
-		assessmentItemStartEvent.setStartedAt(DateTime.now().getMillis());
+		startPlayingVideoEvent.setStartedAt(DateTime.now().getMillis());
 
 		// Send event to EventStore
-		CaliperSensor.send(assessmentItemStartEvent);
+		CaliperSensor.send(startPlayingVideoEvent);
 
 	}
 
-	private void completeAssessmentItem(HashMap<String, Object> globalAppState) {
+	private void pausePlayingVideo(HashMap<String, Object> globalAppState) {
 
-		AssessmentItemEvent assessmentItemCompletedEvent = AssessmentItemEvent
-				.forAction(org.imsglobal.caliper.events.assessment.AssessmentItemEvent.Action.completed);
+		MediaEvent pausePlayingVideoEvent = MediaEvent
+				.forAction(org.imsglobal.caliper.events.media.MediaEvent.Action.paused);
 
-		// action is set in navEvent constructor... now set actor and object
-		assessmentItemCompletedEvent.setActor((LISPerson) globalAppState
+		// action is set in media event constructor... now set actor and object
+		pausePlayingVideoEvent.setActor((LISPerson) globalAppState
 				.get("student"));
-		assessmentItemCompletedEvent
-				.setObject((CaliperAssignableDigitalResource) globalAppState
-						.get("assessment1item1"));
+		pausePlayingVideoEvent.setObject((CaliperVideoObject) globalAppState
+				.get("video1"));
+		
+		pausePlayingVideoEvent.setMediaLocation(new MediaLocation(42));
 
 		// add (learning) context for event
-		assessmentItemCompletedEvent
-				.setEdApp((SoftwareApplication) globalAppState
-						.get("assessmentEdApp"));
-		assessmentItemCompletedEvent
+		pausePlayingVideoEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("mediaEdApp"));
+		pausePlayingVideoEvent
 				.setLisOrganization((LISOrganization) globalAppState
 						.get("currentCourse"));
 
 		// set time and any event specific properties
-		assessmentItemCompletedEvent.setStartedAt(DateTime.now().getMillis());
+		pausePlayingVideoEvent.setStartedAt(DateTime.now().getMillis());
 
 		// Send event to EventStore
-		CaliperSensor.send(assessmentItemCompletedEvent);
+		CaliperSensor.send(pausePlayingVideoEvent);
+
+	}
+
+	private void resumePlayingVideo(HashMap<String, Object> globalAppState) {
+
+		MediaEvent resumePlayingVideoEvent = MediaEvent
+				.forAction(org.imsglobal.caliper.events.media.MediaEvent.Action.started);
+
+		// action is set in media event constructor... now set actor and object
+		resumePlayingVideoEvent.setActor((LISPerson) globalAppState
+				.get("student"));
+		resumePlayingVideoEvent.setObject((CaliperVideoObject) globalAppState
+				.get("video1"));
+		
+		resumePlayingVideoEvent.setMediaLocation(new MediaLocation(42));
+
+		// add (learning) context for event
+		resumePlayingVideoEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("mediaEdApp"));
+		resumePlayingVideoEvent
+				.setLisOrganization((LISOrganization) globalAppState
+						.get("currentCourse"));
+
+		// set time and any event specific properties
+		resumePlayingVideoEvent.setStartedAt(DateTime.now().getMillis());
+
+		// Send event to EventStore
+		CaliperSensor.send(resumePlayingVideoEvent);
+
+	}
+
+	private void completePlayingVideo(HashMap<String, Object> globalAppState) {
+
+		MediaEvent completePlayingVideoEvent = MediaEvent
+				.forAction(org.imsglobal.caliper.events.media.MediaEvent.Action.ended);
+
+		// action is set in media event constructor... now set actor and object
+		completePlayingVideoEvent.setActor((LISPerson) globalAppState
+				.get("student"));
+		completePlayingVideoEvent.setObject((CaliperVideoObject) globalAppState
+				.get("video1"));
+		
+		completePlayingVideoEvent.setMediaLocation(new MediaLocation(1420));
+
+		// add (learning) context for event
+		completePlayingVideoEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("mediaEdApp"));
+		completePlayingVideoEvent
+				.setLisOrganization((LISOrganization) globalAppState
+						.get("currentCourse"));
+
+		// set time and any event specific properties
+		completePlayingVideoEvent.setStartedAt(DateTime.now().getMillis());
+
+		// Send event to EventStore
+		CaliperSensor.send(completePlayingVideoEvent);
 
 	}
 
@@ -522,7 +476,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		CaliperSensor.send(gradeAttemptEvent);
 
 	}
-	
+
 	private int randomSecsDurationBetween(int start, int end) {
 		return r.nextInt((end - start) + start);
 	}
