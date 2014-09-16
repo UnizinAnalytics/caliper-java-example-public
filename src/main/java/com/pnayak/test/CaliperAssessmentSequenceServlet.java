@@ -14,9 +14,9 @@ import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.entities.CaliperAgent;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
 import org.imsglobal.caliper.entities.SoftwareApplication;
+import org.imsglobal.caliper.entities.assessment.Attempt;
 import org.imsglobal.caliper.entities.assessment.CaliperAssessment;
 import org.imsglobal.caliper.entities.assessment.CaliperAssessmentItem;
-import org.imsglobal.caliper.entities.assignable.Attempt;
 import org.imsglobal.caliper.entities.assignable.CaliperAssignableDigitalResource;
 import org.imsglobal.caliper.entities.lis.LISCourseSection;
 import org.imsglobal.caliper.entities.lis.LISOrganization;
@@ -161,21 +161,31 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		output.append(">> generated learning context data\n");
 
 		// -------------------------------------------------------------------------
-		// Step 2: Set up activity context elements (i.e. the Assignable
-		// Assessment)
+		// Step 2: Set up activity context elements (i.e. the Assignable in
+		// the LMS and the Assessment it uses that is provided by the LTI tool)
 		// -------------------------------------------------------------------------
+		CaliperAssignableDigitalResource assignment = new CaliperAssignableDigitalResource(
+				"https://canvas.instructure.com/course/american-revolution-101/assignment/assignment1");
+		assignment.setName("American Revolution - Key Figures Assignment");
+		assignment.setDateCreated(now.minus(Weeks.weeks(1)).getMillis());
+		assignment.setDatePublished(now.minus(Weeks.weeks(1)).getMillis());
+		assignment.setDateToActivate(now.minus(Days.days(1)).getMillis());
+		assignment.setDateToShow(now.minus(Days.days(1)).getMillis());
+		assignment.setDateToSubmit(now.minus(Days.days(10)).getMillis());
+		assignment.setMaxAttempts(2);
+		assignment.setMaxSubmits(2);
+		assignment.setMaxScore(5.0d);
+		assignment.setParentRef(americanHistoryCourse);
+
 		CaliperAssessment assessment = new CaliperAssessment(
 				"https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1");
 		assessment.setName("American Revolution - Key Figures Assessment");
-		assessment.setDateCreated(now.minus(Weeks.weeks(1)).getMillis());
-		assessment.setDatePublished(now.minus(Weeks.weeks(1)).getMillis());
-		assessment.setDateToActivate(now.minus(Days.days(1)).getMillis());
-		assessment.setDateToShow(now.minus(Days.days(1)).getMillis());
-		assessment.setDateToSubmit(now.minus(Days.days(10)).getMillis());
+		assessment.setDateCreated(now.minus(Weeks.weeks(3)).getMillis());
+		assessment.setDatePublished(now.minus(Weeks.weeks(3)).getMillis());
 		assessment.setMaxAttempts(2);
 		assessment.setMaxSubmits(2);
 		assessment.setMaxScore(5.0d);
-		assessment.setParentRef(americanHistoryCourse);
+		assessment.setParentRef(assignment);
 
 		CaliperAssessmentItem assessmentItem = new CaliperAssessmentItem(
 				"https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item1");
@@ -197,6 +207,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		globalAppState.put("currentCourse", americanHistoryCourse);
 		globalAppState.put("courseWebPage", courseWebPage);
 		globalAppState.put("assessmentEdApp", superAssessmentTool);
+		globalAppState.put("assignment1", assignment);
 		globalAppState.put("assessment1", assessment);
 		globalAppState.put("assessment1item1", assessmentItem);
 		globalAppState.put("gradingEngine", superAssessmentToolGradingEngine);
@@ -245,7 +256,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		output.append(">>>>>> Submitted Assessment in Super Assessment edApp... sent AssessmentEvent[submitted]\n");
 
 		// Event # 8 - Start Assignable Event
-		submitAssignment(globalAppState);
+		completeAssignment(globalAppState);
 		output.append(">>>>>> Submitted Assignable in Canvas LMS edApp... sent AssignableEvent[submitted]\n");
 
 		// Event # 9 - Outcome Event (grade)
@@ -257,26 +268,72 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 	// part of Caliper standards work and are here only as a utility in this
 	// sample App
 
+	private void navigateToAssignable(HashMap<String, Object> globalAppState) {
+
+		NavigationEvent navToAssignableEvent = new NavigationEvent();
+
+		// action is set in navEvent constructor... now set actor and object
+		navToAssignableEvent
+				.setActor((LISPerson) globalAppState.get("student"));
+		navToAssignableEvent
+				.setObject((CaliperAssignableDigitalResource) globalAppState
+						.get("assignment1"));
+		navToAssignableEvent
+				.setFromResource((CaliperDigitalResource) globalAppState
+						.get("courseWebPage"));
+
+		// add (learning) context for event
+		navToAssignableEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("canvas"));
+		navToAssignableEvent
+				.setLisOrganization((LISOrganization) globalAppState
+						.get("currentCourse"));
+
+		// set time and any event specific properties
+		navToAssignableEvent.setStartedAt(DateTime.now().getMillis());
+
+		// Send event to EventStore
+		CaliperSensor.send(navToAssignableEvent);
+
+	}
+
+	private void viewAssignable(HashMap<String, Object> globalAppState) {
+
+		ViewedEvent viewAssignableEvent = new ViewedEvent();
+
+		// action is set in navEvent constructor... now set actor and object
+		viewAssignableEvent.setActor((LISPerson) globalAppState.get("student"));
+		viewAssignableEvent
+				.setObject((CaliperAssignableDigitalResource) globalAppState
+						.get("assignment1"));
+
+		// add (learning) context for event
+		viewAssignableEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("canvas"));
+		viewAssignableEvent.setLisOrganization((LISOrganization) globalAppState
+				.get("currentCourse"));
+
+		// set time and any event specific properties
+		viewAssignableEvent.setStartedAt(DateTime.now().getMillis());
+		int duration = randomSecsDurationBetween(5, 120);
+		viewAssignableEvent.setDuration("PT" + duration + "S");
+
+		// Send event to EventStore
+		CaliperSensor.send(viewAssignableEvent);
+
+	}
+
 	private void startAssignment(HashMap<String, Object> globalAppState) {
 
 		AssignableEvent assignableStartEvent = AssignableEvent
 				.forAction(Action.started);
-
-		Attempt attempt = new Attempt(
-				"https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/attempt1");
-		attempt.setActor((LISPerson) globalAppState.get("student"));
-		attempt.setCount(1);
-		attempt.setAssignable((CaliperAssignableDigitalResource) globalAppState
-				.get("assessment1"));
-		globalAppState.put("assignment1attempt1", attempt);
 
 		// action is set in navEvent constructor... now set actor and object
 		assignableStartEvent
 				.setActor((LISPerson) globalAppState.get("student"));
 		assignableStartEvent
 				.setObject((CaliperAssignableDigitalResource) globalAppState
-						.get("assessment1"));
-		assignableStartEvent.setGenerated(attempt);
+						.get("assignment1"));
 
 		// add (learning) context for event
 		assignableStartEvent.setEdApp((SoftwareApplication) globalAppState
@@ -298,12 +355,22 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		AssessmentEvent assessmentStartEvent = AssessmentEvent
 				.forAction(org.imsglobal.caliper.events.assessment.AssessmentEvent.Action.started);
 
+		// The attempt generated
+		Attempt attempt = new Attempt(
+				"https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/attempt1");
+		attempt.setActor((LISPerson) globalAppState.get("student"));
+		attempt.setCount(1);
+		attempt.setAssignable((CaliperAssignableDigitalResource) globalAppState
+				.get("assessment1"));
+		globalAppState.put("assignment1attempt1", attempt);
+
 		// action is set in navEvent constructor... now set actor and object
 		assessmentStartEvent
 				.setActor((LISPerson) globalAppState.get("student"));
 		assessmentStartEvent
 				.setObject((CaliperAssignableDigitalResource) globalAppState
 						.get("assessment1"));
+		assessmentStartEvent.setGenerated(attempt);
 
 		// add (learning) context for event
 		assessmentStartEvent.setEdApp((SoftwareApplication) globalAppState
@@ -377,54 +444,56 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
 	private void submitAssessment(HashMap<String, Object> globalAppState) {
 
-		AssessmentEvent assessmentStartEvent = AssessmentEvent
+		AssessmentEvent assessmentSubmitEvent = AssessmentEvent
 				.forAction(org.imsglobal.caliper.events.assessment.AssessmentEvent.Action.submitted);
 
 		// action is set in navEvent constructor... now set actor and object
-		assessmentStartEvent
-				.setActor((LISPerson) globalAppState.get("student"));
-		assessmentStartEvent
-				.setObject((CaliperAssignableDigitalResource) globalAppState
-						.get("assessment1"));
-
-		// add (learning) context for event
-		assessmentStartEvent.setEdApp((SoftwareApplication) globalAppState
-				.get("assessmentEdApp"));
-		assessmentStartEvent
-				.setLisOrganization((LISOrganization) globalAppState
-						.get("currentCourse"));
-
-		// set time and any event specific properties
-		assessmentStartEvent.setStartedAt(DateTime.now().getMillis());
-
-		// Send event to EventStore
-		CaliperSensor.send(assessmentStartEvent);
-
-	}
-
-	private void submitAssignment(HashMap<String, Object> globalAppState) {
-
-		AssignableEvent assignableStartEvent = AssignableEvent
-				.forAction(Action.submitted);
-
-		// action is set in navEvent constructor... now set actor and object
-		assignableStartEvent
-				.setActor((LISPerson) globalAppState.get("student"));
-		assignableStartEvent.setObject((Attempt) globalAppState
+		assessmentSubmitEvent.setActor((LISPerson) globalAppState
+				.get("student"));
+		// What is completed is the attempt itself (which was generated in
+		// assessmentStartEvent
+		// and in turn references the assignment via assignable)
+		assessmentSubmitEvent.setObject((Attempt) globalAppState
 				.get("assignment1attempt1"));
 
 		// add (learning) context for event
-		assignableStartEvent.setEdApp((SoftwareApplication) globalAppState
-				.get("canvas"));
-		assignableStartEvent
+		assessmentSubmitEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("assessmentEdApp"));
+		assessmentSubmitEvent
 				.setLisOrganization((LISOrganization) globalAppState
 						.get("currentCourse"));
 
 		// set time and any event specific properties
-		assignableStartEvent.setStartedAt(DateTime.now().getMillis());
+		assessmentSubmitEvent.setStartedAt(DateTime.now().getMillis());
 
 		// Send event to EventStore
-		CaliperSensor.send(assignableStartEvent);
+		CaliperSensor.send(assessmentSubmitEvent);
+
+	}
+
+	private void completeAssignment(HashMap<String, Object> globalAppState) {
+
+		AssignableEvent assignableCompletedEvent = AssignableEvent
+				.forAction(Action.completed);
+
+		// action is set in navEvent constructor... now set actor and object
+		assignableCompletedEvent.setActor((LISPerson) globalAppState
+				.get("student"));
+		assignableCompletedEvent.setObject((Attempt) globalAppState
+				.get("assignment1"));
+
+		// add (learning) context for event
+		assignableCompletedEvent.setEdApp((SoftwareApplication) globalAppState
+				.get("canvas"));
+		assignableCompletedEvent
+				.setLisOrganization((LISOrganization) globalAppState
+						.get("currentCourse"));
+
+		// set time and any event specific properties
+		assignableCompletedEvent.setStartedAt(DateTime.now().getMillis());
+
+		// Send event to EventStore
+		CaliperSensor.send(assignableCompletedEvent);
 
 	}
 
@@ -444,7 +513,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 				"https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/attempt1/result");
 		result.setTotalScore(4.2d);
 		result.setNormalScore(4.2d);
-		
+
 		gradeAttemptEvent.setGenerated(result);
 
 		// add (learning) context for event
@@ -460,72 +529,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		CaliperSensor.send(gradeAttemptEvent);
 
 	}
-
-	private void navigateToAssignable(HashMap<String, Object> globalAppState) {
-
-		NavigationEvent navToAssignableEvent = new NavigationEvent();
-
-		// action is set in navEvent constructor... now set actor and object
-		navToAssignableEvent
-				.setActor((LISPerson) globalAppState.get("student"));
-		navToAssignableEvent
-				.setObject((CaliperAssignableDigitalResource) globalAppState
-						.get("assessment1"));
-		navToAssignableEvent
-				.setFromResource((CaliperDigitalResource) globalAppState
-						.get("courseWebPage"));
-
-		// add (learning) context for event
-		navToAssignableEvent.setEdApp((SoftwareApplication) globalAppState
-				.get("canvas"));
-		navToAssignableEvent
-				.setLisOrganization((LISOrganization) globalAppState
-						.get("currentCourse"));
-
-		// set time and any event specific properties
-		navToAssignableEvent.setStartedAt(DateTime.now().getMillis());
-
-		// Send event to EventStore
-		CaliperSensor.send(navToAssignableEvent);
-
-	}
-
-	private void viewAssignable(HashMap<String, Object> globalAppState) {
-
-		ViewedEvent viewAssignableEvent = new ViewedEvent();
-
-		// action is set in navEvent constructor... now set actor and object
-		viewAssignableEvent.setActor((LISPerson) globalAppState.get("student"));
-		viewAssignableEvent
-				.setObject((CaliperAssignableDigitalResource) globalAppState
-						.get("assessment1"));
-
-		// add (learning) context for event
-		viewAssignableEvent.setEdApp((SoftwareApplication) globalAppState
-				.get("canvas"));
-		viewAssignableEvent.setLisOrganization((LISOrganization) globalAppState
-				.get("currentCourse"));
-
-		// set time and any event specific properties
-		viewAssignableEvent.setStartedAt(DateTime.now().getMillis());
-		int duration = randomSecsDurationBetween(5, 120);
-		viewAssignableEvent.setDuration("PT" + duration + "S");
-
-		// Send event to EventStore
-		CaliperSensor.send(viewAssignableEvent);
-
-	}
-
-	private void pauseFor(int time) {
-
-		try {
-			Thread.sleep(time * 1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
+	
 	private int randomSecsDurationBetween(int start, int end) {
 		return r.nextInt((end - start) + start);
 	}
