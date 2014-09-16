@@ -287,8 +287,8 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
 				.get("student"));
 		startPlayingVideoEvent.setObject((CaliperVideoObject) globalAppState
 				.get("video1"));
-		
-		startPlayingVideoEvent.setMediaLocation(new MediaLocation(0));
+
+		startPlayingVideoEvent.setMediaLocation(new MediaLocation(null, 0));
 
 		// add (learning) context for event
 		startPlayingVideoEvent.setEdApp((SoftwareApplication) globalAppState
@@ -315,8 +315,8 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
 				.get("student"));
 		pausePlayingVideoEvent.setObject((CaliperVideoObject) globalAppState
 				.get("video1"));
-		
-		pausePlayingVideoEvent.setMediaLocation(new MediaLocation(42));
+
+		pausePlayingVideoEvent.setMediaLocation(new MediaLocation(null, 42));
 
 		// add (learning) context for event
 		pausePlayingVideoEvent.setEdApp((SoftwareApplication) globalAppState
@@ -343,8 +343,8 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
 				.get("student"));
 		resumePlayingVideoEvent.setObject((CaliperVideoObject) globalAppState
 				.get("video1"));
-		
-		resumePlayingVideoEvent.setMediaLocation(new MediaLocation(42));
+
+		resumePlayingVideoEvent.setMediaLocation(new MediaLocation(null, 42));
 
 		// add (learning) context for event
 		resumePlayingVideoEvent.setEdApp((SoftwareApplication) globalAppState
@@ -371,8 +371,8 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
 				.get("student"));
 		completePlayingVideoEvent.setObject((CaliperVideoObject) globalAppState
 				.get("video1"));
-		
-		completePlayingVideoEvent.setMediaLocation(new MediaLocation(1420));
+
+		completePlayingVideoEvent.setMediaLocation(new MediaLocation(null, 1420));
 
 		// add (learning) context for event
 		completePlayingVideoEvent.setEdApp((SoftwareApplication) globalAppState

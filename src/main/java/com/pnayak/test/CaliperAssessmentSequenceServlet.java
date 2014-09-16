@@ -472,7 +472,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 		// action is set in navEvent constructor... now set actor and object
 		assignableCompletedEvent.setActor((LISPerson) globalAppState
 				.get("student"));
-		assignableCompletedEvent.setObject((Attempt) globalAppState
+		assignableCompletedEvent.setObject((CaliperAssignableDigitalResource) globalAppState
 				.get("assignment1"));
 
 		// add (learning) context for event
