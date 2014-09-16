@@ -196,7 +196,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
 		output.append(">> populated Event Generator\'s global state\n");
 
 		// ----------------------------------------------------------------
-		// Step 4: Execute reading sequence
+		// Step 4: Execute media sequence
 		// ----------------------------------------------------------------
 		output.append(">> sending events\n");
 
@@ -210,19 +210,19 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
 
 		// Event # 3 - Start playing video
 		startPlayingVideo(globalAppState);
-		output.append(">>>>>> Started playing Video in Super Media edApp... sent AssignableEvent[started]\n");
+		output.append(">>>>>> Started playing Video in Super Media edApp... sent MediaEvent[started]\n");
 
 		// Event # 4 - Pause playing video Event
 		pausePlayingVideo(globalAppState);
-		output.append(">>>>>> Paused playing video in Super Media edApp... sent AssessmentEvent[started]\n");
+		output.append(">>>>>> Paused playing video in Super Media edApp... sent MediaEvent[paused]\n");
 
 		// Event # 5 - Resume playing video Event
 		resumePlayingVideo(globalAppState);
-		output.append(">>>>>> Resumed playing video in Super Media edApp... sent AssessmentItemEvent[started]\n");
+		output.append(">>>>>> Resumed playing video in Super Media edApp... sent MediaEvent[started]\n");
 
 		// Event # 6 - Completed playing video Event
 		completePlayingVideo(globalAppState);
-		output.append(">>>>>> Completed playing video in Super Media edApp... sent AssessmentItemEvent[completed]\n");
+		output.append(">>>>>> Completed playing video in Super Media edApp... sent MediaEvent[ended]\n");
 	}
 
 	// Methods below are utility methods for generating events... These are NOT
