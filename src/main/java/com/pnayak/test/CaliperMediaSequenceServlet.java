@@ -169,7 +169,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
 
 		CaliperVideoObject video = new CaliperVideoObject(
 				"https://com.sat/super-media-tool/video/video1");
-		video.setName("American Revolution - Key Figures Assignment");
+		video.setName("American Revolution - Key Figures Video");
 		video.setDuration(1420);
 		video.setAlignedLearningObjectives(Lists
 				.newArrayList(comprehendVideoObjective));
