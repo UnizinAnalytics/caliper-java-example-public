@@ -196,6 +196,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         // The entity that automatically grades our assessment submissions
         // CaliperAgent superAssessmentToolGradingEngine = superAssessmentTool;
+        CaliperAgent gradingEngine = assessmentTool;
 
         output.append(">> generated learning context data\n");
 
@@ -261,11 +262,6 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
          */
         ReadingProfile readingProfile = ReadingProfile.builder()
             .learningContext(lmsContext)
-            //.name()
-            //.partOf()
-            //.objectType()
-            //.alignedLearningObjective()
-            //.keyword()
             .frame(assessment)
             .navigatedFrom(WebPage.builder()
                 .id("AmRev-101-landingPage")
@@ -283,25 +279,20 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         List <CaliperAssessmentItem> assessmentItems = new ArrayList<CaliperAssessmentItem>();
         assessmentItems.add(CaliperAssessmentItem.builder()
-            .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item1")
-            .name("Assessment Item 1")
-            .partOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
-            .build());
+                .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item1")
+                .name("Assessment Item 1")
+                .partOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
+                .build());
 
         AssessmentProfile assessmentProfile = AssessmentProfile.builder()
             .learningContext(LearningContext.builder()
-                .edApp(assessmentTool)
-                .lisOrganization(americanHistoryCourse) // lisCourseSection?
-                .agent(LISPerson.builder()
-                    .id("https://some-university.edu/students/jones-alice-554433")
-                    .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
+                    .edApp(assessmentTool)
+                    .lisOrganization(americanHistoryCourse) // lisCourseSection?
+                    .agent(LISPerson.builder()
+                            .id("https://some-university.edu/students/jones-alice-554433")
+                            .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
+                            .build())
                     .build())
-                .build())
-            //.name()
-            //.partOf()
-            //.objectType()
-            //.alignedLearningObjective()
-            //.keyword()
             .assessment(assessment)
             .assessmentItem(assessmentItems)
             //.target() // WARN: better as a CaliperEvent prop?
@@ -323,7 +314,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .learningContext(LearningContext.builder()
                 .edApp(assessmentTool)
                 .lisOrganization(americanHistoryCourse) // lisCourseSection?
-                .agent((CaliperAgent) assessmentTool)
+                .agent(gradingEngine)
                 .build())
             //.name()
             //.partOf()
