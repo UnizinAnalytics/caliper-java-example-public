@@ -3,6 +3,8 @@ package com.pnayak.test;
 import com.google.common.collect.Lists;
 import org.imsglobal.caliper.CaliperSensor;
 import org.imsglobal.caliper.Options;
+import org.imsglobal.caliper.actions.AnnotationActions;
+import org.imsglobal.caliper.actions.ReadingActions;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.SoftwareApplication;
@@ -564,7 +566,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(profile.getAction().NAVIGATEDTO.key())
+            .action(ReadingActions.NAVIGATEDTO.key())
             .object(profile.getFrame())
             .fromResource((CaliperDigitalResource) profile.getNavigatedFrom())
             .startedAtTime(DateTime.now().getMillis())
@@ -601,7 +603,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(profile.getAction().VIEWED.key())
+            .action(ReadingActions.VIEWED.key())
             .object(profile.getFrame())
             .startedAtTime(DateTime.now().getMillis())
             .duration("PT" + randomSecsDurationBetween(5, 120) + "S")
@@ -647,15 +649,15 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(profile.getAction().HIGHLIGHTED.key())
+            .action(AnnotationActions.HIGHLIGHTED.key())
             .object(profile.getTarget())
             .generated(HighlightAnnotation.builder()
-                .id(baseUrl + UUID.randomUUID().toString())
-                .selectionStart(Integer.toString(startIndex))
-                .selectionEnd(Integer.toString(endIndex))
-                .selectionText(selectionText)
-                .target(profile.getTarget())
-                .build())
+                    .id(baseUrl + UUID.randomUUID().toString())
+                    .selectionStart(Integer.toString(startIndex))
+                    .selectionEnd(Integer.toString(endIndex))
+                    .selectionText(selectionText)
+                    .target(profile.getTarget())
+                    .build())
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
@@ -720,13 +722,13 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(profile.getAction().BOOKMARKED.key())
+            .action(AnnotationActions.BOOKMARKED.key())
             .object(profile.getTarget())
             .generated(BookmarkAnnotation.builder()
-                .id(baseUrl + UUID.randomUUID().toString())
-                .bookmarkNotes(bookmarkNotes)
-                .target(profile.getTarget())
-                .build())
+                    .id(baseUrl + UUID.randomUUID().toString())
+                    .bookmarkNotes(bookmarkNotes)
+                    .target(profile.getTarget())
+                    .build())
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
@@ -786,7 +788,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(profile.getAction().TAGGED.key())
+            .action(AnnotationActions.TAGGED.key())
             .object(profile.getTarget())
             .generated(TagAnnotation.builder()
                 .id(baseUrl + UUID.randomUUID().toString())
@@ -850,13 +852,13 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(profile.getAction().SHARED.key())
+            .action(AnnotationActions.SHARED.key())
             .object(profile.getTarget())
             .generated(SharedAnnotation.builder()
-                .id(baseUrl + UUID.randomUUID().toString())
-                .withAgents(sharedWithIds)
-                .target(profile.getTarget())
-                .build())
+                    .id(baseUrl + UUID.randomUUID().toString())
+                    .withAgents(sharedWithIds)
+                    .target(profile.getTarget())
+                    .build())
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
