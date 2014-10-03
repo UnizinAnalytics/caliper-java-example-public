@@ -3,8 +3,6 @@ package com.pnayak.test;
 import com.google.common.collect.Lists;
 import org.imsglobal.caliper.CaliperSensor;
 import org.imsglobal.caliper.Options;
-import org.imsglobal.caliper.actions.AnnotationActions;
-import org.imsglobal.caliper.actions.ReadingActions;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.SoftwareApplication;
@@ -566,7 +564,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(ReadingActions.NAVIGATEDTO.key())
+            .action(ReadingProfile.ReadingAction.NAVIGATEDTO.key())
             .object(profile.getFrame())
             .fromResource((CaliperDigitalResource) profile.getNavigatedFrom())
             .startedAtTime(DateTime.now().getMillis())
@@ -603,7 +601,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(ReadingActions.VIEWED.key())
+            .action(ReadingProfile.ReadingAction.VIEWED.key())
             .object(profile.getFrame())
             .startedAtTime(DateTime.now().getMillis())
             .duration("PT" + randomSecsDurationBetween(5, 120) + "S")
@@ -649,7 +647,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(AnnotationActions.HIGHLIGHTED.key())
+            .action(AnnotationProfile.AnnotationAction.HIGHLIGHTED.key())
             .object(profile.getTarget())
             .generated(HighlightAnnotation.builder()
                     .id(baseUrl + UUID.randomUUID().toString())
@@ -722,7 +720,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(AnnotationActions.BOOKMARKED.key())
+            .action(AnnotationProfile.AnnotationAction.BOOKMARKED.key())
             .object(profile.getTarget())
             .generated(BookmarkAnnotation.builder()
                     .id(baseUrl + UUID.randomUUID().toString())
@@ -731,6 +729,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                     .build())
             .startedAtTime(DateTime.now().getMillis())
             .build();
+
+        //System.out.println("Type=" + event.getType());
+        //System.out.println("Context=" + event.getContext());
 
         // Send event to EventStore
         CaliperSensor.send(event);
@@ -788,7 +789,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(AnnotationActions.TAGGED.key())
+            .action(AnnotationProfile.AnnotationAction.TAGGED.key())
             .object(profile.getTarget())
             .generated(TagAnnotation.builder()
                 .id(baseUrl + UUID.randomUUID().toString())
@@ -852,7 +853,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(AnnotationActions.SHARED.key())
+            .action(AnnotationProfile.AnnotationAction.SHARED.key())
             .object(profile.getTarget())
             .generated(SharedAnnotation.builder()
                     .id(baseUrl + UUID.randomUUID().toString())

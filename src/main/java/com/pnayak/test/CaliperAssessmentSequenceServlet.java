@@ -2,7 +2,6 @@ package com.pnayak.test;
 
 import org.imsglobal.caliper.CaliperSensor;
 import org.imsglobal.caliper.Options;
-import org.imsglobal.caliper.actions.*;
 import org.imsglobal.caliper.entities.CaliperAgent;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
 import org.imsglobal.caliper.entities.LearningContext;
@@ -460,7 +459,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(AssignableActions.STARTED.key())
+            .action(AssignableProfile.AssignableAction.STARTED.key())
             .object(profile.getAssignable())
             .startedAtTime(DateTime.now().getMillis())
             .build();
@@ -501,7 +500,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(AssessmentActions.STARTED.key())
+            .action(AssessmentProfile.AssessmentAction.STARTED.key())
             .object((CaliperAssignableDigitalResource) profile.getAssessment())
             .startedAtTime(DateTime.now().getMillis())
             .build();
@@ -554,7 +553,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(AssessmentItemActions.STARTED.key())
+            .action(AssessmentProfile.AssessmentItemAction.STARTED.key())
             .object((CaliperAssignableDigitalResource) profile.getAssessmentItem().get(0))
             .startedAtTime(DateTime.now().getMillis())
             .build();
@@ -596,7 +595,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(AssessmentItemActions.COMPLETED.key())
+            .action(AssessmentProfile.AssessmentItemAction.COMPLETED.key())
             .object((CaliperAssignableDigitalResource) profile.getAssessmentItem().get(0))
             .startedAtTime(DateTime.now().getMillis())
             .build();
@@ -637,7 +636,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(AssessmentActions.SUBMITTED.key())
+            .action(AssessmentProfile.AssessmentAction.SUBMITTED.key())
             .object((CaliperAssignableDigitalResource) profile.getAssessment())
             .startedAtTime(DateTime.now().getMillis())
             .build();
@@ -674,7 +673,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(AssignableActions.SUBMITTED.key())
+            .action(AssignableProfile.AssignableAction.SUBMITTED.key())
             .object(profile.getAssignable())
             //.generated(attempt)
             .generated(Attempt.builder()
@@ -726,7 +725,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(OutcomeActions.GRADED.key())
+            .action(OutcomeProfile.OutcomeAction.GRADED.key())
             .object((Attempt) Attempt.builder()
                     .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/attempt1")
                     .assignable((CaliperAssignableDigitalResource) profile.getAssignable())
@@ -779,7 +778,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
                 .edApp(profile.getLearningContext().getEdApp())
                 .lisOrganization(profile.getLearningContext().getLisOrganization())
                 .actor(profile.getLearningContext().getAgent())
-                .action(ReadingActions.NAVIGATEDTO.key())
+                .action(ReadingProfile.ReadingAction.NAVIGATEDTO.key())
                 .object(profile.getFrame())
                 .fromResource((CaliperDigitalResource) profile.getNavigatedFrom())
                 .startedAtTime(DateTime.now().getMillis())
@@ -819,7 +818,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
-            .action(ReadingActions.VIEWED.key())
+            .action(ReadingProfile.ReadingAction.VIEWED.key())
             .object(profile.getFrame())
             .startedAtTime(DateTime.now().getMillis())
             .duration("PT" + randomSecsDurationBetween(5, 120) + "S")
