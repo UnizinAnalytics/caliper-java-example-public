@@ -161,34 +161,6 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
             .build();
 
-        LearningContext readiumContext = LearningContext.builder()
-            .edApp(SoftwareApplication.builder()
-                .id("https://github.com/readium/readium-js-viewer")
-                //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/epub-reader") // WARN: CaliperEntity prop
-                .type("http://purl.imsglobal.org/caliper/v1/SoftwareApplication") // INFO: builder constructor will set this
-                .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
-                .build())
-            .lisOrganization(americanHistoryCourse) // lisCourseSection?
-            .agent(LISPerson.builder()
-                .id("https://some-university.edu/students/jones-alice-554433")
-                .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
-                .build())
-            .build();
-
-        LearningContext courseSmartContext = LearningContext.builder()
-            .edApp(SoftwareApplication.builder()
-                .id("http://www.coursesmart.com/reader")
-                //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/epub-reader") // WARN: CaliperEntity prop
-                .type("http://purl.imsglobal.org/caliper/v1/SoftwareApplication") // INFO: builder constructor will set this
-                .lastModifiedAt(now.minus(Weeks.weeks(6)).getMillis())
-                .build())
-            .lisOrganization(americanHistoryCourse) // lisCourseSection?
-            .agent(LISPerson.builder()
-                .id("https://some-university.edu/students/jones-alice-554433")
-                .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
-                .build())
-            .build();
-
         output.append(">> generated learning context data\n");
 
         // ---------------------------------------------------------------------
@@ -203,24 +175,31 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .setLastModifiedAt(now.minus(Weeks.weeks(53)).getMillis());
         */
 
-        EPubVolume readiumVolume = EPubVolume.builder()
-            .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
-            .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
-            .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
-            .build();
-
-        /**
-         * Readium Profile
-         */
-        ReadingProfile readiumVolumeProfile = ReadingProfile.builder()
-            .learningContext(readiumContext)
-            .name("readium")
-            .frame(readiumVolume)
-            .navigatedFrom(WebPage.builder()
-                    .id("AmRev-101-landingPage")
-                    .name("American Revolution 101 Landing Page")
-                    .partOf(americanHistoryCourse)
+        ReadingProfile readiumProfile = ReadingProfile.builder()
+            .learningContext(LearningContext.builder()
+                .edApp(SoftwareApplication.builder()
+                    .id("https://github.com/readium/readium-js-viewer")
+                    //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/epub-reader") // WARN: CaliperEntity prop
+                    .type("http://purl.imsglobal.org/caliper/v1/SoftwareApplication") // INFO: builder constructor will set this
+                    .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
                     .build())
+                .lisOrganization(americanHistoryCourse) // lisCourseSection?
+                .agent(LISPerson.builder()
+                    .id("https://some-university.edu/students/jones-alice-554433")
+                    .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
+                    .build())
+                .build())
+            .name("readium")
+            .frame(EPubVolume.builder()
+                .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
+                .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
+                .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
+                .build())
+            .navigatedFrom(WebPage.builder()
+                .id("AmRev-101-landingPage")
+                .name("American Revolution 101 Landing Page")
+                .partOf(americanHistoryCourse)
+                .build())
             //.target() // WARN: better as a CaliperEvent prop?
             //.generated() // WARN: better as a CaliperEvent prop?
             .build();
@@ -234,36 +213,16 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         readiumReadingPage1.setParentRef(readiumReading);
         */
 
-        /**
-        EPubSubChapter readiumReadingPage1 = EPubSubChapter.builder()
+        // Add new frame 1
+        readiumProfile.getFrameList().add(EPubSubChapter.builder()
             .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)/1")
             .name("Key Figures: George Washington")
             .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
-            .partOf((EPubVolume) readiumVolume)
-            .build();
-        */
+            .partOf((EPubVolume) readiumProfile.getFrameList().get(0))
+            .build());
 
-        /**
-         * Readium Page 01 Profile
-         */
-        ReadingProfile readiumPage01Profile = ReadingProfile.builder()
-            .learningContext(readiumContext)
-            .name("readium")
-            .partOf(readiumVolume.getId())
-            .frame(EPubSubChapter.builder()
-                    .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)/1")
-                    .name("Key Figures: George Washington")
-                    .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
-                    .partOf((EPubVolume) readiumVolume)
-                    .build())
-            .navigatedFrom(WebPage.builder()
-                    .id("AmRev-101-landingPage")
-                    .name("American Revolution 101 Landing Page")
-                    .partOf(americanHistoryCourse)
-                    .build())
-            //.target() // WARN: better as a CaliperEvent prop?
-            //.generated() // WARN: better as a CaliperEvent prop?
-            .build();
+        // Add new navigatedFrom 0
+        readiumProfile.getNavigatedFromList().add(readiumProfile.getFrameList().get(0));
 
         /**
         EPubSubChapter readiumReadingPage2 = new EPubSubChapter(
@@ -274,44 +233,24 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         readiumReadingPage2.setParentRef(readiumReading);
         */
 
-        /**
-        EPubSubChapter readiumReadingPage2 = EPubSubChapter.builder()
+        // Add new frame 2
+        readiumProfile.getFrameList().add(EPubSubChapter.builder()
             .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)/2")
             .name("Key Figures: Lord Cornwallis")
             .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
-            .partOf((EPubVolume) readiumVolume)
-            .build();
-        */
+            .partOf((EPubVolume) readiumProfile.getFrameList().get(0))
+            .build());
 
-        /**
-         * Readium Page 02 Profile
-         */
-        ReadingProfile readiumPage02Profile = ReadingProfile.builder()
-            .learningContext(readiumContext)
-            .name("readium")
-            .partOf(readiumVolume.getId())
-            .frame(EPubSubChapter.builder()
-                    .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)/2")
-                    .name("Key Figures: Lord Cornwallis")
-                    .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
-                    .partOf((EPubVolume) readiumVolume)
-                    .build())
-            .navigatedFrom(WebPage.builder()
-                    .id("AmRev-101-landingPage")
-                    .name("American Revolution 101 Landing Page")
-                    .partOf(americanHistoryCourse)
-                    .build())
-            //.target() // WARN: better as a CaliperEvent prop?
-            //.generated() // WARN: better as a CaliperEvent prop?
-            .build();
+        // Add new navigatedFrom 2
+        readiumProfile.getNavigatedFromList().add(readiumProfile.getFrameList().get(1));
+
 
         /**
          * Readium Page 02 Annotation Profile
          */
         AnnotationProfile readiumPage02AnnotationProfile = AnnotationProfile.builder()
-            .learningContext(readiumContext)
-            .target(readiumPage02Profile.getFrame())
-                    //.generated() // WARN: better as a CaliperEvent prop?
+            .learningContext(readiumProfile.getLearningContext())
+            .target(readiumProfile.getFrameList().get(2))
             .build();
 
         /**
@@ -323,44 +262,23 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         readiumReadingPage3.setParentRef(readiumReading);
         */
 
-        /**
-        EPubSubChapter readiumReadingPage3 = EPubSubChapter.builder()
+        // Add new frame 3
+        readiumProfile.getFrameList().add(EPubSubChapter.builder()
             .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)/3")
             .name("Key Figures: Paul Revere")
             .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
-            .partOf((EPubVolume) readiumVolume)
-            .build();
-        */
+            .partOf((EPubVolume) readiumProfile.getFrameList().get(0))
+            .build());
 
-        /**
-         * Readium Page 03 Profile
-         */
-        ReadingProfile readiumPage03Profile = ReadingProfile.builder()
-            .learningContext(readiumContext)
-            .name("readium")
-            .partOf(readiumVolume.getId())
-            .frame(EPubSubChapter.builder()
-                    .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)/3")
-                    .name("Key Figures: Paul Revere")
-                    .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
-                    .partOf((EPubVolume) readiumVolume)
-                    .build())
-            .navigatedFrom(WebPage.builder()
-                    .id("AmRev-101-landingPage")
-                    .name("American Revolution 101 Landing Page")
-                    .partOf(americanHistoryCourse)
-                    .build())
-            //.target() // WARN: better as a CaliperEvent prop?
-            //.generated() // WARN: better as a CaliperEvent prop?
-            .build();
+        // Add new navigatedFrom 3
+        readiumProfile.getNavigatedFromList().add(readiumProfile.getFrameList().get(2));
 
         /**
          * Readium Page 03 Annotation Profile
          */
         AnnotationProfile readiumPage03AnnotationProfile = AnnotationProfile.builder()
-            .learningContext(readiumContext)
-            .target(readiumPage03Profile.getFrame())
-            //.generated() // WARN: better as a CaliperEvent prop?
+            .learningContext(readiumProfile.getLearningContext())
+            .target(readiumProfile.getFrameList().get(3))
             .build();
 
         /**
@@ -372,32 +290,6 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .getMillis());
         */
 
-        EPubVolume courseSmartVolume = EPubVolume.builder()
-            .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
-            .name("The American Revolution: A Concise History | 978-0-19-531295-9")
-            .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
-            .build();
-
-        /**
-         * CourseSmart Volume Profile
-         */
-        ReadingProfile courseSmartVolumeProfile = ReadingProfile.builder()
-            .learningContext(courseSmartContext)
-            .name("CourseSmart")
-            //.partOf()
-            //.objectType()
-            //.alignedLearningObjective()
-            //.keyword()
-            .frame(courseSmartVolume)
-            .navigatedFrom(WebPage.builder()
-                    .id("AmRev-101-landingPage")
-                    .name("American Revolution 101 Landing Page")
-                    .partOf(americanHistoryCourse)
-                    .build())
-            //.target() // WARN: better as a CaliperEvent prop?
-            //.generated() // WARN: better as a CaliperEvent prop?
-            .build();
-
         /**
          EPubSubChapter courseSmartReadingPageaXfsadf12 = new EPubSubChapter(
          "http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322/aXfsadf12");
@@ -408,44 +300,46 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
          */
 
         /**
-         EPubSubChapter courseSmartReadingPageaXfsadf12 = EPubSubChapter.builder()
-         .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322/aXfsadf12")
-         .name("The Boston Tea Party")
-         .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
-         .partOf((EPubVolume) courseSmartReading)
-         .build();
+         * CourseSmart Volume Profile
          */
-
-        /**
-         * CourseSmart Chapter Profile
-         */
-        ReadingProfile courseSmartSubChapterProfile = ReadingProfile.builder()
-            .learningContext(courseSmartContext)
+        ReadingProfile courseSmartProfile = ReadingProfile.builder()
+            .learningContext(LearningContext.builder()
+                .edApp(SoftwareApplication.builder()
+                    .id("http://www.coursesmart.com/reader")
+                    //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/epub-reader") // WARN: CaliperEntity prop
+                    .type("http://purl.imsglobal.org/caliper/v1/SoftwareApplication") // INFO: builder constructor will set this
+                    .lastModifiedAt(now.minus(Weeks.weeks(6)).getMillis())
+                    .build())
+                .lisOrganization(americanHistoryCourse) // lisCourseSection?
+                .agent(LISPerson.builder()
+                    .id("https://some-university.edu/students/jones-alice-554433")
+                    .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
+                    .build())
+                .build())
             .name("CourseSmart")
-            //.partOf(courseSmartReading.getId())
             .frame(EPubSubChapter.builder()
                 .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322/aXfsadf12")
                 .name("The Boston Tea Party")
                 .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
-                .partOf((EPubVolume) courseSmartVolume)
+                .partOf((EPubVolume) EPubVolume.builder()
+                    .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
+                    .name("The American Revolution: A Concise History | 978-0-19-531295-9")
+                    .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
+                    .build())
                 .build())
             .navigatedFrom(WebPage.builder()
                 .id("AmRev-101-landingPage")
                 .name("American Revolution 101 Landing Page")
                 .partOf(americanHistoryCourse)
                 .build())
-            //.target() // WARN: better as a CaliperEvent prop?
-            //.generated() // WARN: better as a CaliperEvent prop?
             .build();
-
 
         /**
          * CourseSmart Annotation Profile
          */
         AnnotationProfile courseSmartAnnotationProfile = AnnotationProfile.builder()
-            .learningContext(courseSmartContext)
-            .target(courseSmartSubChapterProfile.getFrame()) // WARN: better as a CaliperEvent prop?
-            //.generated() // WARN: better as a CaliperEvent prop?
+            .learningContext(courseSmartProfile.getLearningContext())
+            .target(courseSmartProfile.getFrameList().get(0)) // WARN: better as a CaliperEvent prop?
             .build();
 
         output.append(">> generated activity context data\n");
@@ -480,18 +374,18 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // ----------------------------------------------------------------
         output.append(">> sending events\n");
 
-        // Event # 1 - NavigationEvent
-        navigateToReading(readiumVolumeProfile);
+        // Event # 1 - NavigationEvent to #epubcfi(/4/3)
+        navigateToReading(readiumProfile, 0);
         //navigateToReading(globalAppState, "readium");
         output.append(">>>>>> Navigated to Reading provided by Readium... sent NavigateEvent\n");
 
-        // Event # 2 - ViewedEvent
-        viewPageInReading(readiumPage01Profile);
+        // Event # 2 - ViewedEvent #epubcfi(/4/3)/1 (George Washington)
+        viewPageInReading(readiumProfile, 1);
         //viewPageInReading(globalAppState, "readium", "1");
         output.append(">>>>>> Viewed Page with pageId 1 in Readium Reading... sent ViewedEvent\n");
 
-        // Event # 3 - ViewedEvent
-        viewPageInReading(readiumPage02Profile);
+        // Event # 3 - ViewedEvent #epubcfi(/4/3)/2 (Lord Cornwallis)
+        viewPageInReading(readiumProfile, 2);
         //viewPageInReading(globalAppState, "readium", "2");
         output.append(">>>>>> Viewed Page with pageId 2 in Readium Reading... sent ViewedEvent\n");
 
@@ -500,8 +394,8 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         //highlightTermsInReading(globalAppState, "readium", "2", 455, 489);
         output.append(">>>>>> Highlighted fragment in pageId 2 from index 455 to 489 in Readium Reading... sent HighlightedEvent\n");
 
-        // Event # 5 - Viewed Event
-        viewPageInReading(readiumPage03Profile);
+        // Event # 5 - Viewed Event #epubcfi(/4/3)/3 (Paul Revere)
+        viewPageInReading(readiumProfile, 3);
         //viewPageInReading(globalAppState, "readium", "3");
         output.append(">>>>>> Viewed Page with pageId 3 in Readium Reading... sent ViewedEvent\n");
 
@@ -511,12 +405,12 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append(">>>>>> Bookmarked Page with pageId 3 in Readium Reading... sent BookmarkedEvent\n");
 
         // Event # 7 - NavigationEvent
-        navigateToReading(courseSmartVolumeProfile);
+        navigateToReading(courseSmartProfile, 0);
         //navigateToReading(globalAppState, "coursesmart");
         output.append(">>>>>> Navigated to Reading provided by CourseSmart... sent NavigateEvent\n");
 
-        // Event # 8 - ViewedEvent
-        viewPageInReading(courseSmartSubChapterProfile);
+        // Event # 8 - ViewedEvent aXfsadf12
+        viewPageInReading(courseSmartProfile, 0);
         //viewPageInReading(globalAppState, "coursesmart", "aXfsadf12");
         output.append(">>>>>> Viewed Page with pageId aXfsadf12 in CourseSmart Reading... sent ViewedEvent\n");
 
@@ -536,7 +430,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
     // part of Caliper standards work and are here only as a utility in this
     // sample App
 
-    private void navigateToReading(ReadingProfile profile) {
+    private void navigateToReading(ReadingProfile profile, int index) {
     // private void navigateToReading(HashMap<String, Object> globalAppState, String edApp) {
 
         /**
@@ -565,8 +459,8 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(ReadingProfile.ReadingAction.NAVIGATEDTO.key())
-            .object(profile.getFrame())
-            .fromResource((CaliperDigitalResource) profile.getNavigatedFrom())
+            .object(profile.getFrameList().get(index))
+            .fromResource((CaliperDigitalResource) profile.getNavigatedFromList().get(index))
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
@@ -574,7 +468,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         CaliperSensor.send(event);
     }
 
-    private void viewPageInReading(ReadingProfile profile) {
+    private void viewPageInReading(ReadingProfile profile, int index) {
     // private void viewPageInReading(HashMap<String, Object> globalAppState, String edApp, String pageId) {
 
         /**
@@ -602,7 +496,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(ReadingProfile.ReadingAction.VIEWED.key())
-            .object(profile.getFrame())
+            .object(profile.getFrameList().get(index))
             .startedAtTime(DateTime.now().getMillis())
             .duration("PT" + randomSecsDurationBetween(5, 120) + "S")
             .build();

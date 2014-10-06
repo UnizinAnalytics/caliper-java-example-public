@@ -283,6 +283,11 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
                 .name("Assessment Item 1")
                 .partOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
                 .build());
+        assessmentItems.add(CaliperAssessmentItem.builder()
+                .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item2")
+                .name("Assessment Item 2")
+                .partOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
+                .build());
 
         AssessmentProfile assessmentProfile = AssessmentProfile.builder()
             .learningContext(LearningContext.builder()
@@ -362,12 +367,14 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append(">> sending events\n");
 
         // Event # 1 - NavigationEvent
-        navigateToAssignable(readingProfile);
+        // TODO RECHECK INDEX
+        navigateToAssignable(readingProfile, 0);
         //navigateToAssignable(globalAppState);
         output.append(">>>>>> Navigated to Assignable in Canvas LMS edApp... sent NavigateEvent\n");
 
         // Event # 2 - ViewedEvent
-        viewAssignable(readingProfile);
+       // TODO RECHECK INDEX
+        viewAssignable(readingProfile, 0);
         //viewAssignable(globalAppState);
         output.append(">>>>>> Viewed Assignable in Canvas LMS edApp... sent ViewedEvent\n");
 
@@ -744,7 +751,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         CaliperSensor.send(event);
     }
 
-    private void navigateToAssignable(ReadingProfile profile) {
+    private void navigateToAssignable(ReadingProfile profile, int index) {
     // private void navigateToAssignable(HashMap<String, Object> globalAppState) {
 
         /**
@@ -775,20 +782,20 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
          * Type & context properties set by AssignableEvent constructor
          */
         NavigationEvent event = NavigationEvent.builder()
-                .edApp(profile.getLearningContext().getEdApp())
-                .lisOrganization(profile.getLearningContext().getLisOrganization())
-                .actor(profile.getLearningContext().getAgent())
-                .action(ReadingProfile.ReadingAction.NAVIGATEDTO.key())
-                .object(profile.getFrame())
-                .fromResource((CaliperDigitalResource) profile.getNavigatedFrom())
-                .startedAtTime(DateTime.now().getMillis())
-                .build();
+            .edApp(profile.getLearningContext().getEdApp())
+            .lisOrganization(profile.getLearningContext().getLisOrganization())
+            .actor(profile.getLearningContext().getAgent())
+            .action(ReadingProfile.ReadingAction.NAVIGATEDTO.key())
+            .object(profile.getFrameList().get(index))
+            .fromResource((CaliperDigitalResource) profile.getNavigatedFromList().get(index))
+            .startedAtTime(DateTime.now().getMillis())
+            .build();
 
         // Send event to EventStore
         CaliperSensor.send(event);
     }
 
-    private void viewAssignable(ReadingProfile profile) {
+    private void viewAssignable(ReadingProfile profile, int index) {
     // private void viewAssignable(HashMap<String, Object> globalAppState) {
         /**
         ViewedEvent viewAssignableEvent = new ViewedEvent();
@@ -819,7 +826,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(ReadingProfile.ReadingAction.VIEWED.key())
-            .object(profile.getFrame())
+            .object(profile.getFrameList().get(index))
             .startedAtTime(DateTime.now().getMillis())
             .duration("PT" + randomSecsDurationBetween(5, 120) + "S")
             .build();
