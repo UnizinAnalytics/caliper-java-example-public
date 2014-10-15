@@ -1,5 +1,6 @@
 caliper-java-example
 ====================
+Note: THESE MATERIALS ARE FOR IMS CONTRIBUTING MEMBERS ONLY>
 
 This is a sample WebApp that utilizes the Caliper Java sensor.
 
@@ -30,3 +31,5 @@ mvn clean package
 cp ./target/caliper-java-example.war /usr/local/tomcat/webapps/
 ```
 * In a browser, navigate to http://localhost:8080/caliper-java-example/testservlet
+
+©2014 IMS Global Learning Consortium, Inc. All Rights Reserved.  Trademark Information - http://www.imsglobal.org/copyright.html
