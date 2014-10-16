@@ -287,7 +287,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         BookmarkAnnotation bookmark = (BookmarkAnnotation) Iterables.getLast(readiumAnnotationProfile.getAnnotations());
         output.append("Object : " + bookmark.getId()  + "\n");
-        output.append("Target : " + ((EPubSubChapter) highlight.getTarget()).getId() + "\n\n");
+        output.append("Target : " + ((EPubSubChapter) bookmark.getTarget()).getId() + "\n\n");
 
         // EVENT # 7 - Add NavigationEvent
         courseSmartProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
@@ -312,7 +312,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // Process event
         navigate(courseSmartProfile);
 
-        output.append("Object : " + ((EPubSubChapter) Iterables.getLast(readiumProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + ((EPubSubChapter) Iterables.getLast(courseSmartProfile.getFrames())).getId() + "\n\n");
 
         // EVENT # 8 - Add ViewedEvent aXfsadf12
         courseSmartProfile.getActions().add(ReadingActions.VIEWED.key());
@@ -322,7 +322,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // Process event
         view(courseSmartProfile);
 
-        output.append("Object : " + ((EPubSubChapter) Iterables.getLast(readiumProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + ((EPubSubChapter) Iterables.getLast(courseSmartProfile.getFrames())).getId() + "\n\n");
 
         // EVENT # 9 - Add TaggedEvent
         AnnotationProfile courseSmartAnnotationProfile = AnnotationProfile.builder()
