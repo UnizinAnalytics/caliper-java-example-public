@@ -49,9 +49,8 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
     private Random r;
     StringBuffer output = new StringBuffer();
 
+    // Initialize the sensor - this needs to be done only once
     private void initialize() {
-
-        // Initialize the sensor - this needs to be done only once
         Options options = new Options();
         options.setHost(HOST);
         options.setApiKey(API_KEY);
@@ -98,7 +97,10 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
     }
 
     /**
-     * Reading Sequence. Student in a course interacts with two readings from two edApps.
+     * --------------------------------------------------------------------
+     * -------------------------Reading Sequence---------------------------
+     * --------------------------------------------------------------------
+     * Student in a course interacts with two readings from two edApps.
      * In the process of interacting with the apps, she performs various reading and
      * annotation activities. These are defined in the Caliper Reading and Annotation profiles respectively.
      *

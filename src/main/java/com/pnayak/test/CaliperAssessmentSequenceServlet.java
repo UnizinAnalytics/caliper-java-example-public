@@ -55,9 +55,8 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
     private Random r;
     StringBuffer output = new StringBuffer();
 
+    // Initialize the sensor - this needs to be done only once
     private void initialize() {
-
-        // Initialize the sensor - this needs to be done only once
         Options options = new Options();
         options.setHost(HOST);
         options.setApiKey(API_KEY);
@@ -103,17 +102,19 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         // TODO Auto-generated method stub
     }
 
+    /**
+     * -----------------------------------------------------------------
+     * ------------Assignable, Assessment, Outcome Sequence-------------
+     * -----------------------------------------------------------------
+     * Student in a course interacts with assignable entities within
+     * the course. The assignable here is an Assessment.
+     * In the process of interacting, she performs various assignable
+     * and assessment related interactions. These are defined in
+     * the Caliper Assignable, Assessment and Outcomes profiles respectively
+     *
+     * @param output
+     */
     private void generateAAOSequence(StringBuffer output) {
-
-        /* -----------------------------------------------------------------
-         * ------------Assignable, Assessment, Outcome Sequence-------------
-         * -----------------------------------------------------------------
-         * Student in a course interacts with assignable entities within
-         * the course. The assignable here is an Assessment.
-         * In the process of interacting, she performs various assignable
-         * and assessment related interactions. These are defined in
-         * the Caliper Assignable, Assessment and Outcomes profiles respectively
-         */
 
         // For reference, the current time
         DateTime now = DateTime.now();
