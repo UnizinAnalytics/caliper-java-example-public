@@ -521,7 +521,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
             .object((CaliperAssignableDigitalResource) Iterables.getLast(profile.getFrames()))
-            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getNavigatedFroms()))
+            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getNavigationHistory()))
             .startedAtTime(DateTime.now().getMillis())
             .build();
 

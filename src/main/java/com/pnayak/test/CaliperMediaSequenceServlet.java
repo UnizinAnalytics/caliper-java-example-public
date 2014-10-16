@@ -195,7 +195,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
                 .id("http://americanrevolution.com/personalities/learn")
                 .build())
             .build());
-        readingProfile.getNavigatedFroms().add(WebPage.builder()
+        readingProfile.getNavigationHistory().add(WebPage.builder()
             .id("AmRev-101-landingPage")
             .name("American Revolution 101 Landing Page")
             .partOf(americanHistoryCourse)
@@ -273,7 +273,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
             .object(Iterables.getLast(profile.getFrames()))
-            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getNavigatedFroms()))
+            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getNavigationHistory()))
             .startedAtTime(DateTime.now().getMillis())  // Pass this value in?
             .build();
 

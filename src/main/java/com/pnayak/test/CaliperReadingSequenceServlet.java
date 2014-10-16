@@ -181,7 +181,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
             .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
             .build());
-        readiumProfile.getNavigatedFroms().add(WebPage.builder()
+        readiumProfile.getNavigationHistory().add(WebPage.builder()
             .id("AmRev-101-landingPage")
             .name("American Revolution 101 Landing Page")
             .partOf(americanHistoryCourse)
@@ -202,7 +202,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
             .partOf((EPubVolume) Iterables.getFirst(readiumProfile.getFrames(), null))
             .build());
-        readiumProfile.getNavigatedFroms().add(Iterables.getFirst(readiumProfile.getFrames(), null));
+        readiumProfile.getNavigationHistory().add(Iterables.getFirst(readiumProfile.getFrames(), null));
 
         output.append("Viewed Page with pageId 1 in Readium Reader . . . sent ViewedEvent\n");
 
@@ -219,7 +219,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
             .partOf((EPubVolume) Iterables.getFirst(readiumProfile.getFrames(), null))
             .build());
-        readiumProfile.getNavigatedFroms()
+        readiumProfile.getNavigationHistory()
             .add(readiumProfile.getFrames().get(readiumProfile.getFrames().size() - 2));
 
         output.append("Viewed Page with pageId 2 in Readium Reader . . . sent ViewedEvent\n");
@@ -260,7 +260,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
             .partOf((EPubVolume) Iterables.getFirst(readiumProfile.getFrames(), null))
             .build());
-        readiumProfile.getNavigatedFroms()
+        readiumProfile.getNavigationHistory()
             .add(readiumProfile.getFrames().get(readiumProfile.getFrames().size() - 2));
 
         output.append("Viewed Page with pageId 3 in Readium Reading . . . sent ViewedEvent\n");
@@ -301,7 +301,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
                 .build())
             .build());
-        courseSmartProfile.getNavigatedFroms().add(WebPage.builder()
+        courseSmartProfile.getNavigationHistory().add(WebPage.builder()
             .id("AmRev-101-landingPage")
             .name("American Revolution 101 Landing Page")
             .partOf(americanHistoryCourse)
@@ -405,7 +405,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
             .object(Iterables.getLast(profile.getFrames()))
-            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getNavigatedFroms()))
+            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getNavigationHistory()))
             .startedAtTime(DateTime.now().getMillis())  // Pass this value in?
             .build();
 
