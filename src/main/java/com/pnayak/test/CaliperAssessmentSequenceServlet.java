@@ -90,6 +90,9 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append(CaliperSensor.getStatistics().toString());
 
         response.getWriter().write(output.toString());
+
+        //Clear the buffer
+        output.setLength(0);
     }
 
     /**
