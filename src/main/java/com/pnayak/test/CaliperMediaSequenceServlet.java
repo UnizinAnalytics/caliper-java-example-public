@@ -4,20 +4,18 @@ import com.google.common.collect.Iterables;
 import org.imsglobal.caliper.CaliperSensor;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.actions.MediaActions;
-import org.imsglobal.caliper.actions.ReadingActions;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.LearningObjective;
-import org.imsglobal.caliper.entities.SoftwareApplication;
 import org.imsglobal.caliper.entities.lis.LISCourseSection;
 import org.imsglobal.caliper.entities.lis.LISPerson;
 import org.imsglobal.caliper.entities.media.CaliperVideoObject;
 import org.imsglobal.caliper.entities.media.MediaLocation;
 import org.imsglobal.caliper.entities.schemadotorg.WebPage;
-import org.imsglobal.caliper.events.media.MediaEvent;
-import org.imsglobal.caliper.events.reading.NavigationEvent;
+import org.imsglobal.caliper.entities.SoftwareApplication;
+import org.imsglobal.caliper.events.MediaEvent;
+import org.imsglobal.caliper.events.NavigationEvent;
 import org.imsglobal.caliper.profiles.MediaProfile;
-import org.imsglobal.caliper.profiles.ReadingProfile;
 import org.joda.time.DateTime;
 import org.joda.time.Weeks;
 
@@ -113,66 +111,47 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
 
         /*
          * -----------------------------------------------------------------
-         * Step 01. Set up activity context elements (i.e. Video provided by the
-         * LTI tool). We also assign a single learning objective to the video
+         * Step 01. Set the learning and activity context (i.e. Video provided by the
+         * LTI tool). We also assign a single learning objective to the video.
          * -----------------------------------------------------------------
          */
 
         // NOTE - we would want to associate the LISCourseSection with a
         // parent Department or Institution at some point
 
-        // Course Section (part of the learning context)
-        LISCourseSection americanHistoryCourse = LISCourseSection.builder()
-            .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
-            .semester("Spring-2014")
-            .courseNumber("AmRev-101")
-            .label("Am Rev 101")
-            .title("American Revolution 101")
-            .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
-            .build();
-
-        // Reading Profile
-        ReadingProfile readingProfile = ReadingProfile.builder()
-            .learningContext(LearningContext.builder()
-                .edApp(SoftwareApplication.builder()
-                    .id("https://canvas.instructure.com")
-                    //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms") // WARN CaliperEntity prop
-                    .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
-                    .build())
-                .lisOrganization(americanHistoryCourse) // lisCourseSection?
-                .agent(LISPerson.builder()
-                    .id("https://some-university.edu/students/jones-alice-554433")
-                    .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
-                    .build())
+        // Learning Context
+        LearningContext learningContext = LearningContext.builder()
+            .edApp(SoftwareApplication.builder()
+                .id("https://com.sat/super-media-tool")
+                //.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/media"); Set by default
+                .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
                 .build())
-                //.target() // WARN: better as a CaliperEvent prop?
-                //.generated() // WARN: better as a CaliperEvent prop?
+            .lisOrganization(LISCourseSection.builder()
+                .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
+                .semester("Spring-2014")
+                .courseNumber("AmRev-101")
+                .label("Am Rev 101")
+                .title("American Revolution 101")
+                .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
+                .build())
+            .agent(LISPerson.builder()
+                .id("https://some-university.edu/students/jones-alice-554433")
+                .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
+                .build())
             .build();
 
         // Media Profile
         MediaProfile mediaProfile = MediaProfile.builder()
-            .learningContext(LearningContext.builder()
-                .edApp(SoftwareApplication.builder()
-                    .id("https://com.sat/super-media-tool")
-                    //.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/media"); Set by default
-                    .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
-                    .build())
-                .lisOrganization(americanHistoryCourse)
-                .agent(LISPerson.builder()
-                    .id("https://some-university.edu/students/jones-alice-554433")
-                    .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
-                    .build())
-                .build())
+            .learningContext(learningContext)
             .mediaObject(CaliperVideoObject.builder()
                 .id("https://com.sat/super-media-tool/video/video1")
                 .name("American Revolution - Key Figures Video")
-                .duration(1420)
+                .partOf(learningContext.getLisOrganization())
                 .learningObjective(LearningObjective.builder()
                     .id("http://americanrevolution.com/personalities/learn")
                     .build())
+                .duration(1420)
                 .build())
-            //.target() // WARN: better as a CaliperEvent prop?
-            //.generated() // WARN: better as a CaliperEvent prop?
             .build();
 
         output.append("Generated activity context data\n\n");
@@ -185,32 +164,31 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
 
         output.append("Sending events . . .\n\n");
 
-        // EVENT # 1 - NavigationEvent
-        readingProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
-        readingProfile.getFrames().add(CaliperVideoObject.builder()
-            .id("https://com.sat/super-media-tool/video/video1")
-            .name("American Revolution - Key Figures Video")
-            .duration(1420)
-            .learningObjective(LearningObjective.builder()
-                .id("http://americanrevolution.com/personalities/learn")
-                .build())
-            .build());
-        readingProfile.getNavigationHistory().add(WebPage.builder()
+        // EVENT # 01 - NavigationEvent
+        mediaProfile.getActions().add(MediaActions.NAVIGATED_TO.key());
+        mediaProfile.getTargets().add(mediaProfile.getMediaObject());
+        mediaProfile.getMediaLocations().add(MediaLocation.builder()
+            .id(((CaliperVideoObject) mediaProfile.getMediaObject()).getId()) // Don't forget to set the Id
+            .currentTime(0).build());
+        mediaProfile.getFromResources().add(WebPage.builder()
             .id("AmRev-101-landingPage")
             .name("American Revolution 101 Landing Page")
-            .partOf(americanHistoryCourse)
+            .partOf(mediaProfile.getLearningContext().getLisOrganization())
             .build());
 
         output.append("Navigated to video in Canvas LMS edApp... sent NavigateEvent\n");
 
         // Process Event
-        navigate(readingProfile);
+        navigate(mediaProfile);
 
-        output.append("Object : " + ((CaliperVideoObject) Iterables.getLast(readingProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + ((CaliperVideoObject) mediaProfile.getMediaObject()).getId() + "\n");
+        output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
 
-        // EVENT  # 2 - Start playing video
+        // EVENT  # 02 - Start playing video
         mediaProfile.getActions().add(MediaActions.STARTED.key());
-        mediaProfile.getMediaLocations().add(MediaLocation.builder().currentTime(0).build());
+        mediaProfile.getMediaLocations().add(MediaLocation.builder()
+            .id(((CaliperVideoObject) mediaProfile.getMediaObject()).getId())
+            .currentTime(0).build());
 
         output.append("Started playing Video in Super Media edApp... sent MediaEvent\n");
 
@@ -220,9 +198,11 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         output.append("Object : " + ((CaliperVideoObject) mediaProfile.getMediaObject()).getId() + "\n");
         output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
 
-        // EVENT  # 3 - Pause playing video Event
+        // EVENT  # 03 - Pause playing video Event
         mediaProfile.getActions().add(MediaActions.PAUSED.key());
-        mediaProfile.getMediaLocations().add(MediaLocation.builder().currentTime(710).build());
+        mediaProfile.getMediaLocations().add(MediaLocation.builder()
+            .id(((CaliperVideoObject) mediaProfile.getMediaObject()).getId())
+            .currentTime(710).build());
 
         output.append("Paused playing video in Super Media edApp... sent MediaEvent\n");
 
@@ -232,9 +212,11 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         output.append("Object : " + ((CaliperVideoObject) mediaProfile.getMediaObject()).getId() + "\n");
         output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
 
-        // EVENT  # 4 - Resume playing video Event
+        // EVENT  # 04 - Resume playing video Event
         mediaProfile.getActions().add(MediaActions.RESUMED.key());
-        mediaProfile.getMediaLocations().add(MediaLocation.builder().currentTime(710).build());
+        mediaProfile.getMediaLocations().add(MediaLocation.builder()
+            .id(((CaliperVideoObject) mediaProfile.getMediaObject()).getId())
+            .currentTime(710).build());
 
         output.append("Resumed playing video in Super Media edApp... sent MediaEvent\n");
 
@@ -244,9 +226,11 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         output.append("Object : " + ((CaliperVideoObject) mediaProfile.getMediaObject()).getId() + "\n");
         output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
 
-        // EVENT  # 5 - Completed playing video Event
+        // EVENT  # 05 - Completed playing video Event
         mediaProfile.getActions().add(MediaActions.ENDED.key());
-        mediaProfile.getMediaLocations().add(MediaLocation.builder().currentTime(1420).build());
+        mediaProfile.getMediaLocations().add(MediaLocation.builder()
+            .id(((CaliperVideoObject) mediaProfile.getMediaObject()).getId())
+            .currentTime(1420).build());
 
         output.append("Completed playing video in Super Media edApp... sent MediaEvent\n");
 
@@ -265,15 +249,15 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
       ---------------------------------------------------------------------------------
      */
 
-    private void navigate(ReadingProfile profile) {
+    private void navigate(MediaProfile profile) {
 
         NavigationEvent event = NavigationEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
-            .object(Iterables.getLast(profile.getFrames()))
-            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getNavigationHistory()))
+            .object(profile.getMediaObject())
+            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getFromResources()))
             .startedAtTime(DateTime.now().getMillis())  // Pass this value in?
             .build();
 

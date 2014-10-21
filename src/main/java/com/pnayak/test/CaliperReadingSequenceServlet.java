@@ -7,6 +7,7 @@ import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.actions.AnnotationActions;
 import org.imsglobal.caliper.actions.ReadingActions;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
+import org.imsglobal.caliper.entities.Frame;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.SoftwareApplication;
 import org.imsglobal.caliper.entities.annotation.BookmarkAnnotation;
@@ -15,12 +16,11 @@ import org.imsglobal.caliper.entities.annotation.SharedAnnotation;
 import org.imsglobal.caliper.entities.annotation.TagAnnotation;
 import org.imsglobal.caliper.entities.lis.LISCourseSection;
 import org.imsglobal.caliper.entities.lis.LISPerson;
-import org.imsglobal.caliper.entities.reading.EPubSubChapter;
 import org.imsglobal.caliper.entities.reading.EPubVolume;
 import org.imsglobal.caliper.entities.schemadotorg.WebPage;
-import org.imsglobal.caliper.events.annotation.AnnotationEvent;
-import org.imsglobal.caliper.events.reading.NavigationEvent;
-import org.imsglobal.caliper.events.reading.ViewedEvent;
+import org.imsglobal.caliper.events.AnnotationEvent;
+import org.imsglobal.caliper.events.NavigationEvent;
+import org.imsglobal.caliper.events.ViewedEvent;
 import org.imsglobal.caliper.profiles.AnnotationProfile;
 import org.imsglobal.caliper.profiles.ReadingProfile;
 import org.joda.time.DateTime;
@@ -116,19 +116,31 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         /*
          * -----------------------------------------------------------------
-         * Step 01.  Set the activity context for the two readings.
+         * Step 01.  Set the learning and activity context for the two readings.
          * -----------------------------------------------------------------
          */
 
-        // Course Section (part of the learning context)
-        LISCourseSection americanHistoryCourse = LISCourseSection.builder()
-            .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
-            .semester("Spring-2014")
-            .courseNumber("AmRev-101")
-            .label("Am Rev 101")
-            .title("American Revolution 101")
-            .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
+        // TODO LISCourseSection does not define a section property.  Oversight?
+        LearningContext lmsContext = LearningContext.builder()
+            .edApp(SoftwareApplication.builder()
+                .id("https://canvas.instructure.com")
+                //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms") // WARN CaliperEntity prop
+                .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
+                .build())
+            .lisOrganization(LISCourseSection.builder()
+                .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
+                .semester("Spring-2014")
+                .courseNumber("AmRev-101")
+                .label("Am Rev 101")
+                .title("American Revolution 101")
+                .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
+                .build()) // lisCourseSection?
+            .agent(LISPerson.builder()
+                .id("https://some-university.edu/students/jones-alice-554433")
+                .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
+                .build())
             .build();
+
 
         // Readium Profile
         ReadingProfile readiumProfile = ReadingProfile.builder()
@@ -137,14 +149,14 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                     .id("https://github.com/readium/readium-js-viewer")
                     .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
                     .build())
-                .lisOrganization(americanHistoryCourse)
-                .agent(LISPerson.builder()
-                    .id("https://some-university.edu/students/jones-alice-554433")
-                    .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
-                    .build())
+                .lisOrganization(lmsContext.getLisOrganization())
+                .agent(lmsContext.getAgent())
                 .build())
-            //.target() // WARN: better as a CaliperEvent prop?
-            //.generated() // WARN: better as a CaliperEvent prop?
+            .reading(EPubVolume.builder()
+                .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
+                .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
+                .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
+                .build())
             .build();
 
         // CourseSmart Profile
@@ -154,14 +166,14 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                     .id("http://www.coursesmart.com/reader")
                     .lastModifiedAt(now.minus(Weeks.weeks(6)).getMillis())
                     .build())
-                .lisOrganization(americanHistoryCourse)
-                .agent(LISPerson.builder()
-                    .id("https://some-university.edu/students/jones-alice-554433")
-                    .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
-                    .build())
+                .lisOrganization(lmsContext.getLisOrganization())
+                .agent(lmsContext.getAgent())
                 .build())
-            //.target() // WARN: better as a CaliperEvent prop?
-            //.generated() // WARN: better as a CaliperEvent prop?
+            .reading(EPubVolume.builder()
+                .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
+                .name("The American Revolution: A Concise History | 978-0-19-531295-9")
+                .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
+                .build())
             .build();
 
         output.append("Generated activity context data.\n\n");
@@ -176,60 +188,96 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // EVENT 01 - Add NavigationEvent to #epubcfi(/4/3)
         readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
-        readiumProfile.getFrames().add(EPubVolume.builder()
-            .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
-            .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
-            .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
-            .build());
-        readiumProfile.getNavigationHistory().add(WebPage.builder()
+        readiumProfile.getFromResources().add(WebPage.builder()
             .id("AmRev-101-landingPage")
             .name("American Revolution 101 Landing Page")
-            .partOf(americanHistoryCourse)
+            .partOf(readiumProfile.getLearningContext().getLisOrganization())
+            .build());
+        readiumProfile.getTargets().add(Frame.builder()
+            .id(readiumProfile.getReading().getId())
+            .name(readiumProfile.getReading().getName())
+            .lastModifiedAt(readiumProfile.getReading().getLastModifiedAt())
+            .index(0)
             .build());
 
-        output.append("Navigated to chapter in Readium Reader . . . sent NavigatedEvent\n");
+        output.append("Navigated to volume in Readium Reader . . . sent NavigatedEvent\n");
 
         // Process Event
         navigate(readiumProfile);
 
-        output.append("Object : " + ((EPubVolume) Iterables.getLast(readiumProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + readiumProfile.getReading().getId() + "\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
-        // EVENT # 2 - Add ViewedEvent #epubcfi(/4/3)/1 (George Washington)
-        readiumProfile.getActions().add(ReadingActions.VIEWED.key());
-        readiumProfile.getFrames().add(EPubSubChapter.builder()
-            .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)/1")
+        // EVENT 02 - Add NavigationEvent to #epubcfi(/4/3)/1 (George Washington)
+        readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
+        readiumProfile.getFromResources().add((CaliperDigitalResource) Iterables.getLast(readiumProfile.getTargets()));
+        readiumProfile.getTargets().add(Frame.builder()
+            .id(readiumProfile.getReading().getId() + "/1")
             .name("Key Figures: George Washington")
-            .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
-            .partOf((EPubVolume) Iterables.getFirst(readiumProfile.getFrames(), null))
+            .lastModifiedAt(readiumProfile.getReading().getLastModifiedAt())
+            .index(1)
+            .partOf(readiumProfile.getReading())
             .build());
-        readiumProfile.getNavigationHistory().add(Iterables.getFirst(readiumProfile.getFrames(), null));
 
-        output.append("Viewed Page with pageId 1 in Readium Reader . . . sent ViewedEvent\n");
+        output.append("Navigated to Page 1 in Readium Reader . . . sent NavigatedEvent\n");
+
+        // Process Event
+        navigate(readiumProfile);
+
+        output.append("Object : " + readiumProfile.getReading().getId() + "\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
+
+        // EVENT # 03 - Add ViewedEvent #epubcfi(/4/3)/1 (George Washington)
+        readiumProfile.getActions().add(ReadingActions.VIEWED.key());
+        readiumProfile.getFromResources().add(Iterables.getLast(readiumProfile.getFromResources()));
+        readiumProfile.getTargets().add(Iterables.getLast(readiumProfile.getTargets()));
+
+        output.append("Viewed Page 1 in Readium Reader . . . sent ViewedEvent\n");
 
         // Process event
         view(readiumProfile);
 
-        output.append("Object : " + ((EPubSubChapter) Iterables.getLast(readiumProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + readiumProfile.getReading().getId() + "\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
-        // EVENT # 3 - Add ViewedEvent #epubcfi(/4/3)/2 (Lord Cornwallis)
-        readiumProfile.getActions().add(ReadingActions.VIEWED.key());
-        readiumProfile.getFrames().add(EPubSubChapter.builder()
-            .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)/2")
+        // EVENT 04 - Add NavigationEvent to #epubcfi(/4/3)/1 (George Washington)
+        readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
+        readiumProfile.getFromResources().add((CaliperDigitalResource) Iterables.getLast(readiumProfile.getTargets()));
+        readiumProfile.getTargets().add(Frame.builder()
+            .id(readiumProfile.getReading().getId() + "/2")
             .name("Key Figures: Lord Cornwallis")
-            .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
-            .partOf((EPubVolume) Iterables.getFirst(readiumProfile.getFrames(), null))
+            .lastModifiedAt(readiumProfile.getReading().getLastModifiedAt())
+            .index(2)
+            .partOf(readiumProfile.getReading())
             .build());
-        readiumProfile.getNavigationHistory()
-            .add(readiumProfile.getFrames().get(readiumProfile.getFrames().size() - 2));
 
-        output.append("Viewed Page with pageId 2 in Readium Reader . . . sent ViewedEvent\n");
+        output.append("Navigated to page 2 in Readium Reader . . . sent NavigatedEvent\n");
+
+        // Process Event
+        navigate(readiumProfile);
+
+        output.append("Object : " + readiumProfile.getReading().getId() + "\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
+
+        // EVENT # 05 - Add ViewedEvent #epubcfi(/4/3)/2 (Lord Cornwallis)
+        readiumProfile.getActions().add(ReadingActions.VIEWED.key());
+        readiumProfile.getFromResources().add(Iterables.getLast(readiumProfile.getFromResources()));
+        readiumProfile.getTargets().add(Iterables.getLast(readiumProfile.getTargets()));
+
+        output.append("Viewed Page 2 in Readium Reader . . . sent ViewedEvent\n");
 
         // Process Event
         view(readiumProfile);
 
-        output.append("Object : " + ((EPubSubChapter) Iterables.getLast(readiumProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + readiumProfile.getReading().getId() + "\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
-        // EVENT # 4 - HighlightedEvent
+        // EVENT # 06 - HighlightedEvent
         AnnotationProfile readiumAnnotationProfile = AnnotationProfile.builder()
             .learningContext(readiumProfile.getLearningContext())
             .action(AnnotationActions.HIGHLIGHTED.key())
@@ -238,47 +286,64 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .selectionStart(Integer.toString(455))
                 .selectionEnd(Integer.toString(489))
                 .selectionText("Life, Liberty and the pursuit of Happiness")
-                .target(Iterables.getLast(readiumProfile.getFrames()))
+                .target(Iterables.getLast(readiumProfile.getTargets()))  // TODO: REDUNDANT?
                 .build())
-            .target(Iterables.getLast(readiumProfile.getFrames()))
+            .target(Iterables.getLast(readiumProfile.getTargets()))
             .build();
 
-        output.append("Highlighted fragment in pageId 2 from index 455 to 489 in Readium Reading . . . sent HighlightedEvent\n");
+        output.append("Highlighted fragment in Page 2 from index 455 to 489 in Readium Reading . . . sent HighlightedEvent\n");
 
         // Process Event
         annotate(readiumAnnotationProfile);
 
         HighlightAnnotation highlight = (HighlightAnnotation) Iterables.getLast(readiumAnnotationProfile.getAnnotations());
         output.append("Object : " + highlight.getId()  + "\n");
-        output.append("Target : " + ((EPubSubChapter) highlight.getTarget()).getId() + "\n\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((CaliperDigitalResource) highlight.getTarget()).getId() + "\n\n");
+        //output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
-        // EVENT # 5 - Add Viewed Event #epubcfi(/4/3)/3 (Paul Revere)
-        readiumProfile.getActions().add(ReadingActions.VIEWED.key());
-        readiumProfile.getFrames().add(EPubSubChapter.builder()
-            .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)/3")
+        // EVENT # 07 - Add NavigationEvent #epubcfi(/4/3)/3 (Paul Revere)
+        readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
+        readiumProfile.getFromResources().add((CaliperDigitalResource) Iterables.getLast(readiumProfile.getTargets()));
+        readiumProfile.getTargets().add(Frame.builder()
+            .id(readiumProfile.getReading().getId() + "/3")
             .name("Key Figures: Paul Revere")
-            .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
-            .partOf((EPubVolume) Iterables.getFirst(readiumProfile.getFrames(), null))
+            .lastModifiedAt(readiumProfile.getReading().getLastModifiedAt())
+            .index(2)
+            .partOf(readiumProfile.getReading())
             .build());
-        readiumProfile.getNavigationHistory()
-            .add(readiumProfile.getFrames().get(readiumProfile.getFrames().size() - 2));
 
-        output.append("Viewed Page with pageId 3 in Readium Reading . . . sent ViewedEvent\n");
+        output.append("Navigated to Page 3 in Readium Reader . . . sent NavigatedEvent\n");
+
+        // Process Event
+        navigate(readiumProfile);
+
+        output.append("Object : " + readiumProfile.getReading().getId() + "\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
+
+        // EVENT # 07 - Add Viewed Event #epubcfi(/4/3)/3 (Paul Revere)
+        readiumProfile.getActions().add(ReadingActions.VIEWED.key());
+        readiumProfile.getFromResources().add(Iterables.getLast(readiumProfile.getFromResources()));
+        readiumProfile.getTargets().add(Iterables.getLast(readiumProfile.getTargets()));
+
+        output.append("Viewed Page 3 in Readium Reading . . . sent ViewedEvent\n");
 
         // Process Event
         view(readiumProfile);
 
-        output.append("Object : " + ((EPubSubChapter) Iterables.getLast(readiumProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + readiumProfile.getReading().getId() + "\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
-        // EVENT # 6 - Add BookmarkedEvent
+        // EVENT # 08 - Add BookmarkedEvent
         readiumAnnotationProfile.getActions().add(AnnotationActions.BOOKMARKED.key());
         readiumAnnotationProfile.getAnnotations().add(BookmarkAnnotation.builder()
             .id("https://someEduApp.edu/bookmarks/" + UUID.randomUUID().toString())
             .bookmarkNotes("The Intolerable Acts (1774)--bad idea Lord North")
-            .target(Iterables.getLast(readiumProfile.getFrames()))
+            .target(Iterables.getLast(readiumProfile.getTargets())) // TODO: REDUNDANT?
             .build());
-        readiumAnnotationProfile.getTargets()
-            .add(Iterables.getLast(readiumProfile.getFrames())); // WARN: DO REALLY NEED target in BASE PROFILE?
+        readiumAnnotationProfile.getTargets().add(Iterables.getLast(readiumProfile.getTargets()));
 
         output.append("Bookmarked Page with pageId 3 in Readium Reading . . . sent BookmarkedEvent\n");
 
@@ -287,24 +352,22 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         BookmarkAnnotation bookmark = (BookmarkAnnotation) Iterables.getLast(readiumAnnotationProfile.getAnnotations());
         output.append("Object : " + bookmark.getId()  + "\n");
-        output.append("Target : " + ((EPubSubChapter) bookmark.getTarget()).getId() + "\n\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((CaliperDigitalResource) bookmark.getTarget()).getId() + "\n\n");
+        //output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
-        // EVENT # 7 - Add NavigationEvent
+        // EVENT # 09 - Add NavigationEvent
         courseSmartProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
-        courseSmartProfile.getFrames().add(EPubSubChapter.builder()
-            .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322/aXfsadf12")
-            .name("The Boston Tea Party")
-            .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
-            .partOf((EPubVolume) EPubVolume.builder()
-                .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
-                .name("The American Revolution: A Concise History | 978-0-19-531295-9")
-                .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
-                .build())
-            .build());
-        courseSmartProfile.getNavigationHistory().add(WebPage.builder()
+        courseSmartProfile.getFromResources().add(WebPage.builder()
             .id("AmRev-101-landingPage")
             .name("American Revolution 101 Landing Page")
-            .partOf(americanHistoryCourse)
+            .partOf(readiumProfile.getLearningContext().getLisOrganization())
+            .build());
+        courseSmartProfile.getTargets().add(Frame.builder()
+            .id(courseSmartProfile.getReading().getId())
+            .name(courseSmartProfile.getReading().getName())
+            .lastModifiedAt(courseSmartProfile.getReading().getLastModifiedAt())
+            .index(0)
             .build());
 
         output.append("Navigated to Reading provided by CourseSmart . . . sent NavigateEvent\n");
@@ -312,28 +375,54 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // Process event
         navigate(courseSmartProfile);
 
-        output.append("Object : " + ((EPubSubChapter) Iterables.getLast(courseSmartProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + courseSmartProfile.getReading().getId() + "\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((Frame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
 
-        // EVENT # 8 - Add ViewedEvent aXfsadf12
+        // EVENT # 10 - Add NavigationEvent aXfsadf12
+        courseSmartProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
+        courseSmartProfile.getFromResources().add((CaliperDigitalResource) Iterables.getLast(courseSmartProfile.getTargets()));
+        courseSmartProfile.getTargets().add(Frame.builder()
+            .id(courseSmartProfile.getReading().getId() + "/aXfsadf12")
+            .name("The Boston Tea Party")
+            .lastModifiedAt(courseSmartProfile.getReading().getLastModifiedAt())
+            .index(1)
+            .build());
+
+        output.append("Navigated to Reading provided by CourseSmart . . . sent NavigateEvent\n");
+
+        // Process event
+        navigate(courseSmartProfile);
+
+        output.append("Object : " + courseSmartProfile.getReading().getId() + "\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((Frame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
+
+
+        // EVENT # 11 - Add ViewedEvent aXfsadf12
         courseSmartProfile.getActions().add(ReadingActions.VIEWED.key());
+        courseSmartProfile.getFromResources().add(Iterables.getLast(courseSmartProfile.getFromResources()));
+        courseSmartProfile.getTargets().add(Iterables.getLast(courseSmartProfile.getTargets()));
 
         output.append("Viewed CourseSmart Reading Page with pageId aXfsadf12 ... sent ViewedEvent\n");
 
         // Process event
         view(courseSmartProfile);
 
-        output.append("Object : " + ((EPubSubChapter) Iterables.getLast(courseSmartProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + courseSmartProfile.getReading().getId() + "\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((Frame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
 
-        // EVENT # 9 - Add TaggedEvent
+        // EVENT # 12 - Add TaggedEvent
         AnnotationProfile courseSmartAnnotationProfile = AnnotationProfile.builder()
             .learningContext(courseSmartProfile.getLearningContext())
             .action(AnnotationActions.TAGGED.key())
             .annotation((TagAnnotation) TagAnnotation.builder()
                 .id("https://someEduApp.edu/tags/" + UUID.randomUUID().toString())
                 .tags(Lists.newArrayList("to-read", "1776", "shared-with-project-team"))
-                .target(Iterables.getLast(courseSmartProfile.getFrames()))
+                .target(Iterables.getLast(courseSmartProfile.getTargets()))
                 .build())
-            .target(Iterables.getLast(courseSmartProfile.getFrames())) // WARN: DO REALLY NEED target in BASE PROFILE?
+            .target(Iterables.getLast(courseSmartProfile.getTargets())) // WARN: DO REALLY NEED target in BASE PROFILE?
             .build();
 
         output.append("Tagged CourseSmart Reading Page with pageId aXfsadf12 . . . sent TaggedEvent\n");
@@ -343,18 +432,21 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         TagAnnotation tag = (TagAnnotation) Iterables.getLast(courseSmartAnnotationProfile.getAnnotations());
         output.append("Object : " + tag.getId()  + "\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((CaliperDigitalResource) tag.getTarget()).getId() + "\n\n");
         output.append("Tags : " + tag.getTags().toString() + "\n");
-        output.append("Target : " + ((EPubSubChapter) tag.getTarget()).getId() + "\n\n");
+        //output.append("Target : " + ((Frame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
 
-        // EVENT # 10 - Add SharedEvent
+        // EVENT # 13 - Add SharedEvent
         courseSmartAnnotationProfile.getActions().add(AnnotationActions.SHARED.key());
         courseSmartAnnotationProfile.getAnnotations().add((SharedAnnotation) SharedAnnotation.builder()
             .id("https://someEduApp.edu/tags/" + UUID.randomUUID().toString())
             .withAgents(Lists.newArrayList(
                 "https://some-university.edu/students/smith-bob-554433",
                 "https://some-university.edu/students/lam-eve-554433"))
-            .target(Iterables.getLast(courseSmartProfile.getFrames()))
+            .target(Iterables.getLast(courseSmartProfile.getTargets()))
             .build());
+        courseSmartAnnotationProfile.getTargets().add(Iterables.getLast(courseSmartProfile.getTargets()));
 
         output.append("Shared CourseSmart Reading Page with pageId aXfsadf12 with students . . . sent SharedEvent\n");
 
@@ -363,8 +455,10 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         SharedAnnotation shared = (SharedAnnotation) Iterables.getLast(courseSmartAnnotationProfile.getAnnotations());
         output.append("Object : " + shared.getId() + "\n");
+        output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
+        output.append("Target : " + ((CaliperDigitalResource) shared.getTarget()).getId() + "\n\n");
+        //output.append("Target : " + ((Frame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
         output.append("Shared : " + shared.getWithAgents().toString() + "\n");
-        output.append("Target : " + ((EPubSubChapter) shared.getTarget()).getId() + "\n\n");
         output.append("FINIS\n\n");
     }
 
@@ -404,8 +498,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
-            .object(Iterables.getLast(profile.getFrames()))
-            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getNavigationHistory()))
+            .object(profile.getReading())
+            .target(Iterables.getLast(profile.getTargets()))
+            .fromResource(Iterables.getLast(profile.getFromResources()))
             .startedAtTime(DateTime.now().getMillis())  // Pass this value in?
             .build();
 
@@ -423,7 +518,8 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
-            .object(Iterables.getLast(profile.getFrames()))
+            .object(profile.getReading())
+            .target(Iterables.getLast(profile.getTargets()))
             .startedAtTime(DateTime.now().getMillis()) // Pass this value in?
             .duration("PT" + randomSecsDurationBetween(5, 120) + "S") // Pass this value in?
             .build();
