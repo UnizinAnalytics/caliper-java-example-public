@@ -17,16 +17,15 @@ import org.imsglobal.caliper.entities.lis.LISPerson;
 import org.imsglobal.caliper.entities.outcome.Outcome;
 import org.imsglobal.caliper.entities.outcome.Result;
 import org.imsglobal.caliper.entities.schemadotorg.WebPage;
-import org.imsglobal.caliper.events.assessment.AssessmentEvent;
-import org.imsglobal.caliper.events.assessment.AssessmentItemEvent;
-import org.imsglobal.caliper.events.assignable.AssignableEvent;
-import org.imsglobal.caliper.events.outcome.OutcomeEvent;
-import org.imsglobal.caliper.events.reading.NavigationEvent;
-import org.imsglobal.caliper.events.reading.ViewedEvent;
+import org.imsglobal.caliper.events.AssessmentEvent;
+import org.imsglobal.caliper.events.AssessmentItemEvent;
+import org.imsglobal.caliper.events.AssignableEvent;
+import org.imsglobal.caliper.events.OutcomeEvent;
+import org.imsglobal.caliper.events.NavigationEvent;
+import org.imsglobal.caliper.events.ViewedEvent;
 import org.imsglobal.caliper.profiles.AssessmentProfile;
 import org.imsglobal.caliper.profiles.AssignableProfile;
 import org.imsglobal.caliper.profiles.OutcomeProfile;
-import org.imsglobal.caliper.profiles.ReadingProfile;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.joda.time.Weeks;
@@ -121,44 +120,47 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         /*
          * -----------------------------------------------------------------
-         * Step 01.  Set the activity context for the two readings.
+         * Step 01.  Set the learning and activity context for the two readings.
          * -----------------------------------------------------------------
          */
 
+        // LMS learning context
         // TODO LISCourseSection does not define a section property.  Oversight?
-        LISCourseSection americanHistoryCourse = LISCourseSection.builder()
-            .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
-            .semester("Spring-2014")
-            .courseNumber("AmRev-101")
-            .label("Am Rev 101")
-            .title("American Revolution 101")
-            .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
-            .build();
-
         LearningContext lmsContext = LearningContext.builder()
             .edApp(SoftwareApplication.builder()
                 .id("https://canvas.instructure.com")
                 //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms") // WARN CaliperEntity prop
                 .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
                 .build())
-            .lisOrganization(americanHistoryCourse) // lisCourseSection?
+            .lisOrganization(LISCourseSection.builder()
+                .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
+                .semester("Spring-2014")
+                .courseNumber("AmRev-101")
+                .label("Am Rev 101")
+                .title("American Revolution 101")
+                .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
+                .build()) // lisCourseSection?
             .agent(LISPerson.builder()
                 .id("https://some-university.edu/students/jones-alice-554433")
                 .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
                 .build())
             .build();
 
-        // Assessment engine
-        SoftwareApplication assessmentTool = SoftwareApplication.builder()
-            .id("https://com.sat/super-assessment-tool")
-            //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/Assessment") // WARN: CaliperEntity prop
-            .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
+        //Tool learning context
+        LearningContext toolContext = LearningContext.builder()
+            .edApp(SoftwareApplication.builder()
+                .id("https://com.sat/super-assessment-tool")
+                //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/Assessment") // WARN: CaliperEntity prop
+                .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
+                .build())
+            .lisOrganization(lmsContext.getLisOrganization())
+            .agent(lmsContext.getAgent())
             .build();
 
         // Grading engine
-        CaliperAgent gradingEngine = assessmentTool;
+        CaliperAgent gradingEngine = toolContext.getEdApp();
 
-        output.append(">> generated learning context data\n");
+        output.append(">> Generated learning context data\n");
 
         /*
          * -----------------------------------------------------------------
@@ -196,7 +198,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .maxAttempts(2)
             .maxSubmits(2)
             .maxScore(5) // WARN original value "5.0d"
-            .partOf(americanHistoryCourse)
+            .partOf(lmsContext.getLisOrganization())
             .assessmentItems(assessmentItems)
             .build();
 
@@ -204,49 +206,19 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         AssignableProfile assignableProfile = AssignableProfile.builder()
             .learningContext(lmsContext)
             .assignable(assessment)
-            //.target() // WARN: better as a CaliperEvent prop?
-            //.generated() // WARN: better as a CaliperEvent prop?
             .build();
 
-        // Navigation profile (LMS context)
-        ReadingProfile readingProfile = ReadingProfile.builder()
-            .learningContext(lmsContext)
-            .frame(assessment)
-            .navigatedFrom(WebPage.builder()
-                .id("AmRev-101-landingPage")
-                .name("American Revolution 101 Landing Page")
-                .partOf(americanHistoryCourse)
-                .build())
-                //.target() // WARN: better as a CaliperEvent prop?
-                //.generated() // WARN: better as a CaliperEvent prop?
-            .build();
-
-        // Assessment profile (Assessment tool context)
+        // Assessment profile (Tool context)
         AssessmentProfile assessmentProfile = AssessmentProfile.builder()
-            .learningContext(LearningContext.builder()
-                .edApp(assessmentTool)
-                .lisOrganization(americanHistoryCourse)
-                .agent(LISPerson.builder()
-                    .id("https://some-university.edu/students/jones-alice-554433")
-                    .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
-                    .build())
-                .build())
+            .learningContext(toolContext)
             .assessment(assessment)
-            //.target() // WARN: better as a CaliperEvent prop?
-            //.generated() // WARN: better as a CaliperEvent prop or add attempt now?
             .build();
 
-        //Outcome profile (Assessment tool context)
+        //Outcome profile (Tool context)
         OutcomeProfile outcomeProfile = OutcomeProfile.builder()
-            .learningContext(LearningContext.builder()
-                .edApp(assessmentTool)
-                .lisOrganization(americanHistoryCourse) // lisCourseSection?
-                .agent(gradingEngine)
-                .build())
+            .learningContext(toolContext)
             .assignable(assessment)
             //.result() //WARN CAN'T PRE-POPULATE RESULT; BETTER AS A OutcomeEvent prop/
-            //.target() // WARN: better as a CaliperEvent prop?
-            //.generated() // WARN: better as a CaliperEvent prop or add attempt now?  Add attempt seems premature.
             .build();
 
         output.append("Generated activity context data\n");
@@ -260,27 +232,34 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Sending events  . . .\n\n");
 
         // EVENT # 01 - NavigationEvent
-        readingProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
+        assignableProfile.getActions().add(AssignableActions.NAVIGATED_TO.key());
+        assignableProfile.getFromResources().add(WebPage.builder()
+            .id("AmRev-101-landingPage")
+            .name("American Revolution 101 Landing Page")
+            .partOf(assignableProfile.getLearningContext().getLisOrganization())
+            .build());
         output.append("Navigated to Assignable in Canvas LMS edApp . . . sent NavigationEvent\n");
 
         // Process Event
-        navigate(readingProfile);
+        navigate(assignableProfile);
 
-        output.append("Object : " + ((CaliperAssessment) Iterables.getLast(readingProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + ((CaliperAssessment) assignableProfile.getAssignable()).getId() + "\n\n");
 
         // EVENT # 02 - ViewedEvent
-        readingProfile.getActions().add(ReadingActions.VIEWED.key());
+        assignableProfile.getActions().add(AssignableActions.VIEWED.key());
+        assignableProfile.getFromResources().add((Iterables.getLast(assignableProfile.getFromResources())));
+
         output.append("Viewed Assignable in Canvas LMS edApp . . . sent ViewedEvent\n");
 
         // Process Event
-        view(readingProfile);
+        view(assignableProfile);
 
-        output.append("Object : " + ((CaliperAssessment) Iterables.getLast(readingProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + ((CaliperAssessment) assignableProfile.getAssignable()).getId() + "\n\n");
 
         // EVENT # 03 - Started Assignable Event
         assignableProfile.getActions().add(AssignableActions.STARTED.key());
         assignableProfile.getAttempts().add(Attempt.builder()
-            .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/attempt1")
+            .id(assignableProfile.getAssignable().getId() + "/attempt1")
             .assignable((CaliperAssignableDigitalResource) assignableProfile.getAssignable())
             .actor(assignableProfile.getLearningContext().getAgent())
             .count(1)
@@ -292,106 +271,97 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         startAssignment(assignableProfile);
 
         output.append("Attempt : " + ((Attempt) Iterables.getFirst(assignableProfile.getAttempts(), 1)).getCount() + "\n");
-        output.append("Object : " + ((CaliperAssessment) Iterables.getLast(readingProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + ((CaliperAssessment) assignableProfile.getAssignable()).getId() + "\n\n");
 
         // EVENT # 04 - Started Assessment Event
         assessmentProfile.getActions().add(AssessmentActions.STARTED.key());
         output.append("Started Assessment in Super Assessment edApp . . . sent AssessmentEvent.\n");
 
         // Process Event
-        startAssessment(assessmentProfile);
+        assess(assessmentProfile, assignableProfile);
 
-        output.append("Object : " + ((CaliperAssessment) Iterables.getLast(readingProfile.getFrames())).getId() + "\n\n");
+        output.append("Object : " + assessmentProfile.getAssessment().getId() + "\n\n");
 
         // EVENT # 05 - Started AssessmentItem 01
         assessmentProfile.getActions().add(AssessmentItemActions.STARTED.key());
         output.append("Started AssessmentItem 01 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
         // Process Event
-        startAssessmentItem(assessmentProfile, 0);
+        itemAssess(assessmentProfile, 0);
 
-        output.append("Object : " + ((CaliperAssessment) Iterables.getLast(readingProfile.getFrames()))
-            .getAssessmentItems().get(0).getId() + "\n\n");
+        output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(0).getId() + "\n\n");
 
         // EVENT # 06 - Completed AssessmentItem 01
         assessmentProfile.getActions().add(AssessmentItemActions.COMPLETED.key());
         output.append("Completed AssessmentItem 01 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
         // Process Event
-        completeAssessmentItem(assessmentProfile, 0);
+        itemAssess(assessmentProfile, 0);
 
-        output.append("Object : " + ((CaliperAssessment) Iterables.getLast(readingProfile.getFrames()))
-            .getAssessmentItems().get(0).getId() + "\n\n");
+        output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(0).getId() + "\n\n");
 
         // EVENT # 07 - Started AssessmentItem 02
         assessmentProfile.getActions().add(AssessmentItemActions.STARTED.key());
         output.append("Started AssessmentItem 02 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
         // Process Event
-        startAssessmentItem(assessmentProfile, 1);
+        itemAssess(assessmentProfile, 1);
 
-        output.append("Object : " + ((CaliperAssessment) Iterables.getLast(readingProfile.getFrames()))
-            .getAssessmentItems().get(1).getId() + "\n\n");
+        output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(1).getId() + "\n\n");
 
         // EVENT # 08 - Completed AssessmentItem 02
         assessmentProfile.getActions().add(AssessmentItemActions.COMPLETED.key());
         output.append("Completed AssessmentItem 02 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
         // Process Event
-        completeAssessmentItem(assessmentProfile, 1);
+        itemAssess(assessmentProfile, 1);
 
-        output.append("Object : " + ((CaliperAssessment) Iterables.getLast(readingProfile.getFrames()))
-            .getAssessmentItems().get(1).getId() + "\n\n");
+        output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(1).getId() + "\n\n");
 
         // EVENT # 09 - Started AssessmentItem 03
         assessmentProfile.getActions().add(AssessmentItemActions.STARTED.key());
         output.append("Started AssessmentItem 03 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
         // Process Event
-        startAssessmentItem(assessmentProfile, 2);
+        itemAssess(assessmentProfile, 2);
 
-        output.append("Object : " + ((CaliperAssessment) Iterables.getLast(readingProfile.getFrames()))
-            .getAssessmentItems().get(2).getId() + "\n\n");
+        output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(2).getId() + "\n\n");
 
         // EVENT # 10 - Completed AssessmentItem 03
         assessmentProfile.getActions().add(AssessmentItemActions.COMPLETED.key());
         output.append("Completed AssessmentItem 03 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
         // Process Event
-        completeAssessmentItem(assessmentProfile, 2);
+        itemAssess(assessmentProfile, 2);
 
-        output.append("Object : " + ((CaliperAssessment) Iterables.getLast(readingProfile.getFrames()))
-            .getAssessmentItems().get(2).getId() + "\n\n");
+        output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(2).getId() + "\n\n");
 
         // EVENT # 11 - Submitted Assessment Event
         assessmentProfile.getActions().add(AssessmentActions.SUBMITTED.key());
         output.append("Submitted Assessment in Super Assessment edApp . . . sent AssessmentEvent.\n");
 
         // Process Event
-        submitAssessment(assessmentProfile);
+        assess(assessmentProfile, assignableProfile);
 
-        output.append("Object : " + ((CaliperAssessment) Iterables.getLast(readingProfile.getFrames())).getId() + "\n\n");
-
+        output.append("Object : " + assessmentProfile.getAssessment().getId() + "\n\n");
 
         // EVENT # 12 - Outcome Event (attempt, result pairing)
         outcomeProfile.getActions().add(OutcomeActions.GRADED.key());
-        Outcome outcome = new Outcome();
-        outcome.setAttempt(Iterables.getLast(assignableProfile.getAttempts()));
-        outcome.setResult(Result.builder()
+        Result result = Result.builder()
             .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/attempt1/result")
             .totalScore(4.2d)
             .normalScore(4.2d)
-            .build());
-        outcomeProfile.getOutcomes().add(outcome);
+            .build();
+        outcomeProfile.getOutcomes().add(new Outcome(Iterables.getLast(assignableProfile.getAttempts()), result));
 
         output.append("Submitted assessment auto-graded by Super Assessment edApp . . . sent OutcomeEvent.\n");
 
         // Process Event
-        autoGradeAssessmentSubmission(outcomeProfile);
+        autoGrade(outcomeProfile);
 
-        output.append("Object : " + ((CaliperAssessment) Iterables.getLast(readingProfile.getFrames())).getId() + "\n");
+        output.append("Object : " + Iterables.getLast(outcomeProfile.getOutcomes()).getAttempt().getId() + "\n");
         output.append("Attempt : " + Iterables.getLast(outcomeProfile.getOutcomes()).getAttempt().getCount() + "\n");
-        output.append("Total Score : " + Iterables.getLast(outcomeProfile.getOutcomes()).getResult().getTotalScore() + "\n\n");
+        output.append("Generated (Score) : " + Iterables.getLast(outcomeProfile.getOutcomes()).getResult().getTotalScore() + "\n\n");
         output.append("FINIS\n\n");
     }
 
@@ -404,13 +374,13 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
     private void startAssignment(AssignableProfile profile) {
 
-        // TODO Assignable Event should include the attempt object?
         AssignableEvent event = AssignableEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
             .object((CaliperAssignableDigitalResource) profile.getAssignable())
+            .generated((Attempt) Iterables.getLast(profile.getAttempts()))
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
@@ -421,15 +391,18 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Action : " + event.getAction() + "\n");
     }
 
-    private void startAssessment(AssessmentProfile profile) {
+    private void assess(AssessmentProfile assessment, AssignableProfile assignable) {
 
-        // TODO CaliperAssignableDigitalResource - include the attempt object?
+        /*
+         * Include the latest attempt (generated)
+         */
         AssessmentEvent event = AssessmentEvent.builder()
-            .edApp(profile.getLearningContext().getEdApp())
-            .lisOrganization(profile.getLearningContext().getLisOrganization())
-            .actor(profile.getLearningContext().getAgent())
-            .action(Iterables.getLast(profile.getActions()))
-            .object((CaliperAssignableDigitalResource) profile.getAssessment())
+            .edApp(assessment.getLearningContext().getEdApp())
+            .lisOrganization(assessment.getLearningContext().getLisOrganization())
+            .actor(assessment.getLearningContext().getAgent())
+            .action(Iterables.getLast(assessment.getActions()))
+            .object((CaliperAssignableDigitalResource) assessment.getAssessment())
+            .generated(Iterables.getLast(assignable.getAttempts()))
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
@@ -440,7 +413,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Action : " + event.getAction() + "\n");
     }
 
-    private void startAssessmentItem(AssessmentProfile profile, int index) {
+    private void itemAssess(AssessmentProfile profile, int index) {
 
         AssessmentItemEvent event = AssessmentItemEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
@@ -448,6 +421,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
             .object((CaliperAssignableDigitalResource) profile.getAssessment().getAssessmentItems().get(index))
+            //.generated(RESPONSE) TODO: Do we need to capture the item response, if any?
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
@@ -458,43 +432,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Action : " + event.getAction() + "\n");
     }
 
-    private void completeAssessmentItem(AssessmentProfile profile, int index) {
-
-        AssessmentItemEvent event = AssessmentItemEvent.builder()
-            .edApp(profile.getLearningContext().getEdApp())
-            .lisOrganization(profile.getLearningContext().getLisOrganization())
-            .actor(profile.getLearningContext().getAgent())
-            .action(Iterables.getLast(profile.getActions()))
-            .object((CaliperAssignableDigitalResource) profile.getAssessment().getAssessmentItems().get(index))
-            .startedAtTime(DateTime.now().getMillis())
-            .build();
-
-        // Send event to EventStore
-        CaliperSensor.send(event);
-
-        // Output i18n action text
-        output.append("Action : " + event.getAction() + "\n");
-    }
-
-    private void submitAssessment(AssessmentProfile profile) {
-
-        AssessmentEvent event = AssessmentEvent.builder()
-            .edApp(profile.getLearningContext().getEdApp())
-            .lisOrganization(profile.getLearningContext().getLisOrganization())
-            .actor(profile.getLearningContext().getAgent())
-            .action(Iterables.getLast(profile.getActions()))
-            .object((CaliperAssignableDigitalResource) profile.getAssessment())
-            .startedAtTime(DateTime.now().getMillis())
-            .build();
-
-        // Send event to EventStore
-        CaliperSensor.send(event);
-
-        // Output i18n action text
-        output.append("Action : " + event.getAction() + "\n");
-    }
-
-    private void autoGradeAssessmentSubmission(OutcomeProfile profile) {
+    private void autoGrade(OutcomeProfile profile) {
 
         OutcomeEvent event = OutcomeEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
@@ -513,15 +451,15 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Action : " + event.getAction() + "\n");
     }
 
-    private void navigate(ReadingProfile profile) {
+    private void navigate(AssignableProfile profile) {
 
         NavigationEvent event = NavigationEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
-            .object((CaliperAssignableDigitalResource) Iterables.getLast(profile.getFrames()))
-            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getNavigationHistory()))
+            .object((CaliperAssignableDigitalResource) profile.getAssignable())
+            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getFromResources()))
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
@@ -532,14 +470,14 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Action : " + event.getAction() + "\n");
     }
 
-    private void view(ReadingProfile profile) {
+    private void view(AssignableProfile profile) {
 
         ViewedEvent event = ViewedEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
-            .object((CaliperAssignableDigitalResource) Iterables.getLast(profile.getFrames()))
+            .object((CaliperAssignableDigitalResource) profile.getAssignable())
             .startedAtTime(DateTime.now().getMillis())
             .duration("PT" + randomSecsDurationBetween(5, 120) + "S")
             .build();
