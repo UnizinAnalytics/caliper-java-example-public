@@ -3,7 +3,10 @@ package com.pnayak.test;
 import com.google.common.collect.Iterables;
 import org.imsglobal.caliper.CaliperSensor;
 import org.imsglobal.caliper.Options;
-import org.imsglobal.caliper.actions.*;
+import org.imsglobal.caliper.actions.AssessmentActions;
+import org.imsglobal.caliper.actions.AssessmentItemActions;
+import org.imsglobal.caliper.actions.AssignableActions;
+import org.imsglobal.caliper.actions.OutcomeActions;
 import org.imsglobal.caliper.entities.CaliperAgent;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
 import org.imsglobal.caliper.entities.LearningContext;
@@ -17,12 +20,7 @@ import org.imsglobal.caliper.entities.lis.LISPerson;
 import org.imsglobal.caliper.entities.outcome.Outcome;
 import org.imsglobal.caliper.entities.outcome.Result;
 import org.imsglobal.caliper.entities.schemadotorg.WebPage;
-import org.imsglobal.caliper.events.AssessmentEvent;
-import org.imsglobal.caliper.events.AssessmentItemEvent;
-import org.imsglobal.caliper.events.AssignableEvent;
-import org.imsglobal.caliper.events.OutcomeEvent;
-import org.imsglobal.caliper.events.NavigationEvent;
-import org.imsglobal.caliper.events.ViewedEvent;
+import org.imsglobal.caliper.events.*;
 import org.imsglobal.caliper.profiles.AssessmentProfile;
 import org.imsglobal.caliper.profiles.AssignableProfile;
 import org.imsglobal.caliper.profiles.OutcomeProfile;
@@ -205,23 +203,10 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .assessmentItems(assessmentItems)
             .build();
 
-        // Assignable profile (LMS context)
-        AssignableProfile assignableProfile = AssignableProfile.builder()
-            .learningContext(lmsContext)
-            .assignable(assessment)
-            .build();
-
         // Assessment profile (Tool context)
         AssessmentProfile assessmentProfile = AssessmentProfile.builder()
             .learningContext(toolContext)
             .assessment(assessment)
-            .build();
-
-        //Outcome profile (Tool context)
-        OutcomeProfile outcomeProfile = OutcomeProfile.builder()
-            .learningContext(toolContext)
-            .assignable(assessment)
-            //.result() //WARN CAN'T PRE-POPULATE RESULT; BETTER AS A OutcomeEvent prop/
             .build();
 
         output.append("Generated activity context data\n");
@@ -234,13 +219,20 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         output.append("Sending events  . . .\n\n");
 
-        // EVENT # 01 - NavigationEvent
-        assignableProfile.getActions().add(AssignableActions.NAVIGATED_TO.key());
-        assignableProfile.getFromResources().add(WebPage.builder()
-            .id("AmRev-101-landingPage")
-            .name("American Revolution 101 Landing Page")
-            .partOf(assignableProfile.getLearningContext().getLisOrganization())
-            .build());
+        // EVENT # 01 - Generate Assignable profile (LMS context) triggered by Navigation Event
+
+        AssignableProfile assignableProfile = AssignableProfile.builder()
+            .learningContext(lmsContext)
+            .assignable(assessment)
+            .action(AssignableActions.NAVIGATED_TO.key())
+            .fromResource(WebPage.builder()
+                .id("AmRev-101-landingPage")
+                .name("American Revolution 101 Landing Page")
+                .partOf(lmsContext.getLisOrganization())
+                .build())
+            .target(assessment)
+            .build();
+
         output.append("Navigated to Assignable in Canvas LMS edApp . . . sent NavigationEvent\n");
 
         // Process Event
@@ -248,18 +240,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         output.append("Object : " + ((CaliperAssessment) assignableProfile.getAssignable()).getId() + "\n\n");
 
-        // EVENT # 02 - ViewedEvent
-        assignableProfile.getActions().add(AssignableActions.VIEWED.key());
-        assignableProfile.getFromResources().add((Iterables.getLast(assignableProfile.getFromResources())));
-
-        output.append("Viewed Assignable in Canvas LMS edApp . . . sent ViewedEvent\n");
-
-        // Process Event
-        view(assignableProfile);
-
-        output.append("Object : " + ((CaliperAssessment) assignableProfile.getAssignable()).getId() + "\n\n");
-
-        // EVENT # 03 - Started Assignable Event
+        // EVENT # 02 - Started Assignable Event
         assignableProfile.getActions().add(AssignableActions.STARTED.key());
         assignableProfile.getAttempts().add(Attempt.builder()
             .id(assignableProfile.getAssignable().getId() + "/attempt1")
@@ -276,7 +257,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Attempt : " + ((Attempt) Iterables.getFirst(assignableProfile.getAttempts(), 1)).getCount() + "\n");
         output.append("Object : " + ((CaliperAssessment) assignableProfile.getAssignable()).getId() + "\n\n");
 
-        // EVENT # 04 - Started Assessment Event
+        // EVENT # 03 - Started Assessment Event
         assessmentProfile.getActions().add(AssessmentActions.STARTED.key());
         output.append("Started Assessment in Super Assessment edApp . . . sent AssessmentEvent.\n");
 
@@ -285,7 +266,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         output.append("Object : " + assessmentProfile.getAssessment().getId() + "\n\n");
 
-        // EVENT # 05 - Started AssessmentItem 01
+        // EVENT # 04 - Started AssessmentItem 01
         assessmentProfile.getActions().add(AssessmentItemActions.STARTED.key());
         output.append("Started AssessmentItem 01 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
@@ -294,7 +275,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(0).getId() + "\n\n");
 
-        // EVENT # 06 - Completed AssessmentItem 01
+        // EVENT # 05 - Completed AssessmentItem 01
         assessmentProfile.getActions().add(AssessmentItemActions.COMPLETED.key());
         output.append("Completed AssessmentItem 01 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
@@ -303,7 +284,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(0).getId() + "\n\n");
 
-        // EVENT # 07 - Started AssessmentItem 02
+        // EVENT # 06 - Started AssessmentItem 02
         assessmentProfile.getActions().add(AssessmentItemActions.STARTED.key());
         output.append("Started AssessmentItem 02 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
@@ -312,7 +293,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(1).getId() + "\n\n");
 
-        // EVENT # 08 - Completed AssessmentItem 02
+        // EVENT # 07 - Completed AssessmentItem 02
         assessmentProfile.getActions().add(AssessmentItemActions.COMPLETED.key());
         output.append("Completed AssessmentItem 02 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
@@ -321,7 +302,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(1).getId() + "\n\n");
 
-        // EVENT # 09 - Started AssessmentItem 03
+        // EVENT # 08 - Started AssessmentItem 03
         assessmentProfile.getActions().add(AssessmentItemActions.STARTED.key());
         output.append("Started AssessmentItem 03 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
@@ -330,7 +311,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(2).getId() + "\n\n");
 
-        // EVENT # 10 - Completed AssessmentItem 03
+        // EVENT # 09 - Completed AssessmentItem 03
         assessmentProfile.getActions().add(AssessmentItemActions.COMPLETED.key());
         output.append("Completed AssessmentItem 03 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
@@ -339,7 +320,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(2).getId() + "\n\n");
 
-        // EVENT # 11 - Submitted Assessment Event
+        // EVENT # 10 - Submitted Assessment Event
         assessmentProfile.getActions().add(AssessmentActions.SUBMITTED.key());
         output.append("Submitted Assessment in Super Assessment edApp . . . sent AssessmentEvent.\n");
 
@@ -348,14 +329,19 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         output.append("Object : " + assessmentProfile.getAssessment().getId() + "\n\n");
 
-        // EVENT # 12 - Outcome Event (attempt, result pairing)
-        outcomeProfile.getActions().add(OutcomeActions.GRADED.key());
+        // EVENT # 11 Generate OutcomeProfile triggered by Outcome Event (attempt, result pairing)
         Result result = Result.builder()
             .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/attempt1/result")
             .totalScore(4.2d)
             .normalScore(4.2d)
             .build();
-        outcomeProfile.getOutcomes().add(new Outcome(Iterables.getLast(assignableProfile.getAttempts()), result));
+
+        OutcomeProfile outcomeProfile = OutcomeProfile.builder()
+            .learningContext(toolContext)
+            .assignable(assessment)
+            .action(OutcomeActions.GRADED.key())
+            .outcome(new Outcome(Iterables.getLast(assignableProfile.getAttempts()), result))
+            .build();
 
         output.append("Submitted assessment auto-graded by Super Assessment edApp . . . sent OutcomeEvent.\n");
 
@@ -464,25 +450,6 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .object((CaliperAssignableDigitalResource) profile.getAssignable())
             .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getFromResources()))
             .startedAtTime(DateTime.now().getMillis())
-            .build();
-
-        // Send event to EventStore
-        CaliperSensor.send(event);
-
-        // Output i18n action text
-        output.append("Action : " + event.getAction() + "\n");
-    }
-
-    private void view(AssignableProfile profile) {
-
-        ViewedEvent event = ViewedEvent.builder()
-            .edApp(profile.getLearningContext().getEdApp())
-            .lisOrganization(profile.getLearningContext().getLisOrganization())
-            .actor(profile.getLearningContext().getAgent())
-            .action(Iterables.getLast(profile.getActions()))
-            .object((CaliperAssignableDigitalResource) profile.getAssignable())
-            .startedAtTime(DateTime.now().getMillis())
-            .duration("PT" + randomSecsDurationBetween(5, 120) + "S")
             .build();
 
         // Send event to EventStore

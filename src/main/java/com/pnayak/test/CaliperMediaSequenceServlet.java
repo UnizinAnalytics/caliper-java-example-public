@@ -143,18 +143,15 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
                 .build())
             .build();
 
-        // Media Profile
-        MediaProfile mediaProfile = MediaProfile.builder()
-            .learningContext(learningContext)
-            .mediaObject(CaliperVideoObject.builder()
-                .id("https://com.sat/super-media-tool/video/video1")
-                .name("American Revolution - Key Figures Video")
-                .partOf(learningContext.getLisOrganization())
-                .learningObjective(LearningObjective.builder()
-                    .id("http://americanrevolution.com/personalities/learn")
-                    .build())
-                .duration(1420)
+        // Video
+        CaliperVideoObject video = CaliperVideoObject.builder()
+            .id("https://com.sat/super-media-tool/video/video1")
+            .name("American Revolution - Key Figures Video")
+            .partOf(learningContext.getLisOrganization())
+            .learningObjective(LearningObjective.builder()
+                .id("http://americanrevolution.com/personalities/learn")
                 .build())
+            .duration(1420)
             .build();
 
         output.append("Generated activity context data\n\n");
@@ -167,17 +164,21 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
 
         output.append("Sending events . . .\n\n");
 
-        // EVENT # 01 - NavigationEvent
-        mediaProfile.getActions().add(MediaActions.NAVIGATED_TO.key());
-        mediaProfile.getTargets().add(mediaProfile.getMediaObject());
-        mediaProfile.getMediaLocations().add(MediaLocation.builder()
-            .id(((CaliperVideoObject) mediaProfile.getMediaObject()).getId()) // Don't forget to set the Id
-            .currentTime(0).build());
-        mediaProfile.getFromResources().add(WebPage.builder()
-            .id("AmRev-101-landingPage")
-            .name("American Revolution 101 Landing Page")
-            .partOf(mediaProfile.getLearningContext().getLisOrganization())
-            .build());
+        // EVENT # 01 Generate MediaProfile triggered by NavigationEvent
+        MediaProfile mediaProfile = MediaProfile.builder()
+            .learningContext(learningContext)
+            .mediaObject(video)
+            .action(MediaActions.NAVIGATED_TO.key())
+            .fromResource(WebPage.builder()
+                .id("AmRev-101-landingPage")
+                .name("American Revolution 101 Landing Page")
+                .partOf(learningContext.getLisOrganization())
+                .build())
+            .target(video) // WARN: Expects a frame coordinate (none provided)
+            .mediaLocation(MediaLocation.builder()
+                .id(video.getId()) // Don't forget to set the Id
+                .currentTime(0).build())
+            .build();
 
         output.append("Navigated to video in Canvas LMS edApp... sent NavigateEvent\n");
 
@@ -261,7 +262,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .action(Iterables.getLast(profile.getActions()))
             .object(profile.getMediaObject())
             .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getFromResources()))
-            .startedAtTime(DateTime.now().getMillis())  // Pass this value in?
+            .startedAtTime(DateTime.now().getMillis())
             .build();
 
         // Send event to EventStore
@@ -280,7 +281,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .action(Iterables.getLast(profile.getActions()))
             .object((CaliperVideoObject) profile.getMediaObject())
             .mediaLocation(Iterables.getLast(profile.getMediaLocations()))
-            .startedAtTime(DateTime.now().getMillis())  // Pass this value in?
+            .startedAtTime(DateTime.now().getMillis())
             .build();
 
         // Send event to EventStore
