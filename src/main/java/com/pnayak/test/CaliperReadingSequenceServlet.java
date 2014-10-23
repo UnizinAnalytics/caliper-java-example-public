@@ -7,7 +7,7 @@ import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.actions.AnnotationActions;
 import org.imsglobal.caliper.actions.ReadingActions;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
-import org.imsglobal.caliper.entities.Frame;
+import org.imsglobal.caliper.entities.reading.Frame;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.SoftwareApplication;
 import org.imsglobal.caliper.entities.annotation.BookmarkAnnotation;
@@ -17,6 +17,7 @@ import org.imsglobal.caliper.entities.annotation.TagAnnotation;
 import org.imsglobal.caliper.entities.lis.LISCourseSection;
 import org.imsglobal.caliper.entities.lis.LISPerson;
 import org.imsglobal.caliper.entities.reading.EPubVolume;
+import org.imsglobal.caliper.entities.reading.View;
 import org.imsglobal.caliper.entities.schemadotorg.WebPage;
 import org.imsglobal.caliper.events.AnnotationEvent;
 import org.imsglobal.caliper.events.NavigationEvent;
@@ -144,6 +145,17 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .build())
             .build();
 
+        output.append("Generated activity context data.\n\n");
+
+        /*
+         * -----------------------------------------------------------------
+         * Step 02.  Execute reading and annotation sequence.
+         * -----------------------------------------------------------------
+         */
+
+        output.append("Sending events . . .\n\n");
+
+        // EVENT 01 - Generate profile triggered by Navigation Event to #epubcfi(/4/3)
 
         // Readium Profile
         ReadingProfile readiumProfile = ReadingProfile.builder()
@@ -160,48 +172,17 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
                 .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
                 .build())
-            .build();
-
-        // CourseSmart Profile
-        ReadingProfile courseSmartProfile = ReadingProfile.builder()
-            .learningContext(LearningContext.builder()
-                .edApp(SoftwareApplication.builder()
-                    .id("http://www.coursesmart.com/reader")
-                    .lastModifiedAt(now.minus(Weeks.weeks(6)).getMillis())
-                    .build())
-                .lisOrganization(lmsContext.getLisOrganization())
-                .agent(lmsContext.getAgent())
+            .action(ReadingActions.NAVIGATED_TO.key())
+            .fromResource(WebPage.builder()
+                .id("AmRev-101-landingPage")
+                .name("American Revolution 101 Landing Page")
+                .partOf(lmsContext.getLisOrganization())
                 .build())
-            .reading(EPubVolume.builder()
-                .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
-                .name("The American Revolution: A Concise History | 978-0-19-531295-9")
-                .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
+            .target(Frame.builder()
+                .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
+                .index(0)
                 .build())
             .build();
-
-        output.append("Generated activity context data.\n\n");
-
-        /*
-         * -----------------------------------------------------------------
-         * Step 02.  Execute reading and annotation sequence.
-         * -----------------------------------------------------------------
-         */
-
-        output.append("Sending events . . .\n\n");
-
-        // EVENT 01 - Add NavigationEvent to #epubcfi(/4/3)
-        readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
-        readiumProfile.getFromResources().add(WebPage.builder()
-            .id("AmRev-101-landingPage")
-            .name("American Revolution 101 Landing Page")
-            .partOf(readiumProfile.getLearningContext().getLisOrganization())
-            .build());
-        readiumProfile.getTargets().add(Frame.builder()
-            .id(readiumProfile.getReading().getId())
-            .name(readiumProfile.getReading().getName())
-            .lastModifiedAt(readiumProfile.getReading().getLastModifiedAt())
-            .index(0)
-            .build());
 
         output.append("Navigated to volume in Readium Reader . . . sent NavigatedEvent\n");
 
@@ -233,7 +214,15 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
         // EVENT # 03 - Add ViewedEvent #epubcfi(/4/3)/1 (George Washington)
+
         readiumProfile.getActions().add(ReadingActions.VIEWED.key());
+        readiumProfile.getViews().add(View.builder()
+            .frame((Frame) Iterables.getLast(readiumProfile.getTargets()))
+            .actor(lmsContext.getAgent())
+            .startedAtTime(DateTime.now().minusSeconds(240).getMillis())
+            .endedAtTime(DateTime.now().getMillis())
+            .duration("PT" + randomSecsDurationBetween(5, 120) + "S")
+            .build());
         readiumProfile.getFromResources().add(Iterables.getLast(readiumProfile.getFromResources()));
         readiumProfile.getTargets().add(Iterables.getLast(readiumProfile.getTargets()));
 
@@ -268,6 +257,13 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // EVENT # 05 - Add ViewedEvent #epubcfi(/4/3)/2 (Lord Cornwallis)
         readiumProfile.getActions().add(ReadingActions.VIEWED.key());
+        readiumProfile.getViews().add(View.builder()
+            .frame((Frame) Iterables.getLast(readiumProfile.getTargets()))
+            .actor(lmsContext.getAgent())
+            .startedAtTime(DateTime.now().minusSeconds(360).getMillis())
+            .endedAtTime(DateTime.now().getMillis())
+            .duration("PT" + randomSecsDurationBetween(5, 120) + "S")
+            .build());
         readiumProfile.getFromResources().add(Iterables.getLast(readiumProfile.getFromResources()));
         readiumProfile.getTargets().add(Iterables.getLast(readiumProfile.getTargets()));
 
@@ -327,6 +323,13 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // EVENT # 07 - Add Viewed Event #epubcfi(/4/3)/3 (Paul Revere)
         readiumProfile.getActions().add(ReadingActions.VIEWED.key());
+        readiumProfile.getViews().add(View.builder()
+            .frame((Frame) Iterables.getLast(readiumProfile.getTargets()))
+            .actor(lmsContext.getAgent())
+            .startedAtTime(DateTime.now().minusSeconds(180).getMillis())
+            .endedAtTime(DateTime.now().getMillis())
+            .duration("PT" + randomSecsDurationBetween(5, 120) + "S")
+            .build());
         readiumProfile.getFromResources().add(Iterables.getLast(readiumProfile.getFromResources()));
         readiumProfile.getTargets().add(Iterables.getLast(readiumProfile.getTargets()));
 
@@ -359,19 +362,34 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Target : " + ((CaliperDigitalResource) bookmark.getTarget()).getId() + "\n\n");
         //output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
-        // EVENT # 09 - Add NavigationEvent
-        courseSmartProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
-        courseSmartProfile.getFromResources().add(WebPage.builder()
-            .id("AmRev-101-landingPage")
-            .name("American Revolution 101 Landing Page")
-            .partOf(readiumProfile.getLearningContext().getLisOrganization())
-            .build());
-        courseSmartProfile.getTargets().add(Frame.builder()
-            .id(courseSmartProfile.getReading().getId())
-            .name(courseSmartProfile.getReading().getName())
-            .lastModifiedAt(courseSmartProfile.getReading().getLastModifiedAt())
-            .index(0)
-            .build());
+        // EVENT # 09 - Generate CourseSmart Profile triggered by NavigationEvent
+
+        // CourseSmart Profile
+        ReadingProfile courseSmartProfile = ReadingProfile.builder()
+            .learningContext(LearningContext.builder()
+                .edApp(SoftwareApplication.builder()
+                    .id("http://www.coursesmart.com/reader")
+                    .lastModifiedAt(now.minus(Weeks.weeks(6)).getMillis())
+                    .build())
+                .lisOrganization(lmsContext.getLisOrganization())
+                .agent(lmsContext.getAgent())
+                .build())
+            .reading(EPubVolume.builder()
+                .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
+                .name("The American Revolution: A Concise History | 978-0-19-531295-9")
+                .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
+                .build())
+            .action(ReadingActions.NAVIGATED_TO.key())
+            .fromResource(WebPage.builder()
+                .id("AmRev-101-landingPage")
+                .name("American Revolution 101 Landing Page")
+                .partOf(readiumProfile.getLearningContext().getLisOrganization())
+                .build())
+            .target(Frame.builder()
+                .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
+                .index(0)
+                .build())
+            .build();
 
         output.append("Navigated to Reading provided by CourseSmart . . . sent NavigateEvent\n");
 
@@ -404,6 +422,13 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // EVENT # 11 - Add ViewedEvent aXfsadf12
         courseSmartProfile.getActions().add(ReadingActions.VIEWED.key());
+        courseSmartProfile.getViews().add(View.builder()
+            .frame((Frame) Iterables.getLast(courseSmartProfile.getTargets()))
+            .actor(lmsContext.getAgent())
+            .startedAtTime(DateTime.now().minusSeconds(180).getMillis())
+            .endedAtTime(DateTime.now().getMillis())
+            .duration("PT" + randomSecsDurationBetween(5, 120) + "S")
+            .build());
         courseSmartProfile.getFromResources().add(Iterables.getLast(courseSmartProfile.getFromResources()));
         courseSmartProfile.getTargets().add(Iterables.getLast(courseSmartProfile.getTargets()));
 
@@ -523,8 +548,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .action(Iterables.getLast(profile.getActions()))
             .object(profile.getReading())
             .target(Iterables.getLast(profile.getTargets()))
-            .startedAtTime(DateTime.now().getMillis()) // Pass this value in?
-            .duration("PT" + randomSecsDurationBetween(5, 120) + "S") // Pass this value in?
+            .startedAtTime(Iterables.getLast(profile.getViews()).getStartedAtTime())
+            .endedAtTime(Iterables.getLast(profile.getViews()).getEndedAtTime())
+            .duration(Iterables.getLast(profile.getViews()).getDuration())
             .build();
 
         // Send event to EventStore
