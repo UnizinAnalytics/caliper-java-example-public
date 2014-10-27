@@ -1,18 +1,18 @@
 package com.pnayak.test;
 
 import com.google.common.collect.Iterables;
-import org.imsglobal.caliper.CaliperSensor;
+import org.imsglobal.caliper.Sensor;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.actions.MediaActions;
-import org.imsglobal.caliper.entities.CaliperDigitalResource;
+import org.imsglobal.caliper.entities.DigitalResource;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.LearningObjective;
-import org.imsglobal.caliper.entities.lis.LISCourseSection;
-import org.imsglobal.caliper.entities.lis.LISPerson;
-import org.imsglobal.caliper.entities.media.CaliperVideoObject;
+import org.imsglobal.caliper.entities.lis.CourseSection;
+import org.imsglobal.caliper.entities.lis.Person;
+import org.imsglobal.caliper.entities.media.VideoObject;
 import org.imsglobal.caliper.entities.media.MediaLocation;
-import org.imsglobal.caliper.entities.schemadotorg.WebPage;
 import org.imsglobal.caliper.entities.SoftwareApplication;
+import org.imsglobal.caliper.entities.WebPage;
 import org.imsglobal.caliper.events.MediaEvent;
 import org.imsglobal.caliper.events.NavigationEvent;
 import org.imsglobal.caliper.profiles.MediaProfile;
@@ -46,7 +46,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         Options options = new Options();
         options.setHost(HOST);
         options.setApiKey(API_KEY);
-        CaliperSensor.initialize(options);
+        Sensor.initialize(options);
 
         r = new Random();
     }
@@ -74,7 +74,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
 
         generateMediaSequence(output);
 
-        output.append(CaliperSensor.getStatistics().toString());
+        output.append(Sensor.getStatistics().toString());
 
         response.getWriter().write(output.toString());
 
@@ -129,7 +129,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
                 //.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/media"); Set by default
                 .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
                 .build())
-            .lisOrganization(LISCourseSection.builder()
+            .lisOrganization(CourseSection.builder()
                 .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
                 .semester("Spring-2014")
                 .courseNumber("AmRev-101")
@@ -137,14 +137,14 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
                 .title("American Revolution 101")
                 .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
                 .build())
-            .agent(LISPerson.builder()
+            .agent(Person.builder()
                 .id("https://some-university.edu/students/jones-alice-554433")
                 .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
                 .build())
             .build();
 
         // Video
-        CaliperVideoObject video = CaliperVideoObject.builder()
+        VideoObject video = VideoObject.builder()
             .id("https://com.sat/super-media-tool/video/video1")
             .name("American Revolution - Key Figures Video")
             .partOf(learningContext.getLisOrganization())
@@ -185,13 +185,13 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         // Process Event
         navigate(mediaProfile);
 
-        output.append("Object : " + ((CaliperVideoObject) mediaProfile.getMediaObject()).getId() + "\n");
+        output.append("Object : " + ((VideoObject) mediaProfile.getMediaObject()).getId() + "\n");
         output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
 
         // EVENT  # 02 - Start playing video
         mediaProfile.getActions().add(MediaActions.STARTED.key());
         mediaProfile.getMediaLocations().add(MediaLocation.builder()
-            .id(((CaliperVideoObject) mediaProfile.getMediaObject()).getId())
+            .id(((VideoObject) mediaProfile.getMediaObject()).getId())
             .currentTime(0).build());
 
         output.append("Started playing Video in Super Media edApp... sent MediaEvent\n");
@@ -199,13 +199,13 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         // Process Event
         media(mediaProfile);
 
-        output.append("Object : " + ((CaliperVideoObject) mediaProfile.getMediaObject()).getId() + "\n");
+        output.append("Object : " + ((VideoObject) mediaProfile.getMediaObject()).getId() + "\n");
         output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
 
         // EVENT  # 03 - Pause playing video Event
         mediaProfile.getActions().add(MediaActions.PAUSED.key());
         mediaProfile.getMediaLocations().add(MediaLocation.builder()
-            .id(((CaliperVideoObject) mediaProfile.getMediaObject()).getId())
+            .id(((VideoObject) mediaProfile.getMediaObject()).getId())
             .currentTime(710).build());
 
         output.append("Paused playing video in Super Media edApp... sent MediaEvent\n");
@@ -213,13 +213,13 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         // Process Event
         media(mediaProfile);
 
-        output.append("Object : " + ((CaliperVideoObject) mediaProfile.getMediaObject()).getId() + "\n");
+        output.append("Object : " + ((VideoObject) mediaProfile.getMediaObject()).getId() + "\n");
         output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
 
         // EVENT  # 04 - Resume playing video Event
         mediaProfile.getActions().add(MediaActions.RESUMED.key());
         mediaProfile.getMediaLocations().add(MediaLocation.builder()
-            .id(((CaliperVideoObject) mediaProfile.getMediaObject()).getId())
+            .id(((VideoObject) mediaProfile.getMediaObject()).getId())
             .currentTime(710).build());
 
         output.append("Resumed playing video in Super Media edApp... sent MediaEvent\n");
@@ -227,13 +227,13 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         // Process Event
         media(mediaProfile);
 
-        output.append("Object : " + ((CaliperVideoObject) mediaProfile.getMediaObject()).getId() + "\n");
+        output.append("Object : " + ((VideoObject) mediaProfile.getMediaObject()).getId() + "\n");
         output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
 
         // EVENT  # 05 - Completed playing video Event
         mediaProfile.getActions().add(MediaActions.ENDED.key());
         mediaProfile.getMediaLocations().add(MediaLocation.builder()
-            .id(((CaliperVideoObject) mediaProfile.getMediaObject()).getId())
+            .id(((VideoObject) mediaProfile.getMediaObject()).getId())
             .currentTime(1420).build());
 
         output.append("Completed playing video in Super Media edApp... sent MediaEvent\n");
@@ -241,7 +241,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         // Process Event
         media(mediaProfile);
 
-        output.append("Object : " + ((CaliperVideoObject) mediaProfile.getMediaObject()).getId() + "\n");
+        output.append("Object : " + ((VideoObject) mediaProfile.getMediaObject()).getId() + "\n");
         output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
         output.append("FINIS\n\n");
     }
@@ -261,12 +261,12 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
             .object(profile.getMediaObject())
-            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getFromResources()))
+            .fromResource((DigitalResource) Iterables.getLast(profile.getFromResources()))
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
         // Send event to EventStore
-        CaliperSensor.send(event);
+        Sensor.send(event);
 
         // Output i18n action text
         output.append("Action : " + event.getAction() + "\n");
@@ -279,13 +279,13 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
-            .object((CaliperVideoObject) profile.getMediaObject())
+            .object((VideoObject) profile.getMediaObject())
             .mediaLocation(Iterables.getLast(profile.getMediaLocations()))
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
         // Send event to EventStore
-        CaliperSensor.send(event);
+        Sensor.send(event);
 
         // Output i18n action text
         output.append("Action : " + event.getAction() + "\n");

@@ -1,26 +1,30 @@
 package com.pnayak.test;
 
 import com.google.common.collect.Iterables;
-import org.imsglobal.caliper.CaliperSensor;
+import org.imsglobal.caliper.Sensor;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.actions.AssessmentActions;
 import org.imsglobal.caliper.actions.AssessmentItemActions;
 import org.imsglobal.caliper.actions.AssignableActions;
 import org.imsglobal.caliper.actions.OutcomeActions;
-import org.imsglobal.caliper.entities.CaliperAgent;
-import org.imsglobal.caliper.entities.CaliperDigitalResource;
+import org.imsglobal.caliper.entities.Agent;
+import org.imsglobal.caliper.entities.DigitalResource;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.SoftwareApplication;
-import org.imsglobal.caliper.entities.assessment.CaliperAssessment;
-import org.imsglobal.caliper.entities.assessment.CaliperAssessmentItem;
+import org.imsglobal.caliper.entities.WebPage;
+import org.imsglobal.caliper.entities.assessment.Assessment;
+import org.imsglobal.caliper.entities.assessment.AssessmentItem;
 import org.imsglobal.caliper.entities.assignable.Attempt;
-import org.imsglobal.caliper.entities.assignable.CaliperAssignableDigitalResource;
-import org.imsglobal.caliper.entities.lis.LISCourseSection;
-import org.imsglobal.caliper.entities.lis.LISPerson;
+import org.imsglobal.caliper.entities.assignable.AssignableDigitalResource;
+import org.imsglobal.caliper.entities.lis.CourseSection;
+import org.imsglobal.caliper.entities.lis.Person;
 import org.imsglobal.caliper.entities.outcome.Outcome;
 import org.imsglobal.caliper.entities.outcome.Result;
-import org.imsglobal.caliper.entities.schemadotorg.WebPage;
-import org.imsglobal.caliper.events.*;
+import org.imsglobal.caliper.events.AssessmentEvent;
+import org.imsglobal.caliper.events.AssessmentItemEvent;
+import org.imsglobal.caliper.events.AssignableEvent;
+import org.imsglobal.caliper.events.NavigationEvent;
+import org.imsglobal.caliper.events.OutcomeEvent;
 import org.imsglobal.caliper.profiles.AssessmentProfile;
 import org.imsglobal.caliper.profiles.AssignableProfile;
 import org.imsglobal.caliper.profiles.OutcomeProfile;
@@ -57,7 +61,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         Options options = new Options();
         options.setHost(HOST);
         options.setApiKey(API_KEY);
-        CaliperSensor.initialize(options);
+        Sensor.initialize(options);
 
         r = new Random();
     }
@@ -85,7 +89,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         generateAAOSequence(output);
 
-        output.append(CaliperSensor.getStatistics().toString());
+        output.append(Sensor.getStatistics().toString());
 
         response.getWriter().write(output.toString());
 
@@ -133,7 +137,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
                 //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms") // WARN CaliperEntity prop
                 .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
                 .build())
-            .lisOrganization(LISCourseSection.builder()
+            .lisOrganization(CourseSection.builder()
                 .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
                 .semester("Spring-2014")
                 .courseNumber("AmRev-101")
@@ -141,7 +145,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
                 .title("American Revolution 101")
                 .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
                 .build()) // lisCourseSection?
-            .agent(LISPerson.builder()
+            .agent(Person.builder()
                 .id("https://some-university.edu/students/jones-alice-554433")
                 .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
                 .build())
@@ -159,7 +163,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Grading engine
-        CaliperAgent gradingEngine = toolContext.getEdApp();
+        Agent gradingEngine = toolContext.getEdApp();
 
         output.append(">> Generated learning context data\n");
 
@@ -170,25 +174,25 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
          */
 
         // Assessment items
-        List <CaliperAssessmentItem> assessmentItems = new ArrayList<CaliperAssessmentItem>();
-        assessmentItems.add(CaliperAssessmentItem.builder()
+        List <AssessmentItem> assessmentItems = new ArrayList<AssessmentItem>();
+        assessmentItems.add(AssessmentItem.builder()
             .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item1")
             .name("Assessment Item 1")
             .partOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
             .build());
-        assessmentItems.add(CaliperAssessmentItem.builder()
+        assessmentItems.add(AssessmentItem.builder()
             .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item2")
             .name("Assessment Item 2")
             .partOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
             .build());
-        assessmentItems.add(CaliperAssessmentItem.builder()
+        assessmentItems.add(AssessmentItem.builder()
             .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item3")
             .name("Assessment Item 3")
             .partOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
             .build());
 
         // Assessment
-        CaliperAssessment assessment = CaliperAssessment.builder()
+        Assessment assessment = Assessment.builder()
             .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
             .name("American Revolution - Key Figures Assessment")
             .dateCreated(now.minus(Weeks.weeks(1)).getMillis())
@@ -238,13 +242,13 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         // Process Event
         navigate(assignableProfile);
 
-        output.append("Object : " + ((CaliperAssessment) assignableProfile.getAssignable()).getId() + "\n\n");
+        output.append("Object : " + ((Assessment) assignableProfile.getAssignable()).getId() + "\n\n");
 
         // EVENT # 02 - Started Assignable Event
         assignableProfile.getActions().add(AssignableActions.STARTED.key());
         assignableProfile.getAttempts().add(Attempt.builder()
             .id(assignableProfile.getAssignable().getId() + "/attempt1")
-            .assignable((CaliperAssignableDigitalResource) assignableProfile.getAssignable())
+            .assignable((AssignableDigitalResource) assignableProfile.getAssignable())
             .actor(assignableProfile.getLearningContext().getAgent())
             .count(1)
             .build());
@@ -255,7 +259,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         startAssignment(assignableProfile);
 
         output.append("Attempt : " + ((Attempt) Iterables.getFirst(assignableProfile.getAttempts(), 1)).getCount() + "\n");
-        output.append("Object : " + ((CaliperAssessment) assignableProfile.getAssignable()).getId() + "\n\n");
+        output.append("Object : " + ((Assessment) assignableProfile.getAssignable()).getId() + "\n\n");
 
         // EVENT # 03 - Started Assessment Event
         assessmentProfile.getActions().add(AssessmentActions.STARTED.key());
@@ -368,13 +372,13 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
-            .object((CaliperAssignableDigitalResource) profile.getAssignable())
+            .object((AssignableDigitalResource) profile.getAssignable())
             .generated((Attempt) Iterables.getLast(profile.getAttempts()))
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
         // Send event to EventStore
-        CaliperSensor.send(event);
+        Sensor.send(event);
 
         // Output i18n action text
         output.append("Action : " + event.getAction() + "\n");
@@ -390,13 +394,13 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .lisOrganization(assessment.getLearningContext().getLisOrganization())
             .actor(assessment.getLearningContext().getAgent())
             .action(Iterables.getLast(assessment.getActions()))
-            .object((CaliperAssignableDigitalResource) assessment.getAssessment())
+            .object((AssignableDigitalResource) assessment.getAssessment())
             .generated(Iterables.getLast(assignable.getAttempts()))
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
         // Send event to EventStore
-        CaliperSensor.send(event);
+        Sensor.send(event);
 
         // Output i18n action text
         output.append("Action : " + event.getAction() + "\n");
@@ -409,13 +413,13 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
-            .object((CaliperAssignableDigitalResource) profile.getAssessment().getAssessmentItems().get(index))
+            .object((AssignableDigitalResource) profile.getAssessment().getAssessmentItems().get(index))
             //.generated(RESPONSE) TODO: Do we need to capture the item response, if any?
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
         // Send event to EventStore
-        CaliperSensor.send(event);
+        Sensor.send(event);
 
         // Output i18n action text
         output.append("Action : " + event.getAction() + "\n");
@@ -434,7 +438,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Send event to EventStore
-        CaliperSensor.send(event);
+        Sensor.send(event);
 
         // Output i18n action text
         output.append("Action : " + event.getAction() + "\n");
@@ -447,13 +451,13 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
-            .object((CaliperAssignableDigitalResource) profile.getAssignable())
-            .fromResource((CaliperDigitalResource) Iterables.getLast(profile.getFromResources()))
+            .object((AssignableDigitalResource) profile.getAssignable())
+            .fromResource((DigitalResource) Iterables.getLast(profile.getFromResources()))
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
         // Send event to EventStore
-        CaliperSensor.send(event);
+        Sensor.send(event);
 
         // Output i18n action text
         output.append("Action : " + event.getAction() + "\n");

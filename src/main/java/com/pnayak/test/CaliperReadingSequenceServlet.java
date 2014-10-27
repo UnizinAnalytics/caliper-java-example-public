@@ -2,26 +2,26 @@ package com.pnayak.test;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import org.imsglobal.caliper.CaliperSensor;
+import org.imsglobal.caliper.Sensor;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.actions.AnnotationActions;
 import org.imsglobal.caliper.actions.ReadingActions;
-import org.imsglobal.caliper.entities.CaliperDigitalResource;
+import org.imsglobal.caliper.entities.DigitalResource;
 import org.imsglobal.caliper.entities.reading.Frame;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.SoftwareApplication;
+import org.imsglobal.caliper.entities.WebPage;
 import org.imsglobal.caliper.entities.annotation.BookmarkAnnotation;
 import org.imsglobal.caliper.entities.annotation.HighlightAnnotation;
 import org.imsglobal.caliper.entities.annotation.SharedAnnotation;
 import org.imsglobal.caliper.entities.annotation.TagAnnotation;
-import org.imsglobal.caliper.entities.lis.LISCourseSection;
-import org.imsglobal.caliper.entities.lis.LISPerson;
-import org.imsglobal.caliper.entities.reading.EPubVolume;
+import org.imsglobal.caliper.entities.lis.CourseSection;
+import org.imsglobal.caliper.entities.lis.Person;
+import org.imsglobal.caliper.entities.reading.EpubVolume;
 import org.imsglobal.caliper.entities.reading.View;
-import org.imsglobal.caliper.entities.schemadotorg.WebPage;
 import org.imsglobal.caliper.events.AnnotationEvent;
 import org.imsglobal.caliper.events.NavigationEvent;
-import org.imsglobal.caliper.events.ViewedEvent;
+import org.imsglobal.caliper.events.ViewEvent;
 import org.imsglobal.caliper.profiles.AnnotationProfile;
 import org.imsglobal.caliper.profiles.ReadingProfile;
 import org.joda.time.DateTime;
@@ -55,7 +55,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         Options options = new Options();
         options.setHost(HOST);
         options.setApiKey(API_KEY);
-        CaliperSensor.initialize(options);
+        Sensor.initialize(options);
 
         r = new Random();
     }
@@ -83,7 +83,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         generateReadingAnnotationEventSequence(output);
 
-        output.append(CaliperSensor.getStatistics().toString());
+        output.append(Sensor.getStatistics().toString());
 
         response.getWriter().write(output.toString());
 
@@ -131,7 +131,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms") // WARN CaliperEntity prop
                 .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
                 .build())
-            .lisOrganization(LISCourseSection.builder()
+            .lisOrganization(CourseSection.builder()
                 .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
                 .semester("Spring-2014")
                 .courseNumber("AmRev-101")
@@ -139,7 +139,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .title("American Revolution 101")
                 .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
                 .build()) // lisCourseSection?
-            .agent(LISPerson.builder()
+            .agent(Person.builder()
                 .id("https://some-university.edu/students/jones-alice-554433")
                 .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
                 .build())
@@ -167,7 +167,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .lisOrganization(lmsContext.getLisOrganization())
                 .agent(lmsContext.getAgent())
                 .build())
-            .reading(EPubVolume.builder()
+            .reading(EpubVolume.builder()
                 .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
                 .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
                 .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
@@ -195,7 +195,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // EVENT 02 - Add NavigationEvent to #epubcfi(/4/3)/1 (George Washington)
         readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
-        readiumProfile.getFromResources().add((CaliperDigitalResource) Iterables.getLast(readiumProfile.getTargets()));
+        readiumProfile.getFromResources().add((DigitalResource) Iterables.getLast(readiumProfile.getTargets()));
         readiumProfile.getTargets().add(Frame.builder()
             .id(readiumProfile.getReading().getId() + "/1")
             .name("Key Figures: George Washington")
@@ -237,7 +237,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // EVENT 04 - Add NavigationEvent to #epubcfi(/4/3)/1 (George Washington)
         readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
-        readiumProfile.getFromResources().add((CaliperDigitalResource) Iterables.getLast(readiumProfile.getTargets()));
+        readiumProfile.getFromResources().add((DigitalResource) Iterables.getLast(readiumProfile.getTargets()));
         readiumProfile.getTargets().add(Frame.builder()
             .id(readiumProfile.getReading().getId() + "/2")
             .name("Key Figures: Lord Cornwallis")
@@ -295,15 +295,16 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // Process Event
         annotate(readiumAnnotationProfile);
 
-        HighlightAnnotation highlight = (HighlightAnnotation) Iterables.getLast(readiumAnnotationProfile.getAnnotations());
+        HighlightAnnotation highlight = (HighlightAnnotation) Iterables.getLast(
+            readiumAnnotationProfile.getAnnotations());
         output.append("Object : " + highlight.getId()  + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((CaliperDigitalResource) highlight.getTarget()).getId() + "\n\n");
+        output.append("Target : " + ((DigitalResource) highlight.getTarget()).getId() + "\n\n");
         //output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
         // EVENT # 07 - Add NavigationEvent #epubcfi(/4/3)/3 (Paul Revere)
         readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
-        readiumProfile.getFromResources().add((CaliperDigitalResource) Iterables.getLast(readiumProfile.getTargets()));
+        readiumProfile.getFromResources().add((DigitalResource) Iterables.getLast(readiumProfile.getTargets()));
         readiumProfile.getTargets().add(Frame.builder()
             .id(readiumProfile.getReading().getId() + "/3")
             .name("Key Figures: Paul Revere")
@@ -359,7 +360,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         BookmarkAnnotation bookmark = (BookmarkAnnotation) Iterables.getLast(readiumAnnotationProfile.getAnnotations());
         output.append("Object : " + bookmark.getId()  + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((CaliperDigitalResource) bookmark.getTarget()).getId() + "\n\n");
+        output.append("Target : " + ((DigitalResource) bookmark.getTarget()).getId() + "\n\n");
         //output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
         // EVENT # 09 - Generate CourseSmart Profile triggered by NavigationEvent
@@ -374,7 +375,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .lisOrganization(lmsContext.getLisOrganization())
                 .agent(lmsContext.getAgent())
                 .build())
-            .reading(EPubVolume.builder()
+            .reading(EpubVolume.builder()
                 .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
                 .name("The American Revolution: A Concise History | 978-0-19-531295-9")
                 .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
@@ -402,7 +403,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // EVENT # 10 - Add NavigationEvent aXfsadf12
         courseSmartProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
-        courseSmartProfile.getFromResources().add((CaliperDigitalResource) Iterables.getLast(courseSmartProfile.getTargets()));
+        courseSmartProfile.getFromResources().add((DigitalResource) Iterables.getLast(courseSmartProfile.getTargets()));
         courseSmartProfile.getTargets().add(Frame.builder()
             .id(courseSmartProfile.getReading().getId() + "/aXfsadf12")
             .name("The Boston Tea Party")
@@ -461,7 +462,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         TagAnnotation tag = (TagAnnotation) Iterables.getLast(courseSmartAnnotationProfile.getAnnotations());
         output.append("Object : " + tag.getId()  + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((CaliperDigitalResource) tag.getTarget()).getId() + "\n\n");
+        output.append("Target : " + ((DigitalResource) tag.getTarget()).getId() + "\n\n");
         output.append("Tags : " + tag.getTags().toString() + "\n");
         //output.append("Target : " + ((Frame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
 
@@ -481,10 +482,11 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // Process event
         annotate(courseSmartAnnotationProfile);
 
-        SharedAnnotation shared = (SharedAnnotation) Iterables.getLast(courseSmartAnnotationProfile.getAnnotations());
+        SharedAnnotation shared = (SharedAnnotation) Iterables.getLast(
+            courseSmartAnnotationProfile.getAnnotations());
         output.append("Object : " + shared.getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((CaliperDigitalResource) shared.getTarget()).getId() + "\n\n");
+        output.append("Target : " + ((DigitalResource) shared.getTarget()).getId() + "\n\n");
         //output.append("Target : " + ((Frame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
         output.append("Shared : " + shared.getWithAgents().toString() + "\n");
         output.append("FINIS\n\n");
@@ -513,7 +515,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .build();
 
         // Send event to EventStore
-        CaliperSensor.send(event);
+        Sensor.send(event);
 
         // Output i18n action text
         output.append("Action : " + event.getAction() + "\n");
@@ -533,7 +535,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .build();
 
         // Send event to EventStore
-        CaliperSensor.send(event);
+        Sensor.send(event);
 
         // Output i18n action text
         output.append("Action : " + event.getAction() + "\n");
@@ -541,7 +543,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
     private void view(ReadingProfile profile) {
 
-        ViewedEvent event = ViewedEvent.builder()
+        ViewEvent event = ViewEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
@@ -554,7 +556,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .build();
 
         // Send event to EventStore
-        CaliperSensor.send(event);
+        Sensor.send(event);
 
         // Output i18n action text
         output.append("Action : " + event.getAction() + "\n");
