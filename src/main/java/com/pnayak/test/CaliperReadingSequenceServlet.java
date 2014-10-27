@@ -3,27 +3,27 @@ package com.pnayak.test;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.imsglobal.caliper.CaliperSensor;
-import org.imsglobal.caliper.Options;
-import org.imsglobal.caliper.actions.AnnotationActions;
-import org.imsglobal.caliper.actions.ReadingActions;
+import org.imsglobal.caliper.CaliperOptions;
+import org.imsglobal.caliper.actions.CaliperAnnotationActions;
+import org.imsglobal.caliper.actions.CaliperReadingActions;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
-import org.imsglobal.caliper.entities.reading.Frame;
+import org.imsglobal.caliper.entities.reading.CaliperFrame;
 import org.imsglobal.caliper.entities.LearningContext;
-import org.imsglobal.caliper.entities.SoftwareApplication;
-import org.imsglobal.caliper.entities.annotation.BookmarkAnnotation;
-import org.imsglobal.caliper.entities.annotation.HighlightAnnotation;
-import org.imsglobal.caliper.entities.annotation.SharedAnnotation;
-import org.imsglobal.caliper.entities.annotation.TagAnnotation;
-import org.imsglobal.caliper.entities.lis.LISCourseSection;
-import org.imsglobal.caliper.entities.lis.LISPerson;
-import org.imsglobal.caliper.entities.reading.EPubVolume;
-import org.imsglobal.caliper.entities.reading.View;
-import org.imsglobal.caliper.entities.schemadotorg.WebPage;
-import org.imsglobal.caliper.events.AnnotationEvent;
-import org.imsglobal.caliper.events.NavigationEvent;
-import org.imsglobal.caliper.events.ViewedEvent;
-import org.imsglobal.caliper.profiles.AnnotationProfile;
-import org.imsglobal.caliper.profiles.ReadingProfile;
+import org.imsglobal.caliper.entities.CaliperSoftwareApplication;
+import org.imsglobal.caliper.entities.CaliperWebPage;
+import org.imsglobal.caliper.entities.annotation.CaliperBookmarkAnnotation;
+import org.imsglobal.caliper.entities.annotation.CaliperHighlightAnnotation;
+import org.imsglobal.caliper.entities.annotation.CaliperSharedAnnotation;
+import org.imsglobal.caliper.entities.annotation.CaliperTagAnnotation;
+import org.imsglobal.caliper.entities.lis.LisCourseSection;
+import org.imsglobal.caliper.entities.lis.LisPerson;
+import org.imsglobal.caliper.entities.reading.EpubVolume;
+import org.imsglobal.caliper.entities.reading.CaliperView;
+import org.imsglobal.caliper.events.CaliperAnnotationEvent;
+import org.imsglobal.caliper.events.CaliperNavigationEvent;
+import org.imsglobal.caliper.events.CaliperViewEvent;
+import org.imsglobal.caliper.profiles.CaliperAnnotationProfile;
+import org.imsglobal.caliper.profiles.CaliperReadingProfile;
 import org.joda.time.DateTime;
 import org.joda.time.Weeks;
 
@@ -52,7 +52,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
     // Initialize the sensor - this needs to be done only once
     private void initialize() {
-        Options options = new Options();
+        CaliperOptions options = new CaliperOptions();
         options.setHost(HOST);
         options.setApiKey(API_KEY);
         CaliperSensor.initialize(options);
@@ -126,12 +126,12 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // TODO LISCourseSection does not define a section property.  Oversight?
         LearningContext lmsContext = LearningContext.builder()
-            .edApp(SoftwareApplication.builder()
+            .edApp(CaliperSoftwareApplication.builder()
                 .id("https://canvas.instructure.com")
                 //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms") // WARN CaliperEntity prop
                 .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
                 .build())
-            .lisOrganization(LISCourseSection.builder()
+            .lisOrganization(LisCourseSection.builder()
                 .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
                 .semester("Spring-2014")
                 .courseNumber("AmRev-101")
@@ -139,7 +139,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .title("American Revolution 101")
                 .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
                 .build()) // lisCourseSection?
-            .agent(LISPerson.builder()
+            .agent(LisPerson.builder()
                 .id("https://some-university.edu/students/jones-alice-554433")
                 .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
                 .build())
@@ -158,27 +158,27 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // EVENT 01 - Generate profile triggered by Navigation Event to #epubcfi(/4/3)
 
         // Readium Profile
-        ReadingProfile readiumProfile = ReadingProfile.builder()
+        CaliperReadingProfile readiumProfile = CaliperReadingProfile.builder()
             .learningContext(LearningContext.builder()
-                .edApp(SoftwareApplication.builder()
+                .edApp(CaliperSoftwareApplication.builder()
                     .id("https://github.com/readium/readium-js-viewer")
                     .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
                     .build())
                 .lisOrganization(lmsContext.getLisOrganization())
                 .agent(lmsContext.getAgent())
                 .build())
-            .reading(EPubVolume.builder()
+            .reading(EpubVolume.builder()
                 .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
                 .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
                 .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
                 .build())
-            .action(ReadingActions.NAVIGATED_TO.key())
-            .fromResource(WebPage.builder()
+            .action(CaliperReadingActions.NAVIGATED_TO.key())
+            .fromResource(CaliperWebPage.builder()
                 .id("AmRev-101-landingPage")
                 .name("American Revolution 101 Landing Page")
                 .partOf(lmsContext.getLisOrganization())
                 .build())
-            .target(Frame.builder()
+            .target(CaliperFrame.builder()
                 .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
                 .index(0)
                 .build())
@@ -191,12 +191,12 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Object : " + readiumProfile.getReading().getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
+        output.append("Target : " + ((CaliperFrame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
         // EVENT 02 - Add NavigationEvent to #epubcfi(/4/3)/1 (George Washington)
-        readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
+        readiumProfile.getActions().add(CaliperReadingActions.NAVIGATED_TO.key());
         readiumProfile.getFromResources().add((CaliperDigitalResource) Iterables.getLast(readiumProfile.getTargets()));
-        readiumProfile.getTargets().add(Frame.builder()
+        readiumProfile.getTargets().add(CaliperFrame.builder()
             .id(readiumProfile.getReading().getId() + "/1")
             .name("Key Figures: George Washington")
             .lastModifiedAt(readiumProfile.getReading().getLastModifiedAt())
@@ -211,13 +211,13 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Object : " + readiumProfile.getReading().getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
+        output.append("Target : " + ((CaliperFrame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
         // EVENT # 03 - Add ViewedEvent #epubcfi(/4/3)/1 (George Washington)
 
-        readiumProfile.getActions().add(ReadingActions.VIEWED.key());
-        readiumProfile.getViews().add(View.builder()
-            .frame((Frame) Iterables.getLast(readiumProfile.getTargets()))
+        readiumProfile.getActions().add(CaliperReadingActions.VIEWED.key());
+        readiumProfile.getViews().add(CaliperView.builder()
+            .frame((CaliperFrame) Iterables.getLast(readiumProfile.getTargets()))
             .actor(lmsContext.getAgent())
             .startedAtTime(DateTime.now().minusSeconds(240).getMillis())
             .endedAtTime(DateTime.now().getMillis())
@@ -233,12 +233,12 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Object : " + readiumProfile.getReading().getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
+        output.append("Target : " + ((CaliperFrame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
         // EVENT 04 - Add NavigationEvent to #epubcfi(/4/3)/1 (George Washington)
-        readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
+        readiumProfile.getActions().add(CaliperReadingActions.NAVIGATED_TO.key());
         readiumProfile.getFromResources().add((CaliperDigitalResource) Iterables.getLast(readiumProfile.getTargets()));
-        readiumProfile.getTargets().add(Frame.builder()
+        readiumProfile.getTargets().add(CaliperFrame.builder()
             .id(readiumProfile.getReading().getId() + "/2")
             .name("Key Figures: Lord Cornwallis")
             .lastModifiedAt(readiumProfile.getReading().getLastModifiedAt())
@@ -253,12 +253,12 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Object : " + readiumProfile.getReading().getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
+        output.append("Target : " + ((CaliperFrame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
         // EVENT # 05 - Add ViewedEvent #epubcfi(/4/3)/2 (Lord Cornwallis)
-        readiumProfile.getActions().add(ReadingActions.VIEWED.key());
-        readiumProfile.getViews().add(View.builder()
-            .frame((Frame) Iterables.getLast(readiumProfile.getTargets()))
+        readiumProfile.getActions().add(CaliperReadingActions.VIEWED.key());
+        readiumProfile.getViews().add(CaliperView.builder()
+            .frame((CaliperFrame) Iterables.getLast(readiumProfile.getTargets()))
             .actor(lmsContext.getAgent())
             .startedAtTime(DateTime.now().minusSeconds(360).getMillis())
             .endedAtTime(DateTime.now().getMillis())
@@ -274,13 +274,13 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Object : " + readiumProfile.getReading().getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
+        output.append("Target : " + ((CaliperFrame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
         // EVENT # 06 - HighlightedEvent
-        AnnotationProfile readiumAnnotationProfile = AnnotationProfile.builder()
+        CaliperAnnotationProfile readiumAnnotationProfile = CaliperAnnotationProfile.builder()
             .learningContext(readiumProfile.getLearningContext())
-            .action(AnnotationActions.HIGHLIGHTED.key())
-            .annotation(HighlightAnnotation.builder()
+            .action(CaliperAnnotationActions.HIGHLIGHTED.key())
+            .annotation(CaliperHighlightAnnotation.builder()
                 .id("https://someEduApp.edu/highlights/" + UUID.randomUUID().toString())
                 .selectionStart(Integer.toString(455))
                 .selectionEnd(Integer.toString(489))
@@ -295,16 +295,17 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // Process Event
         annotate(readiumAnnotationProfile);
 
-        HighlightAnnotation highlight = (HighlightAnnotation) Iterables.getLast(readiumAnnotationProfile.getAnnotations());
+        CaliperHighlightAnnotation highlight = (CaliperHighlightAnnotation) Iterables.getLast(
+            readiumAnnotationProfile.getAnnotations());
         output.append("Object : " + highlight.getId()  + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
         output.append("Target : " + ((CaliperDigitalResource) highlight.getTarget()).getId() + "\n\n");
         //output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
         // EVENT # 07 - Add NavigationEvent #epubcfi(/4/3)/3 (Paul Revere)
-        readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
+        readiumProfile.getActions().add(CaliperReadingActions.NAVIGATED_TO.key());
         readiumProfile.getFromResources().add((CaliperDigitalResource) Iterables.getLast(readiumProfile.getTargets()));
-        readiumProfile.getTargets().add(Frame.builder()
+        readiumProfile.getTargets().add(CaliperFrame.builder()
             .id(readiumProfile.getReading().getId() + "/3")
             .name("Key Figures: Paul Revere")
             .lastModifiedAt(readiumProfile.getReading().getLastModifiedAt())
@@ -319,12 +320,12 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Object : " + readiumProfile.getReading().getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
+        output.append("Target : " + ((CaliperFrame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
         // EVENT # 07 - Add Viewed Event #epubcfi(/4/3)/3 (Paul Revere)
-        readiumProfile.getActions().add(ReadingActions.VIEWED.key());
-        readiumProfile.getViews().add(View.builder()
-            .frame((Frame) Iterables.getLast(readiumProfile.getTargets()))
+        readiumProfile.getActions().add(CaliperReadingActions.VIEWED.key());
+        readiumProfile.getViews().add(CaliperView.builder()
+            .frame((CaliperFrame) Iterables.getLast(readiumProfile.getTargets()))
             .actor(lmsContext.getAgent())
             .startedAtTime(DateTime.now().minusSeconds(180).getMillis())
             .endedAtTime(DateTime.now().getMillis())
@@ -340,11 +341,11 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Object : " + readiumProfile.getReading().getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((Frame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
+        output.append("Target : " + ((CaliperFrame) Iterables.getLast(readiumProfile.getTargets())).getId() + "\n\n");
 
         // EVENT # 08 - Add BookmarkedEvent
-        readiumAnnotationProfile.getActions().add(AnnotationActions.BOOKMARKED.key());
-        readiumAnnotationProfile.getAnnotations().add(BookmarkAnnotation.builder()
+        readiumAnnotationProfile.getActions().add(CaliperAnnotationActions.BOOKMARKED.key());
+        readiumAnnotationProfile.getAnnotations().add(CaliperBookmarkAnnotation.builder()
             .id("https://someEduApp.edu/bookmarks/" + UUID.randomUUID().toString())
             .bookmarkNotes("The Intolerable Acts (1774)--bad idea Lord North")
             .target(Iterables.getLast(readiumProfile.getTargets())) // TODO: REDUNDANT?
@@ -356,7 +357,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // Process Event
         annotate(readiumAnnotationProfile);
 
-        BookmarkAnnotation bookmark = (BookmarkAnnotation) Iterables.getLast(readiumAnnotationProfile.getAnnotations());
+        CaliperBookmarkAnnotation bookmark = (CaliperBookmarkAnnotation) Iterables.getLast(readiumAnnotationProfile.getAnnotations());
         output.append("Object : " + bookmark.getId()  + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
         output.append("Target : " + ((CaliperDigitalResource) bookmark.getTarget()).getId() + "\n\n");
@@ -365,27 +366,27 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // EVENT # 09 - Generate CourseSmart Profile triggered by NavigationEvent
 
         // CourseSmart Profile
-        ReadingProfile courseSmartProfile = ReadingProfile.builder()
+        CaliperReadingProfile courseSmartProfile = CaliperReadingProfile.builder()
             .learningContext(LearningContext.builder()
-                .edApp(SoftwareApplication.builder()
+                .edApp(CaliperSoftwareApplication.builder()
                     .id("http://www.coursesmart.com/reader")
                     .lastModifiedAt(now.minus(Weeks.weeks(6)).getMillis())
                     .build())
                 .lisOrganization(lmsContext.getLisOrganization())
                 .agent(lmsContext.getAgent())
                 .build())
-            .reading(EPubVolume.builder()
+            .reading(EpubVolume.builder()
                 .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
                 .name("The American Revolution: A Concise History | 978-0-19-531295-9")
                 .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
                 .build())
-            .action(ReadingActions.NAVIGATED_TO.key())
-            .fromResource(WebPage.builder()
+            .action(CaliperReadingActions.NAVIGATED_TO.key())
+            .fromResource(CaliperWebPage.builder()
                 .id("AmRev-101-landingPage")
                 .name("American Revolution 101 Landing Page")
                 .partOf(readiumProfile.getLearningContext().getLisOrganization())
                 .build())
-            .target(Frame.builder()
+            .target(CaliperFrame.builder()
                 .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
                 .index(0)
                 .build())
@@ -398,12 +399,12 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Object : " + courseSmartProfile.getReading().getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((Frame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
+        output.append("Target : " + ((CaliperFrame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
 
         // EVENT # 10 - Add NavigationEvent aXfsadf12
-        courseSmartProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
+        courseSmartProfile.getActions().add(CaliperReadingActions.NAVIGATED_TO.key());
         courseSmartProfile.getFromResources().add((CaliperDigitalResource) Iterables.getLast(courseSmartProfile.getTargets()));
-        courseSmartProfile.getTargets().add(Frame.builder()
+        courseSmartProfile.getTargets().add(CaliperFrame.builder()
             .id(courseSmartProfile.getReading().getId() + "/aXfsadf12")
             .name("The Boston Tea Party")
             .lastModifiedAt(courseSmartProfile.getReading().getLastModifiedAt())
@@ -417,13 +418,13 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Object : " + courseSmartProfile.getReading().getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((Frame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
+        output.append("Target : " + ((CaliperFrame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
 
 
         // EVENT # 11 - Add ViewedEvent aXfsadf12
-        courseSmartProfile.getActions().add(ReadingActions.VIEWED.key());
-        courseSmartProfile.getViews().add(View.builder()
-            .frame((Frame) Iterables.getLast(courseSmartProfile.getTargets()))
+        courseSmartProfile.getActions().add(CaliperReadingActions.VIEWED.key());
+        courseSmartProfile.getViews().add(CaliperView.builder()
+            .frame((CaliperFrame) Iterables.getLast(courseSmartProfile.getTargets()))
             .actor(lmsContext.getAgent())
             .startedAtTime(DateTime.now().minusSeconds(180).getMillis())
             .endedAtTime(DateTime.now().getMillis())
@@ -439,13 +440,13 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Object : " + courseSmartProfile.getReading().getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((Frame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
+        output.append("Target : " + ((CaliperFrame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
 
         // EVENT # 12 - Add TaggedEvent
-        AnnotationProfile courseSmartAnnotationProfile = AnnotationProfile.builder()
+        CaliperAnnotationProfile courseSmartAnnotationProfile = CaliperAnnotationProfile.builder()
             .learningContext(courseSmartProfile.getLearningContext())
-            .action(AnnotationActions.TAGGED.key())
-            .annotation((TagAnnotation) TagAnnotation.builder()
+            .action(CaliperAnnotationActions.TAGGED.key())
+            .annotation((CaliperTagAnnotation) CaliperTagAnnotation.builder()
                 .id("https://someEduApp.edu/tags/" + UUID.randomUUID().toString())
                 .tags(Lists.newArrayList("to-read", "1776", "shared-with-project-team"))
                 .target(Iterables.getLast(courseSmartProfile.getTargets()))
@@ -458,7 +459,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // Process event
         annotate(courseSmartAnnotationProfile);
 
-        TagAnnotation tag = (TagAnnotation) Iterables.getLast(courseSmartAnnotationProfile.getAnnotations());
+        CaliperTagAnnotation tag = (CaliperTagAnnotation) Iterables.getLast(courseSmartAnnotationProfile.getAnnotations());
         output.append("Object : " + tag.getId()  + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
         output.append("Target : " + ((CaliperDigitalResource) tag.getTarget()).getId() + "\n\n");
@@ -466,8 +467,8 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         //output.append("Target : " + ((Frame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
 
         // EVENT # 13 - Add SharedEvent
-        courseSmartAnnotationProfile.getActions().add(AnnotationActions.SHARED.key());
-        courseSmartAnnotationProfile.getAnnotations().add((SharedAnnotation) SharedAnnotation.builder()
+        courseSmartAnnotationProfile.getActions().add(CaliperAnnotationActions.SHARED.key());
+        courseSmartAnnotationProfile.getAnnotations().add((CaliperSharedAnnotation) CaliperSharedAnnotation.builder()
             .id("https://someEduApp.edu/tags/" + UUID.randomUUID().toString())
             .withAgents(Lists.newArrayList(
                 "https://some-university.edu/students/smith-bob-554433",
@@ -481,7 +482,8 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // Process event
         annotate(courseSmartAnnotationProfile);
 
-        SharedAnnotation shared = (SharedAnnotation) Iterables.getLast(courseSmartAnnotationProfile.getAnnotations());
+        CaliperSharedAnnotation shared = (CaliperSharedAnnotation) Iterables.getLast(
+            courseSmartAnnotationProfile.getAnnotations());
         output.append("Object : " + shared.getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
         output.append("Target : " + ((CaliperDigitalResource) shared.getTarget()).getId() + "\n\n");
@@ -497,12 +499,12 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
       ---------------------------------------------------------------------------------
      */
 
-    private void annotate(AnnotationProfile profile) {
+    private void annotate(CaliperAnnotationProfile profile) {
 
         // Note: may need to re-implement separate annotate methods
         // to allow for casting generated to the various object and annotation types,
         // e.g., .generated((TagAnnotation) profile.getAnnotations().get(profile.getAnnotations().size() - 1))
-        AnnotationEvent event = AnnotationEvent.builder()
+        CaliperAnnotationEvent event = CaliperAnnotationEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
@@ -519,9 +521,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Action : " + event.getAction() + "\n");
     }
 
-    private void navigate(ReadingProfile profile) {
+    private void navigate(CaliperReadingProfile profile) {
 
-        NavigationEvent event = NavigationEvent.builder()
+        CaliperNavigationEvent event = CaliperNavigationEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
@@ -539,9 +541,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Action : " + event.getAction() + "\n");
     }
 
-    private void view(ReadingProfile profile) {
+    private void view(CaliperReadingProfile profile) {
 
-        ViewedEvent event = ViewedEvent.builder()
+        CaliperViewEvent event = CaliperViewEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())

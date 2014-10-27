@@ -2,28 +2,32 @@ package com.pnayak.test;
 
 import com.google.common.collect.Iterables;
 import org.imsglobal.caliper.CaliperSensor;
-import org.imsglobal.caliper.Options;
-import org.imsglobal.caliper.actions.AssessmentActions;
-import org.imsglobal.caliper.actions.AssessmentItemActions;
-import org.imsglobal.caliper.actions.AssignableActions;
-import org.imsglobal.caliper.actions.OutcomeActions;
+import org.imsglobal.caliper.CaliperOptions;
+import org.imsglobal.caliper.actions.CaliperAssessmentActions;
+import org.imsglobal.caliper.actions.CaliperAssessmentItemActions;
+import org.imsglobal.caliper.actions.CaliperAssignableActions;
+import org.imsglobal.caliper.actions.CaliperOutcomeActions;
 import org.imsglobal.caliper.entities.CaliperAgent;
 import org.imsglobal.caliper.entities.CaliperDigitalResource;
 import org.imsglobal.caliper.entities.LearningContext;
-import org.imsglobal.caliper.entities.SoftwareApplication;
+import org.imsglobal.caliper.entities.CaliperSoftwareApplication;
+import org.imsglobal.caliper.entities.CaliperWebPage;
 import org.imsglobal.caliper.entities.assessment.CaliperAssessment;
 import org.imsglobal.caliper.entities.assessment.CaliperAssessmentItem;
-import org.imsglobal.caliper.entities.assignable.Attempt;
+import org.imsglobal.caliper.entities.assignable.CaliperAttempt;
 import org.imsglobal.caliper.entities.assignable.CaliperAssignableDigitalResource;
-import org.imsglobal.caliper.entities.lis.LISCourseSection;
-import org.imsglobal.caliper.entities.lis.LISPerson;
-import org.imsglobal.caliper.entities.outcome.Outcome;
-import org.imsglobal.caliper.entities.outcome.Result;
-import org.imsglobal.caliper.entities.schemadotorg.WebPage;
-import org.imsglobal.caliper.events.*;
-import org.imsglobal.caliper.profiles.AssessmentProfile;
-import org.imsglobal.caliper.profiles.AssignableProfile;
-import org.imsglobal.caliper.profiles.OutcomeProfile;
+import org.imsglobal.caliper.entities.lis.LisCourseSection;
+import org.imsglobal.caliper.entities.lis.LisPerson;
+import org.imsglobal.caliper.entities.outcome.CaliperOutcome;
+import org.imsglobal.caliper.entities.outcome.CaliperResult;
+import org.imsglobal.caliper.events.CaliperAssessmentEvent;
+import org.imsglobal.caliper.events.CaliperAssessmentItemEvent;
+import org.imsglobal.caliper.events.CaliperAssignableEvent;
+import org.imsglobal.caliper.events.CaliperNavigationEvent;
+import org.imsglobal.caliper.events.CaliperOutcomeEvent;
+import org.imsglobal.caliper.profiles.CaliperAssessmentProfile;
+import org.imsglobal.caliper.profiles.CaliperAssignableProfile;
+import org.imsglobal.caliper.profiles.CaliperOutcomeProfile;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.joda.time.Weeks;
@@ -54,7 +58,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
     // Initialize the sensor - this needs to be done only once
     private void initialize() {
-        Options options = new Options();
+        CaliperOptions options = new CaliperOptions();
         options.setHost(HOST);
         options.setApiKey(API_KEY);
         CaliperSensor.initialize(options);
@@ -128,12 +132,12 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         // LMS learning context
         // TODO LISCourseSection does not define a section property.  Oversight?
         LearningContext lmsContext = LearningContext.builder()
-            .edApp(SoftwareApplication.builder()
+            .edApp(CaliperSoftwareApplication.builder()
                 .id("https://canvas.instructure.com")
                 //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms") // WARN CaliperEntity prop
                 .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
                 .build())
-            .lisOrganization(LISCourseSection.builder()
+            .lisOrganization(LisCourseSection.builder()
                 .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
                 .semester("Spring-2014")
                 .courseNumber("AmRev-101")
@@ -141,7 +145,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
                 .title("American Revolution 101")
                 .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
                 .build()) // lisCourseSection?
-            .agent(LISPerson.builder()
+            .agent(LisPerson.builder()
                 .id("https://some-university.edu/students/jones-alice-554433")
                 .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
                 .build())
@@ -149,7 +153,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         //Tool learning context
         LearningContext toolContext = LearningContext.builder()
-            .edApp(SoftwareApplication.builder()
+            .edApp(CaliperSoftwareApplication.builder()
                 .id("https://com.sat/super-assessment-tool")
                 //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/Assessment") // WARN: CaliperEntity prop
                 .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
@@ -204,7 +208,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Assessment profile (Tool context)
-        AssessmentProfile assessmentProfile = AssessmentProfile.builder()
+        CaliperAssessmentProfile assessmentProfile = CaliperAssessmentProfile.builder()
             .learningContext(toolContext)
             .assessment(assessment)
             .build();
@@ -221,11 +225,11 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         // EVENT # 01 - Generate Assignable profile (LMS context) triggered by Navigation Event
 
-        AssignableProfile assignableProfile = AssignableProfile.builder()
+        CaliperAssignableProfile assignableProfile = CaliperAssignableProfile.builder()
             .learningContext(lmsContext)
             .assignable(assessment)
-            .action(AssignableActions.NAVIGATED_TO.key())
-            .fromResource(WebPage.builder()
+            .action(CaliperAssignableActions.NAVIGATED_TO.key())
+            .fromResource(CaliperWebPage.builder()
                 .id("AmRev-101-landingPage")
                 .name("American Revolution 101 Landing Page")
                 .partOf(lmsContext.getLisOrganization())
@@ -241,8 +245,8 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Object : " + ((CaliperAssessment) assignableProfile.getAssignable()).getId() + "\n\n");
 
         // EVENT # 02 - Started Assignable Event
-        assignableProfile.getActions().add(AssignableActions.STARTED.key());
-        assignableProfile.getAttempts().add(Attempt.builder()
+        assignableProfile.getActions().add(CaliperAssignableActions.STARTED.key());
+        assignableProfile.getAttempts().add(CaliperAttempt.builder()
             .id(assignableProfile.getAssignable().getId() + "/attempt1")
             .assignable((CaliperAssignableDigitalResource) assignableProfile.getAssignable())
             .actor(assignableProfile.getLearningContext().getAgent())
@@ -254,11 +258,11 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         // Process Event
         startAssignment(assignableProfile);
 
-        output.append("Attempt : " + ((Attempt) Iterables.getFirst(assignableProfile.getAttempts(), 1)).getCount() + "\n");
+        output.append("Attempt : " + ((CaliperAttempt) Iterables.getFirst(assignableProfile.getAttempts(), 1)).getCount() + "\n");
         output.append("Object : " + ((CaliperAssessment) assignableProfile.getAssignable()).getId() + "\n\n");
 
         // EVENT # 03 - Started Assessment Event
-        assessmentProfile.getActions().add(AssessmentActions.STARTED.key());
+        assessmentProfile.getActions().add(CaliperAssessmentActions.STARTED.key());
         output.append("Started Assessment in Super Assessment edApp . . . sent AssessmentEvent.\n");
 
         // Process Event
@@ -267,7 +271,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Object : " + assessmentProfile.getAssessment().getId() + "\n\n");
 
         // EVENT # 04 - Started AssessmentItem 01
-        assessmentProfile.getActions().add(AssessmentItemActions.STARTED.key());
+        assessmentProfile.getActions().add(CaliperAssessmentItemActions.STARTED.key());
         output.append("Started AssessmentItem 01 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
         // Process Event
@@ -276,7 +280,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(0).getId() + "\n\n");
 
         // EVENT # 05 - Completed AssessmentItem 01
-        assessmentProfile.getActions().add(AssessmentItemActions.COMPLETED.key());
+        assessmentProfile.getActions().add(CaliperAssessmentItemActions.COMPLETED.key());
         output.append("Completed AssessmentItem 01 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
         // Process Event
@@ -285,7 +289,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(0).getId() + "\n\n");
 
         // EVENT # 06 - Started AssessmentItem 02
-        assessmentProfile.getActions().add(AssessmentItemActions.STARTED.key());
+        assessmentProfile.getActions().add(CaliperAssessmentItemActions.STARTED.key());
         output.append("Started AssessmentItem 02 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
         // Process Event
@@ -294,7 +298,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(1).getId() + "\n\n");
 
         // EVENT # 07 - Completed AssessmentItem 02
-        assessmentProfile.getActions().add(AssessmentItemActions.COMPLETED.key());
+        assessmentProfile.getActions().add(CaliperAssessmentItemActions.COMPLETED.key());
         output.append("Completed AssessmentItem 02 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
         // Process Event
@@ -303,7 +307,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(1).getId() + "\n\n");
 
         // EVENT # 08 - Started AssessmentItem 03
-        assessmentProfile.getActions().add(AssessmentItemActions.STARTED.key());
+        assessmentProfile.getActions().add(CaliperAssessmentItemActions.STARTED.key());
         output.append("Started AssessmentItem 03 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
         // Process Event
@@ -312,7 +316,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(2).getId() + "\n\n");
 
         // EVENT # 09 - Completed AssessmentItem 03
-        assessmentProfile.getActions().add(AssessmentItemActions.COMPLETED.key());
+        assessmentProfile.getActions().add(CaliperAssessmentItemActions.COMPLETED.key());
         output.append("Completed AssessmentItem 03 in Super Assessment edApp . . . sent AssessmentItemEvent.\n");
 
         // Process Event
@@ -321,7 +325,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Object : " + assessmentProfile.getAssessment().getAssessmentItems().get(2).getId() + "\n\n");
 
         // EVENT # 10 - Submitted Assessment Event
-        assessmentProfile.getActions().add(AssessmentActions.SUBMITTED.key());
+        assessmentProfile.getActions().add(CaliperAssessmentActions.SUBMITTED.key());
         output.append("Submitted Assessment in Super Assessment edApp . . . sent AssessmentEvent.\n");
 
         // Process Event
@@ -330,17 +334,17 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Object : " + assessmentProfile.getAssessment().getId() + "\n\n");
 
         // EVENT # 11 Generate OutcomeProfile triggered by Outcome Event (attempt, result pairing)
-        Result result = Result.builder()
+        CaliperResult result = CaliperResult.builder()
             .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/attempt1/result")
             .totalScore(4.2d)
             .normalScore(4.2d)
             .build();
 
-        OutcomeProfile outcomeProfile = OutcomeProfile.builder()
+        CaliperOutcomeProfile outcomeProfile = CaliperOutcomeProfile.builder()
             .learningContext(toolContext)
             .assignable(assessment)
-            .action(OutcomeActions.GRADED.key())
-            .outcome(new Outcome(Iterables.getLast(assignableProfile.getAttempts()), result))
+            .action(CaliperOutcomeActions.GRADED.key())
+            .outcome(new CaliperOutcome(Iterables.getLast(assignableProfile.getAttempts()), result))
             .build();
 
         output.append("Submitted assessment auto-graded by Super Assessment edApp . . . sent OutcomeEvent.\n");
@@ -361,15 +365,15 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
       ---------------------------------------------------------------------------------
      */
 
-    private void startAssignment(AssignableProfile profile) {
+    private void startAssignment(CaliperAssignableProfile profile) {
 
-        AssignableEvent event = AssignableEvent.builder()
+        CaliperAssignableEvent event = CaliperAssignableEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
             .object((CaliperAssignableDigitalResource) profile.getAssignable())
-            .generated((Attempt) Iterables.getLast(profile.getAttempts()))
+            .generated((CaliperAttempt) Iterables.getLast(profile.getAttempts()))
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
@@ -380,12 +384,12 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Action : " + event.getAction() + "\n");
     }
 
-    private void assess(AssessmentProfile assessment, AssignableProfile assignable) {
+    private void assess(CaliperAssessmentProfile assessment, CaliperAssignableProfile assignable) {
 
         /*
          * Include the latest attempt (generated)
          */
-        AssessmentEvent event = AssessmentEvent.builder()
+        CaliperAssessmentEvent event = CaliperAssessmentEvent.builder()
             .edApp(assessment.getLearningContext().getEdApp())
             .lisOrganization(assessment.getLearningContext().getLisOrganization())
             .actor(assessment.getLearningContext().getAgent())
@@ -402,9 +406,9 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Action : " + event.getAction() + "\n");
     }
 
-    private void itemAssess(AssessmentProfile profile, int index) {
+    private void itemAssess(CaliperAssessmentProfile profile, int index) {
 
-        AssessmentItemEvent event = AssessmentItemEvent.builder()
+        CaliperAssessmentItemEvent event = CaliperAssessmentItemEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
@@ -421,15 +425,15 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Action : " + event.getAction() + "\n");
     }
 
-    private void autoGrade(OutcomeProfile profile) {
+    private void autoGrade(CaliperOutcomeProfile profile) {
 
-        OutcomeEvent event = OutcomeEvent.builder()
+        CaliperOutcomeEvent event = CaliperOutcomeEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
             .action(Iterables.getLast(profile.getActions()))
-            .object((Attempt) Iterables.getLast(profile.getOutcomes()).getAttempt())
-            .generated((Result) Iterables.getLast(profile.getOutcomes()).getResult())
+            .object((CaliperAttempt) Iterables.getLast(profile.getOutcomes()).getAttempt())
+            .generated((CaliperResult) Iterables.getLast(profile.getOutcomes()).getResult())
             .startedAtTime(DateTime.now().getMillis())
             .build();
 
@@ -440,9 +444,9 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Action : " + event.getAction() + "\n");
     }
 
-    private void navigate(AssignableProfile profile) {
+    private void navigate(CaliperAssignableProfile profile) {
 
-        NavigationEvent event = NavigationEvent.builder()
+        CaliperNavigationEvent event = CaliperNavigationEvent.builder()
             .edApp(profile.getLearningContext().getEdApp())
             .lisOrganization(profile.getLearningContext().getLisOrganization())
             .actor(profile.getLearningContext().getAgent())
