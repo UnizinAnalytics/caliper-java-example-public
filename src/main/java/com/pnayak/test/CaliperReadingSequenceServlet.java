@@ -117,6 +117,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // For reference, the current time
         DateTime now = DateTime.now();
+        output.append(now + "\n\n");
 
         /*
          * -----------------------------------------------------------------
@@ -129,19 +130,19 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .edApp(SoftwareApplication.builder()
                 .id("https://canvas.instructure.com")
                 //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms") // WARN CaliperEntity prop
-                .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
+                .lastModifiedTime(now.minus(Weeks.weeks(8)).getMillis())
                 .build())
             .lisOrganization(CourseSection.builder()
                 .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
                 .semester("Spring-2014")
                 .courseNumber("AmRev-101")
                 .label("Am Rev 101")
-                .title("American Revolution 101")
-                .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
+                .name("American Revolution 101")
+                .lastModifiedTime(now.minus(Weeks.weeks(4)).getMillis())
                 .build()) // lisCourseSection?
             .agent(Person.builder()
                 .id("https://some-university.edu/students/jones-alice-554433")
-                .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
+                .lastModifiedTime(now.minus(Weeks.weeks(3)).getMillis())
                 .build())
             .build();
 
@@ -162,7 +163,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .learningContext(LearningContext.builder()
                 .edApp(SoftwareApplication.builder()
                     .id("https://github.com/readium/readium-js-viewer")
-                    .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
+                    .lastModifiedTime(now.minus(Weeks.weeks(8)).getMillis())
                     .build())
                 .lisOrganization(lmsContext.getLisOrganization())
                 .agent(lmsContext.getAgent())
@@ -170,7 +171,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .reading(EpubVolume.builder()
                 .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
                 .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
-                .lastModifiedAt(now.minus(Weeks.weeks(53)).getMillis())
+                .lastModifiedTime(now.minus(Weeks.weeks(53)).getMillis())
                 .build())
             .action(ReadingActions.NAVIGATED_TO.key())
             .fromResource(WebPage.builder()
@@ -197,9 +198,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
         readiumProfile.getFromResources().add((DigitalResource) Iterables.getLast(readiumProfile.getTargets()));
         readiumProfile.getTargets().add(Frame.builder()
-            .id(readiumProfile.getReading().getId() + "/1")
+            .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3/1)")
             .name("Key Figures: George Washington")
-            .lastModifiedAt(readiumProfile.getReading().getLastModifiedAt())
+            .lastModifiedTime(readiumProfile.getReading().getLastModifiedTime())
             .index(1)
             .partOf(readiumProfile.getReading())
             .build());
@@ -239,9 +240,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
         readiumProfile.getFromResources().add((DigitalResource) Iterables.getLast(readiumProfile.getTargets()));
         readiumProfile.getTargets().add(Frame.builder()
-            .id(readiumProfile.getReading().getId() + "/2")
+            .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3/2)")
             .name("Key Figures: Lord Cornwallis")
-            .lastModifiedAt(readiumProfile.getReading().getLastModifiedAt())
+            .lastModifiedTime(readiumProfile.getReading().getLastModifiedTime())
             .index(2)
             .partOf(readiumProfile.getReading())
             .build());
@@ -306,9 +307,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         readiumProfile.getActions().add(ReadingActions.NAVIGATED_TO.key());
         readiumProfile.getFromResources().add((DigitalResource) Iterables.getLast(readiumProfile.getTargets()));
         readiumProfile.getTargets().add(Frame.builder()
-            .id(readiumProfile.getReading().getId() + "/3")
+            .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3/3)")
             .name("Key Figures: Paul Revere")
-            .lastModifiedAt(readiumProfile.getReading().getLastModifiedAt())
+            .lastModifiedTime(readiumProfile.getReading().getLastModifiedTime())
             .index(2)
             .partOf(readiumProfile.getReading())
             .build());
@@ -370,7 +371,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .learningContext(LearningContext.builder()
                 .edApp(SoftwareApplication.builder()
                     .id("http://www.coursesmart.com/reader")
-                    .lastModifiedAt(now.minus(Weeks.weeks(6)).getMillis())
+                    .lastModifiedTime(now.minus(Weeks.weeks(6)).getMillis())
                     .build())
                 .lisOrganization(lmsContext.getLisOrganization())
                 .agent(lmsContext.getAgent())
@@ -378,7 +379,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .reading(EpubVolume.builder()
                 .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
                 .name("The American Revolution: A Concise History | 978-0-19-531295-9")
-                .lastModifiedAt(now.minus(Weeks.weeks(22)).getMillis())
+                .lastModifiedTime(now.minus(Weeks.weeks(22)).getMillis())
                 .build())
             .action(ReadingActions.NAVIGATED_TO.key())
             .fromResource(WebPage.builder()
@@ -407,7 +408,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         courseSmartProfile.getTargets().add(Frame.builder()
             .id(courseSmartProfile.getReading().getId() + "/aXfsadf12")
             .name("The Boston Tea Party")
-            .lastModifiedAt(courseSmartProfile.getReading().getLastModifiedAt())
+            .lastModifiedTime(courseSmartProfile.getReading().getLastModifiedTime())
             .index(1)
             .build());
 

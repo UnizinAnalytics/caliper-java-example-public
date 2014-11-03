@@ -111,6 +111,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
 
         // For reference, the current time
         DateTime now = DateTime.now();
+        output.append(now + "\n\n");
 
         /*
          * -----------------------------------------------------------------
@@ -127,19 +128,19 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .edApp(SoftwareApplication.builder()
                 .id("https://com.sat/super-media-tool")
                 //.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/media"); Set by default
-                .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
+                .lastModifiedTime(now.minus(Weeks.weeks(8)).getMillis())
                 .build())
             .lisOrganization(CourseSection.builder()
                 .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
                 .semester("Spring-2014")
                 .courseNumber("AmRev-101")
                 .label("Am Rev 101")
-                .title("American Revolution 101")
-                .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
+                .name("American Revolution 101")
+                .lastModifiedTime(now.minus(Weeks.weeks(4)).getMillis())
                 .build())
             .agent(Person.builder()
                 .id("https://some-university.edu/students/jones-alice-554433")
-                .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
+                .lastModifiedTime(now.minus(Weeks.weeks(3)).getMillis())
                 .build())
             .build();
 

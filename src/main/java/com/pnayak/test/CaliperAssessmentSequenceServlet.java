@@ -122,6 +122,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         // For reference, the current time
         DateTime now = DateTime.now();
+        output.append(now + "\n\n");
 
         /*
          * -----------------------------------------------------------------
@@ -135,19 +136,19 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .edApp(SoftwareApplication.builder()
                 .id("https://canvas.instructure.com")
                 //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms") // WARN CaliperEntity prop
-                .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
+                .lastModifiedTime(now.minus(Weeks.weeks(8)).getMillis())
                 .build())
             .lisOrganization(CourseSection.builder()
                 .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
                 .semester("Spring-2014")
                 .courseNumber("AmRev-101")
                 .label("Am Rev 101")
-                .title("American Revolution 101")
-                .lastModifiedAt(now.minus(Weeks.weeks(4)).getMillis())
+                .name("American Revolution 101")
+                .lastModifiedTime(now.minus(Weeks.weeks(4)).getMillis())
                 .build()) // lisCourseSection?
             .agent(Person.builder()
                 .id("https://some-university.edu/students/jones-alice-554433")
-                .lastModifiedAt(now.minus(Weeks.weeks(3)).getMillis())
+                .lastModifiedTime(now.minus(Weeks.weeks(3)).getMillis())
                 .build())
             .build();
 
@@ -156,7 +157,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .edApp(SoftwareApplication.builder()
                 .id("https://com.sat/super-assessment-tool")
                 //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/Assessment") // WARN: CaliperEntity prop
-                .lastModifiedAt(now.minus(Weeks.weeks(8)).getMillis())
+                .lastModifiedTime(now.minus(Weeks.weeks(8)).getMillis())
                 .build())
             .lisOrganization(lmsContext.getLisOrganization())
             .agent(lmsContext.getAgent())
