@@ -32,9 +32,9 @@ cp ./target/caliper-java-example.war /usr/local/tomcat/webapps/
 ```
 * In a browser, navigate to one of the following URL's in order to generate a sequence of events
 
-http://localhost:9090/caliper-java-example/generateReadingSequence
-http://localhost:9090/caliper-java-example/generateAssessmentSequence
-http://localhost:9090/caliper-java-example/generateMediaSequence
+ * http://localhost:9090/caliper-java-example/generateReadingSequence
+ * http://localhost:9090/caliper-java-example/generateAssessmentSequence
+ * http://localhost:9090/caliper-java-example/generateMediaSequence
 
 In order to make sure the events get to the store.. you'd want to also clone the reference event store and have it started up
 
