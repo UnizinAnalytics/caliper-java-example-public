@@ -30,15 +30,19 @@ mvn clean package
 ```
 cp ./target/caliper-java-example.war /usr/local/tomcat/webapps/
 ```
+
+* In order to make sure the events get to the store.. you'd want to also clone the reference event store and have it started up
+
+ * https://github.com/IMSGlobal/caliperEventStore
+
 * In a browser, navigate to one of the following URL's in order to generate a sequence of events
 
  * http://localhost:9090/caliper-java-example/generateReadingSequence
  * http://localhost:9090/caliper-java-example/generateAssessmentSequence
  * http://localhost:9090/caliper-java-example/generateMediaSequence
 
-In order to make sure the events get to the store.. you'd want to also clone the reference event store and have it started up
+(Note: Assumes your Tomcat is running on port 9090)
 
-https://github.com/IMSGlobal/caliperEventStore
 
 
 ©2014 IMS Global Learning Consortium, Inc. All Rights Reserved.  Trademark Information - http://www.imsglobal.org/copyright.html
