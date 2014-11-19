@@ -6,11 +6,12 @@ import org.imsglobal.caliper.Sensor;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.actions.AnnotationActions;
 import org.imsglobal.caliper.actions.ReadingActions;
+import org.imsglobal.caliper.entities.Agent;
 import org.imsglobal.caliper.entities.DigitalResource;
-import org.imsglobal.caliper.entities.reading.Frame;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.SoftwareApplication;
 import org.imsglobal.caliper.entities.WebPage;
+import org.imsglobal.caliper.entities.reading.Frame;
 import org.imsglobal.caliper.entities.annotation.BookmarkAnnotation;
 import org.imsglobal.caliper.entities.annotation.HighlightAnnotation;
 import org.imsglobal.caliper.entities.annotation.SharedAnnotation;
@@ -471,9 +472,15 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         courseSmartAnnotationProfile.getActions().add(AnnotationActions.SHARED.key());
         courseSmartAnnotationProfile.getAnnotations().add((SharedAnnotation) SharedAnnotation.builder()
             .id("https://someEduApp.edu/shared/" + UUID.randomUUID().toString())
-            .withAgents(Lists.newArrayList(
-                "https://some-university.edu/students/657585",
-                "https://some-university.edu/students/667788"))
+            .withAgents(Lists.<Agent>newArrayList(
+                Person.builder()
+                    .id("https://some-university.edu/students/657585")
+                    .lastModifiedTime(1402965614516l)
+                    .build(),
+                Person.builder()
+                    .id("https://some-university.edu/students/667788")
+                    .lastModifiedTime(1402965614516l)
+                    .build()))
             .target(Iterables.getLast(courseSmartProfile.getTargets()))
             .build());
         courseSmartAnnotationProfile.getTargets().add(Iterables.getLast(courseSmartProfile.getTargets()));
@@ -487,9 +494,13 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             courseSmartAnnotationProfile.getAnnotations());
         output.append("Object : " + shared.getId() + "\n");
         output.append("From : " + Iterables.getLast(readiumProfile.getFromResources()).getId() + "\n");
-        output.append("Target : " + ((DigitalResource) shared.getTarget()).getId() + "\n\n");
+        output.append("Target : " + ((DigitalResource) shared.getTarget()).getId() + "\n");
         //output.append("Target : " + ((Frame) Iterables.getLast(courseSmartProfile.getTargets())).getId() + "\n\n");
-        output.append("Shared : " + shared.getWithAgents().toString() + "\n");
+
+        // Retrieve agents
+        for (Agent agent: shared.getWithAgents()) {
+            output.append("Shared with: " + agent.getId() + "\n");
+        }
         output.append("FINIS\n\n");
     }
 
