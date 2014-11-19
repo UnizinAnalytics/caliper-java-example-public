@@ -148,7 +148,6 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         VideoObject video = VideoObject.builder()
             .id("https://com.sat/super-media-tool/video/video1")
             .name("American Revolution - Key Figures Video")
-            .partOf(learningContext.getLisOrganization())
             .learningObjective(LearningObjective.builder()
                 .id("http://americanrevolution.com/personalities/learn")
                 .build())
@@ -175,7 +174,6 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
                 .name("American Revolution 101 Landing Page")
                 .partOf(learningContext.getLisOrganization())
                 .build())
-            .target(video) // WARN: Expects a frame coordinate (none provided)
             .mediaLocation(MediaLocation.builder()
                 .id(video.getId()) // Don't forget to set the Id
                 .currentTime(0).build())
