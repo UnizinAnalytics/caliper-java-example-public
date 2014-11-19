@@ -470,10 +470,10 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // EVENT # 13 - Add SharedEvent
         courseSmartAnnotationProfile.getActions().add(AnnotationActions.SHARED.key());
         courseSmartAnnotationProfile.getAnnotations().add((SharedAnnotation) SharedAnnotation.builder()
-            .id("https://someEduApp.edu/tags/" + UUID.randomUUID().toString())
+            .id("https://someEduApp.edu/shared/" + UUID.randomUUID().toString())
             .withAgents(Lists.newArrayList(
-                "https://some-university.edu/students/smith-bob-554433",
-                "https://some-university.edu/students/lam-eve-554433"))
+                "https://some-university.edu/students/657585",
+                "https://some-university.edu/students/667788"))
             .target(Iterables.getLast(courseSmartProfile.getTargets()))
             .build());
         courseSmartAnnotationProfile.getTargets().add(Iterables.getLast(courseSmartProfile.getTargets()));
