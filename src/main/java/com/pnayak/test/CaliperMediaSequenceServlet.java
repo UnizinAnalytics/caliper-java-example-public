@@ -1,23 +1,14 @@
 package com.pnayak.test;
 
-import com.google.common.collect.Iterables;
-import org.imsglobal.caliper.Sensor;
 import org.imsglobal.caliper.Options;
-import org.imsglobal.caliper.actions.MediaActions;
-import org.imsglobal.caliper.entities.DigitalResource;
+import org.imsglobal.caliper.Sensor;
 import org.imsglobal.caliper.entities.LearningContext;
-import org.imsglobal.caliper.entities.LearningObjective;
-import org.imsglobal.caliper.entities.lis.CourseSection;
-import org.imsglobal.caliper.entities.lis.Person;
-import org.imsglobal.caliper.entities.media.VideoObject;
 import org.imsglobal.caliper.entities.media.MediaLocation;
-import org.imsglobal.caliper.entities.SoftwareApplication;
-import org.imsglobal.caliper.entities.WebPage;
+import org.imsglobal.caliper.entities.media.VideoObject;
 import org.imsglobal.caliper.events.MediaEvent;
 import org.imsglobal.caliper.events.NavigationEvent;
 import org.imsglobal.caliper.profiles.MediaProfile;
 import org.joda.time.DateTime;
-import org.joda.time.Weeks;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -25,6 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Random;
+
+import static com.pnayak.test.CaliperSampleAssets.*;
 
 /**
  * Servlet implementation class CaliperReadingSequenceServlet
@@ -112,181 +105,136 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         // For reference, the current time
         DateTime now = DateTime.now();
         output.append(now + "\n\n");
-
-        /*
-         * -----------------------------------------------------------------
-         * Step 01. Set the learning and activity context (i.e. Video provided by the
-         * LTI tool). We also assign a single learning objective to the video.
-         * -----------------------------------------------------------------
-         */
-
-        // NOTE - we would want to associate the LISCourseSection with a
-        // parent Department or Institution at some point
-
-        // Learning Context
-        LearningContext learningContext = LearningContext.builder()
-            .edApp(SoftwareApplication.builder()
-                .id("https://com.sat/super-media-tool")
-                //.setType("http://purl.imsglobal.org/ctx/caliper/v1/edApp/media"); Set by default
-                .lastModifiedTime(now.minus(Weeks.weeks(8)).getMillis())
-                .build())
-            .lisOrganization(CourseSection.builder()
-                .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
-                .semester("Spring-2014")
-                .courseNumber("AmRev-101")
-                .label("Am Rev 101")
-                .name("American Revolution 101")
-                .lastModifiedTime(now.minus(Weeks.weeks(4)).getMillis())
-                .build())
-            .agent(Person.builder()
-                .id("https://some-university.edu/students/jones-alice-554433")
-                .lastModifiedTime(now.minus(Weeks.weeks(3)).getMillis())
-                .build())
-            .build();
-
-        // Video
-        VideoObject video = VideoObject.builder()
-            .id("https://com.sat/super-media-tool/video/video1")
-            .name("American Revolution - Key Figures Video")
-            .learningObjective(LearningObjective.builder()
-                .id("http://americanrevolution.com/personalities/learn")
-                .build())
-            .duration(1420)
-            .build();
-
-        output.append("Generated activity context data\n\n");
-
-        /*
-         * -----------------------------------------------------------------
-         * Step 02.  Execute media play sequence.
-         * -----------------------------------------------------------------
-         */
-
         output.append("Sending events . . .\n\n");
 
-        // EVENT # 01 Generate MediaProfile triggered by NavigationEvent
-        MediaProfile mediaProfile = MediaProfile.builder()
-            .learningContext(learningContext)
-            .mediaObject(video)
-            .action(MediaActions.NAVIGATED_TO.key())
-            .fromResource(WebPage.builder()
-                .id("AmRev-101-landingPage")
-                .name("American Revolution 101 Landing Page")
-                .partOf(learningContext.getLisOrganization())
-                .build())
-            .mediaLocation(MediaLocation.builder()
+        // EVENT 01 Generate NavigationEvent once user launches media.
+        LearningContext learningContext = buildSuperMediaToolLearningContext();
+        VideoObject video = buildVideoWithLearningObjective();
+        NavigationEvent navEvent = NavigationEvent.builder()
+            .edApp(learningContext.getEdApp())
+            .lisOrganization(learningContext.getLisOrganization())
+            .actor(learningContext.getAgent())
+            .object(video)
+            .action(MediaProfile.Actions.NAVIGATED_TO.key())
+            .fromResource(buildAmRev101LandingPage())
+            .target(MediaLocation.builder()
                 .id(video.getId()) // Don't forget to set the Id
                 .currentTime(0).build())
+            .startedAtTime(DateTime.now().minusSeconds(1000).getMillis())
             .build();
 
+        output.append("Generated Media Tool learning context data\n");
+        output.append("Generated Video activity context data\n");
         output.append("Navigated to video in Canvas LMS edApp... sent NavigateEvent\n");
 
         // Process Event
-        navigate(mediaProfile);
+        Sensor.send(navEvent);
 
-        output.append("Object : " + ((VideoObject) mediaProfile.getMediaObject()).getId() + "\n");
-        output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
+        output.append("Object : " + navEvent.getObject().getId() + "\n");
+        output.append("Media Location : " + ((MediaLocation) navEvent.getTarget()).getCurrentTime() + "\n\n");
 
-        // EVENT  # 02 - Start playing video
-        mediaProfile.getActions().add(MediaActions.STARTED.key());
-        mediaProfile.getMediaLocations().add(MediaLocation.builder()
-            .id(((VideoObject) mediaProfile.getMediaObject()).getId())
-            .currentTime(0).build());
+        // EVENT 02 - Start playing video
+        learningContext = buildSuperMediaToolLearningContext();
+        video = buildVideoWithLearningObjective();
+        MediaEvent mediaEvent = MediaEvent.builder()
+            .edApp(learningContext.getEdApp())
+            .lisOrganization(learningContext.getLisOrganization())
+            .actor(learningContext.getAgent())
+            .object(video)
+            .action(MediaProfile.MediaActions.STARTED.key())
+            .mediaLocation(MediaLocation.builder()
+                .id(video.getId()) // Don't forget to set the Id
+                .currentTime(0)
+                .build())
+            .startedAtTime(DateTime.now().minusSeconds(2840).getMillis())
+            .build();
 
+        output.append("Generated Media Tool learning context data\n");
+        output.append("Generated Video activity context data\n");
         output.append("Started playing Video in Super Media edApp... sent MediaEvent\n");
 
-        // Process Event
-        media(mediaProfile);
+        Sensor.send(mediaEvent);
 
-        output.append("Object : " + ((VideoObject) mediaProfile.getMediaObject()).getId() + "\n");
-        output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
+        output.append("Object : " + mediaEvent.getObject().getId() + "\n");
+        output.append("Media Location : " + mediaEvent.getMediaLocation().getCurrentTime() + "\n\n");
 
-        // EVENT  # 03 - Pause playing video Event
-        mediaProfile.getActions().add(MediaActions.PAUSED.key());
-        mediaProfile.getMediaLocations().add(MediaLocation.builder()
-            .id(((VideoObject) mediaProfile.getMediaObject()).getId())
-            .currentTime(710).build());
+        // EVENT 03 - Pause playing video Event
+        learningContext = buildSuperMediaToolLearningContext();
+        video = buildVideoWithLearningObjective();
+        mediaEvent = MediaEvent.builder()
+            .edApp(learningContext.getEdApp())
+            .lisOrganization(learningContext.getLisOrganization())
+            .actor(learningContext.getAgent())
+            .object(video)
+            .action(MediaProfile.MediaActions.PAUSED.key())
+            .mediaLocation(MediaLocation.builder()
+                .id(video.getId()) // Don't forget to set the Id
+                .currentTime(710)
+                .build())
+            .startedAtTime(DateTime.now().minusSeconds(2130).getMillis())
+            .build();
 
+        output.append("Generated Media Tool learning context data\n");
+        output.append("Generated Video activity context data\n");
         output.append("Paused playing video in Super Media edApp... sent MediaEvent\n");
 
         // Process Event
-        media(mediaProfile);
+        Sensor.send(mediaEvent);
 
-        output.append("Object : " + ((VideoObject) mediaProfile.getMediaObject()).getId() + "\n");
-        output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
+        output.append("Object : " + mediaEvent.getObject().getId() + "\n");
+        output.append("Media Location : " + mediaEvent.getMediaLocation().getCurrentTime() + "\n\n");
 
-        // EVENT  # 04 - Resume playing video Event
-        mediaProfile.getActions().add(MediaActions.RESUMED.key());
-        mediaProfile.getMediaLocations().add(MediaLocation.builder()
-            .id(((VideoObject) mediaProfile.getMediaObject()).getId())
-            .currentTime(710).build());
+        // EVENT 04 - Resume playing video Event
+        learningContext = buildSuperMediaToolLearningContext();
+        video = buildVideoWithLearningObjective();
+        mediaEvent = MediaEvent.builder()
+            .edApp(learningContext.getEdApp())
+            .lisOrganization(learningContext.getLisOrganization())
+            .actor(learningContext.getAgent())
+            .object(video)
+            .action(MediaProfile.MediaActions.RESUMED.key())
+            .mediaLocation(MediaLocation.builder()
+                .id(video.getId()) // Don't forget to set the Id
+                .currentTime(710)
+                .build())
+            .startedAtTime(DateTime.now().minusSeconds(2100).getMillis())
+            .build();
 
+        output.append("Generated Media Tool learning context data\n");
+        output.append("Generated Video activity context data\n");
         output.append("Resumed playing video in Super Media edApp... sent MediaEvent\n");
 
         // Process Event
-        media(mediaProfile);
+        Sensor.send(mediaEvent);
 
-        output.append("Object : " + ((VideoObject) mediaProfile.getMediaObject()).getId() + "\n");
-        output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
+        output.append("Object : " + mediaEvent.getObject().getId() + "\n");
+        output.append("Media Location : " + mediaEvent.getMediaLocation().getCurrentTime() + "\n\n");
 
-        // EVENT  # 05 - Completed playing video Event
-        mediaProfile.getActions().add(MediaActions.ENDED.key());
-        mediaProfile.getMediaLocations().add(MediaLocation.builder()
-            .id(((VideoObject) mediaProfile.getMediaObject()).getId())
-            .currentTime(1420).build());
+        // EVENT 05 - Completed playing video Event
+        learningContext = buildSuperMediaToolLearningContext();
+        video = buildVideoWithLearningObjective();
+        mediaEvent = MediaEvent.builder()
+            .edApp(learningContext.getEdApp())
+            .lisOrganization(learningContext.getLisOrganization())
+            .actor(learningContext.getAgent())
+            .object(video)
+            .action(MediaProfile.MediaActions.ENDED.key())
+            .mediaLocation(MediaLocation.builder()
+                .id(video.getId()) // Don't forget to set the Id
+                .currentTime(1420)
+                .build())
+            .startedAtTime(DateTime.now().minusSeconds(1319).getMillis())
+            .build();
 
+        output.append("Generated Media Tool learning context data\n");
+        output.append("Generated Video activity context data\n");
         output.append("Completed playing video in Super Media edApp... sent MediaEvent\n");
 
         // Process Event
-        media(mediaProfile);
+        Sensor.send(mediaEvent);
 
-        output.append("Object : " + ((VideoObject) mediaProfile.getMediaObject()).getId() + "\n");
-        output.append("Media Location : " + Iterables.getLast(mediaProfile.getMediaLocations()).getCurrentTime() + "\n\n");
+        output.append("Object : " + mediaEvent.getObject().getId() + "\n");
+        output.append("Media Location : " + mediaEvent.getMediaLocation().getCurrentTime() + "\n\n");
         output.append("FINIS\n\n");
-    }
-
-    /*
-      --------------------------------------------------------------------------------
-      Methods below are utility methods for generating events. These are NOT
-      part of Caliper standards work and are here only as a utility in this sample App.
-      ---------------------------------------------------------------------------------
-     */
-
-    private void navigate(MediaProfile profile) {
-
-        NavigationEvent event = NavigationEvent.builder()
-            .edApp(profile.getLearningContext().getEdApp())
-            .lisOrganization(profile.getLearningContext().getLisOrganization())
-            .actor(profile.getLearningContext().getAgent())
-            .action(Iterables.getLast(profile.getActions()))
-            .object(profile.getMediaObject())
-            .fromResource((DigitalResource) Iterables.getLast(profile.getFromResources()))
-            .startedAtTime(DateTime.now().getMillis())
-            .build();
-
-        // Send event to EventStore
-        Sensor.send(event);
-
-        // Output i18n action text
-        output.append("Action : " + event.getAction() + "\n");
-    }
-
-    private void media(MediaProfile profile) {
-
-        MediaEvent event = MediaEvent.builder()
-            .edApp(profile.getLearningContext().getEdApp())
-            .lisOrganization(profile.getLearningContext().getLisOrganization())
-            .actor(profile.getLearningContext().getAgent())
-            .action(Iterables.getLast(profile.getActions()))
-            .object((VideoObject) profile.getMediaObject())
-            .mediaLocation(Iterables.getLast(profile.getMediaLocations()))
-            .startedAtTime(DateTime.now().getMillis())
-            .build();
-
-        // Send event to EventStore
-        Sensor.send(event);
-
-        // Output i18n action text
-        output.append("Action : " + event.getAction() + "\n");
     }
 }
