@@ -146,11 +146,12 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Object : " + navEvent.getObject().getId() + "\n");
         output.append("From : " + navEvent.getFromResource().getId() + "\n");
-        output.append("Target : " + navEvent.getTarget().getId() + "\n\n");
+        output.append("Target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
         // EVENT 02 - Add NavigationEvent to #epubcfi(/4/3/1) (George Washington)
         learningContext = buildReadiumLearningContext();
         reading = buildEpubSubChap43();
+        DigitalResource target = buildEpubSubChap431();
         navEvent = NavigationEvent.builder()
             .edApp(learningContext.getEdApp())
             .lisOrganization(learningContext.getLisOrganization())
@@ -159,9 +160,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .action(ReadingProfile.Actions.NAVIGATED_TO.key())
             .fromResource(fromResource)
             .target(Frame.builder()
-                    .id(buildEpubSubChap431().getId())
-                    .index(1)
-                    .build())
+                .id(target.getId())
+                .index(1)
+                .build())
             .startedAtTime(DateTime.now().minusSeconds(950).getMillis())
             .build();
 
@@ -173,12 +174,13 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Navigated to EPUB reading #epubcfi(/4/3/1) from #epubcfi(/4/3).  Sent NavigationEvent \n");
         output.append("Object : " + navEvent.getObject().getId() + "\n");
         output.append("From : " + navEvent.getFromResource().getId() + "\n");
-        output.append("Target : " + navEvent.getTarget().getId() + "\n\n");
+        output.append("Target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
         // EVENT 03 - Add ViewedEvent #epubcfi(/4/3/1) (George Washington)
-        //TODO Recommend that VIEW = activityContext not target (target = null).
+        // TODO viewed = object or target?
         learningContext = buildReadiumLearningContext();
         reading = buildEpubSubChap43();
+        target = buildEpubSubChap431();
         ViewEvent viewEvent = ViewEvent.builder()
             .edApp(learningContext.getEdApp())
             .lisOrganization(learningContext.getLisOrganization())
@@ -186,9 +188,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .object(reading)
             .action(ReadingProfile.ReadingActions.VIEWED.key())
             .target(Frame.builder()
-                    .id(buildEpubSubChap431().getId())
-                    .index(1)
-                    .build())
+                .id(target.getId())
+                .index(1)
+                .build())
             .startedAtTime(DateTime.now().minusSeconds(900).getMillis())
             .endedAtTime(DateTime.now().getMillis())
             .duration("PT" + randomSecsDurationBetween(5, 50) + "S")
@@ -207,6 +209,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         learningContext = buildReadiumLearningContext();
         reading = buildEpubSubChap43();
         fromResource = buildEpubSubChap431();
+        target = buildEpubSubChap432();
         navEvent = NavigationEvent.builder()
             .edApp(learningContext.getEdApp())
             .lisOrganization(learningContext.getLisOrganization())
@@ -215,7 +218,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .action(ReadingProfile.Actions.NAVIGATED_TO.key())
             .fromResource(fromResource)
             .target(Frame.builder()
-                .id(buildEpubSubChap432().getId())
+                .id(target.getId())
                 .index(2)
                 .build())
             .startedAtTime(DateTime.now().minusSeconds(850).getMillis())
@@ -229,12 +232,13 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Navigated to EPUB reading #epubcfi(/4/3/2) from #epubcfi(/4/3/1).  Sent NavigationEvent \n");
         output.append("Object : " + navEvent.getObject().getId() + "\n");
         output.append("From : " + navEvent.getFromResource().getId() + "\n");
-        output.append("Target : " + navEvent.getTarget().getId() + "\n\n");
+        output.append("Target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
         // EVENT 05 - Add ViewedEvent #epubcfi(/4/3/2) (Lord Cornwallis)
-        //TODO Recommend that VIEW = activityContext not target (target = null).
+        // TODO viewed = object or target?
         learningContext = buildReadiumLearningContext();
         reading = buildEpubSubChap43();
+        target = buildEpubSubChap432();
         viewEvent = ViewEvent.builder()
             .edApp(learningContext.getEdApp())
             .lisOrganization(learningContext.getLisOrganization())
@@ -242,7 +246,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .object(reading)
             .action(ReadingProfile.ReadingActions.VIEWED.key())
             .target(Frame.builder()
-                .id(buildEpubSubChap432().getId())
+                .id(target.getId())
                 .index(2)
                 .build())
             .startedAtTime(DateTime.now().minusSeconds(800).getMillis())
@@ -261,7 +265,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // EVENT 06 - HighlightedEvent
         learningContext = buildReadiumLearningContext();
-        DigitalResource target = buildEpubSubChap432();
+        target = buildEpubSubChap432();
         AnnotationEvent annotationEvent = AnnotationEvent.builder()
             .edApp(learningContext.getEdApp())
             .lisOrganization(learningContext.getLisOrganization())
@@ -271,10 +275,16 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .selectionStart(Integer.toString(455))
                 .selectionEnd(Integer.toString(489))
                 .selectionText("Life, Liberty and the pursuit of Happiness")
-                .target(target)
+                .target(Frame.builder()
+                    .id(target.getId())
+                    .index(2)
+                    .build())
                 .build())
             .action(AnnotationProfile.AnnotationActions.HIGHLIGHTED.key())
-            .target(target)
+            .target(Frame.builder()
+                .id(target.getId())
+                .index(2)
+                .build())
             .startedAtTime(DateTime.now().minusSeconds(750).getMillis())
             .build();
 
@@ -285,13 +295,14 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Highlighted fragment in #epubcfi(/4/3/2) between index 455-489.  Sent HighlightedEvent\n");
         output.append("Object : " + annotationEvent.getObject().getId()  + "\n");
-        output.append("Target : " + annotationEvent.getTarget().getId() + "\n");
+        output.append("Target : " + ((Frame) annotationEvent.getTarget()).getId() + "\n");
         output.append("Highlighted text : " + ((HighlightAnnotation) annotationEvent.getObject()).getSelectionText() + "\n\n");
 
         // EVENT 07 - Add NavigationEvent #epubcfi(/4/3/3) (Paul Revere)
         learningContext = buildReadiumLearningContext();
         reading = buildEpubSubChap43();
         fromResource = buildEpubSubChap432();
+        target = buildEpubSubChap433();
         navEvent = NavigationEvent.builder()
             .edApp(learningContext.getEdApp())
             .lisOrganization(learningContext.getLisOrganization())
@@ -300,7 +311,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .action(ReadingProfile.Actions.NAVIGATED_TO.key())
             .fromResource(fromResource)
             .target(Frame.builder()
-                .id(buildEpubSubChap433().getId())
+                .id(target.getId())
                 .index(3)
                 .build())
             .startedAtTime(DateTime.now().minusSeconds(700).getMillis())
@@ -314,11 +325,12 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Navigated to EPUB reading #epubcfi(/4/3/3) from #epubcfi(/4/3/2).  Sent NavigationEvent \n");
         output.append("Object : " + navEvent.getObject().getId() + "\n");
         output.append("From : " + navEvent.getFromResource().getId() + "\n");
-        output.append("Target : " + navEvent.getTarget().getId() + "\n\n");
+        output.append("Target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
         // EVENT 08 - Add Viewed Event #epubcfi(/4/3/3) (Paul Revere)
         learningContext = buildReadiumLearningContext();
         reading = buildEpubSubChap43();
+        target = buildEpubSubChap433();
         viewEvent = ViewEvent.builder()
             .edApp(learningContext.getEdApp())
             .lisOrganization(learningContext.getLisOrganization())
@@ -326,7 +338,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .object(reading)
             .action(ReadingProfile.ReadingActions.VIEWED.key())
             .target(Frame.builder()
-                .id(buildEpubSubChap433().getId())
+                .id(target.getId())
                 .index(3)
                 .build())
             .startedAtTime(DateTime.now().minusSeconds(650).getMillis())
@@ -356,7 +368,10 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .target(target)
                 .build())
             .action(AnnotationProfile.AnnotationActions.BOOKMARKED.key())
-            .target(target)
+            .target(Frame.builder()
+                .id(target.getId())
+                .index(3)
+                .build())
             .startedAtTime(DateTime.now().minusSeconds(600).getMillis())
             .build();
 
@@ -367,7 +382,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Bookmarked #epubcfi(/4/3/2).  Sent BookmarkedEvent\n");
         output.append("Object : " + annotationEvent.getObject().getId()  + "\n");
-        output.append("Target : " + annotationEvent.getTarget().getId() + "\n");
+        output.append("Target : " + ((Frame) annotationEvent.getTarget()).getId() + "\n");
         output.append("Bookmark notes : " + ((BookmarkAnnotation) annotationEvent.getObject())
             .getBookmarkNotes() + "\n\n");
 
@@ -397,7 +412,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Navigated to CourseSmart Reading.  Sent NavigateEvent\n");
         output.append("Object : " + navEvent.getObject().getId() + "\n");
         output.append("From : " + navEvent.getFromResource().getId() + "\n");
-        output.append("Target : " + navEvent.getTarget().getId() + "\n\n");
+        output.append("Target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
         // EVENT 11 - Add NavigationEvent aXfsadf12
         learningContext = buildCourseSmartLearningContext();
@@ -427,11 +442,12 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Navigated to page aXfsadf12.  Sent NavigateEvent\n");
         output.append("Object : " + navEvent.getObject().getId() + "\n");
         output.append("From : " + navEvent.getFromResource().getId() + "\n");
-        output.append("Target : " + navEvent.getTarget().getId() + "\n\n");
+        output.append("Target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
         // EVENT 12 - Add ViewedEvent aXfsadf12
         learningContext = buildCourseSmartLearningContext();
         reading = buildAllisonAmRevEpubVolume();
+        target = buildAllisonAmRevEpubSubChap();
         viewEvent = ViewEvent.builder()
             .edApp(learningContext.getEdApp())
             .lisOrganization(learningContext.getLisOrganization())
@@ -439,7 +455,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .object(reading)
             .action(ReadingProfile.ReadingActions.VIEWED.key())
             .target(Frame.builder()
-                .id(buildAllisonAmRevEpubSubChap().getId())
+                .id(target.getId())
                 .index(1)
                 .build())
             .startedAtTime(DateTime.now().minusSeconds(450).getMillis())
@@ -469,7 +485,10 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                 .target(target)
                 .build())
             .action(AnnotationProfile.AnnotationActions.TAGGED.key())
-            .target(target)
+            .target(Frame.builder()
+                .id(target.getId())
+                .index(1)
+                .build())
             .startedAtTime(DateTime.now().minusSeconds(400).getMillis())
             .build();
 
@@ -480,7 +499,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Tagged CourseSmart page aXfsadf12.  Sent TaggedEvent\n");
         output.append("Object : " + annotationEvent.getObject().getId()  + "\n");
-        output.append("Target : " + annotationEvent.getTarget().getId() + "\n");
+        output.append("Target : " + ((Frame) annotationEvent.getTarget()).getId() + "\n");
         output.append("Tags : " + ((TagAnnotation) annotationEvent.getObject()).getTags().toString() + "\n\n");
 
         // EVENT 14 - Add SharedEvent
@@ -503,7 +522,10 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                         .build()))
                 .build())
             .action(AnnotationProfile.AnnotationActions.SHARED.key())
-            .target(target)
+            .target(Frame.builder()
+                .id(target.getId())
+                .index(1)
+                .build())
             .startedAtTime(DateTime.now().minusSeconds(350).getMillis())
             .build();
 
@@ -514,7 +536,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         output.append("Shared CourseSmart page aXfsadf12.  Sent SharedEvent\n");
         output.append("Object : " + annotationEvent.getObject().getId()  + "\n");
-        output.append("Target : " + annotationEvent.getTarget().getId() + "\n");
+        output.append("Target : " + ((Frame) annotationEvent.getTarget()).getId() + "\n");
 
         // Retrieve agents
         SharedAnnotation shared = (SharedAnnotation) annotationEvent.getObject();

@@ -142,7 +142,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .actor(learningContext.getAgent())
             .object(video)
             .action(MediaProfile.MediaActions.STARTED.key())
-            .mediaLocation(MediaLocation.builder()
+            .target(MediaLocation.builder()
                 .id(video.getId()) // Don't forget to set the Id
                 .currentTime(0)
                 .build())
@@ -156,7 +156,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         Sensor.send(mediaEvent);
 
         output.append("Object : " + mediaEvent.getObject().getId() + "\n");
-        output.append("Media Location : " + mediaEvent.getMediaLocation().getCurrentTime() + "\n\n");
+        output.append("Media Location : " + mediaEvent.getTarget().getCurrentTime() + "\n\n");
 
         // EVENT 03 - Pause playing video Event
         learningContext = buildSuperMediaToolLearningContext();
@@ -167,7 +167,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .actor(learningContext.getAgent())
             .object(video)
             .action(MediaProfile.MediaActions.PAUSED.key())
-            .mediaLocation(MediaLocation.builder()
+            .target(MediaLocation.builder()
                 .id(video.getId()) // Don't forget to set the Id
                 .currentTime(710)
                 .build())
@@ -182,7 +182,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         Sensor.send(mediaEvent);
 
         output.append("Object : " + mediaEvent.getObject().getId() + "\n");
-        output.append("Media Location : " + mediaEvent.getMediaLocation().getCurrentTime() + "\n\n");
+        output.append("Media Location : " + mediaEvent.getTarget().getCurrentTime() + "\n\n");
 
         // EVENT 04 - Resume playing video Event
         learningContext = buildSuperMediaToolLearningContext();
@@ -193,7 +193,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .actor(learningContext.getAgent())
             .object(video)
             .action(MediaProfile.MediaActions.RESUMED.key())
-            .mediaLocation(MediaLocation.builder()
+            .target(MediaLocation.builder()
                 .id(video.getId()) // Don't forget to set the Id
                 .currentTime(710)
                 .build())
@@ -208,7 +208,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         Sensor.send(mediaEvent);
 
         output.append("Object : " + mediaEvent.getObject().getId() + "\n");
-        output.append("Media Location : " + mediaEvent.getMediaLocation().getCurrentTime() + "\n\n");
+        output.append("Media Location : " + mediaEvent.getTarget().getCurrentTime() + "\n\n");
 
         // EVENT 05 - Completed playing video Event
         learningContext = buildSuperMediaToolLearningContext();
@@ -219,7 +219,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .actor(learningContext.getAgent())
             .object(video)
             .action(MediaProfile.MediaActions.ENDED.key())
-            .mediaLocation(MediaLocation.builder()
+            .target(MediaLocation.builder()
                 .id(video.getId()) // Don't forget to set the Id
                 .currentTime(1420)
                 .build())
@@ -234,7 +234,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
         Sensor.send(mediaEvent);
 
         output.append("Object : " + mediaEvent.getObject().getId() + "\n");
-        output.append("Media Location : " + mediaEvent.getMediaLocation().getCurrentTime() + "\n\n");
+        output.append("Media Location : " + mediaEvent.getTarget().getCurrentTime() + "\n\n");
         output.append("FINIS\n\n");
     }
 }
