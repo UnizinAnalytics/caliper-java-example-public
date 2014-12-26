@@ -1,6 +1,7 @@
 package org.imsglobal.caliper.test.cli;
 
 import com.pnayak.test.CaliperSampleAssets;
+import com.pnayak.test.CaliperSampleEvents;
 import org.apache.http.conn.HttpHostConnectException;
 import org.imsglobal.caliper.Client;
 import org.imsglobal.caliper.Options;
@@ -8,8 +9,9 @@ import org.imsglobal.caliper.Sensor;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.WebPage;
 import org.imsglobal.caliper.entities.assessment.Assessment;
+import org.imsglobal.caliper.entities.assessment.AssessmentItem;
 import org.imsglobal.caliper.entities.reading.Frame;
-import org.imsglobal.caliper.events.NavigationEvent;
+import org.imsglobal.caliper.events.*;
 import org.imsglobal.caliper.profiles.AssessmentProfile;
 import org.joda.time.DateTime;
 import org.fusesource.jansi.AnsiConsole;
@@ -106,34 +108,52 @@ public class CaliperSequenceGenerator {
         opts.setHost("http://" + (host == null ? DEFAULT_HOST : host) + ":" + (port == null ? DEFAULT_PORT : port));
         Client caliperStore = new Client(opts);
 
-        //TODO: Generalize the creation of these events to example-common,
-        // so they can be used in both test-cli and webapp
+        //TODO: add other Sequences, flagged by a cli param
+        generateAndSendAssessmentSequence(caliperStore);
+    }
+
+    private void generateAndSendAssessmentSequence(Client caliperStore) {
+        LearningContext learningContext = CaliperSampleAssets.buildCanvasLearningContext();
+        Assessment assessment = CaliperSampleAssets.buildAssessment();
 
         // EVENT 01 -  Generate navigation event when user launches assessment
-        LearningContext learningContext = buildCanvasLearningContext();
-        Assessment assessment = buildAssessment();
-        NavigationEvent navEvent = NavigationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .lisOrganization(learningContext.getLisOrganization())
-                .actor(learningContext.getAgent())
-                .object(assessment)
-                .action(AssessmentProfile.Actions.NAVIGATED_TO.key())
-                .fromResource(WebPage.builder()
-                        .id("AmRev-101-landingPage")
-                        .name("American Revolution 101 Landing Page")
-                        .partOf(learningContext.getLisOrganization())
-                        .build())
-                .target(Frame.builder()
-                        .id(assessment.getId())
-                        .index(0)
-                        .build())
-                .startedAtTime(DateTime.now().minusSeconds(1000).getMillis())
-                .build();
+        NavigationEvent navEvent = CaliperSampleEvents.generateNavigationEvent(learningContext, assessment);
 
+        // Process Event
+        sendEvent(caliperStore, navEvent);
 
+        // EVENT 02 - Started Assessment Event
+        AssessmentEvent assessmentEvent = CaliperSampleEvents.generateStartedAssessmentEvent(learningContext, assessment);
+
+        // Process Event
+        sendEvent(caliperStore, assessmentEvent);
+
+        for(AssessmentItem assessmentItem: assessment.getAssessmentItems()) {
+            sendEvent(caliperStore, CaliperSampleEvents.generateStartedAssessmentItemEvent(learningContext, assessment, assessmentItem));
+            sendEvent(caliperStore, CaliperSampleEvents.generateCompletedAssessmentItemEvent(learningContext, assessment, assessmentItem));
+        }
+
+        // Process Event
+        sendEvent(caliperStore, navEvent);
+
+        // EVENT # 09 - Submitted Assessment Event
+        assessmentEvent = CaliperSampleEvents.generateSubmittedAssessmentEvent(learningContext, assessment);
+
+        // Process Event
+        sendEvent(caliperStore, assessmentEvent);
+
+        // EVENT # 10 Generate OutcomeProfile triggered by Outcome Event
+        OutcomeEvent outcomeEvent = CaliperSampleEvents.generateOutcomeEvent(learningContext, assessment);
+
+        // Process Event
+        sendEvent(caliperStore, outcomeEvent);
+
+    }
+
+    public void sendEvent(Client client, Event event){
         //TODO: Remove the swallowing of exceptions in java-caliper so they can be handled here.
         // Process Event
-        Sensor.send(navEvent);
+        client.send(event);
     }
 
 }
