@@ -1,25 +1,19 @@
 package org.imsglobal.caliper.test.cli;
 
 import com.pnayak.test.CaliperSampleAssets;
+import org.apache.http.conn.HttpHostConnectException;
+import org.imsglobal.caliper.Client;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.Sensor;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.WebPage;
 import org.imsglobal.caliper.entities.assessment.Assessment;
 import org.imsglobal.caliper.entities.reading.Frame;
-import org.imsglobal.caliper.events.Event;
 import org.imsglobal.caliper.events.NavigationEvent;
 import org.imsglobal.caliper.profiles.AssessmentProfile;
 import org.joda.time.DateTime;
 import org.fusesource.jansi.AnsiConsole;
 import org.kohsuke.args4j.*;
-import org.kohsuke.args4j.spi.OptionHandler;
-import org.kohsuke.args4j.spi.Parameters;
-import org.kohsuke.args4j.spi.Setter;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.fusesource.jansi.Ansi.*;
 import static org.fusesource.jansi.Ansi.Color.*;
@@ -89,7 +83,7 @@ public class CaliperSequenceGenerator {
         CmdLineParser parser = new CmdLineParser(this);
         try {
             parser.parseArgument(args);
-        } catch(CmdLineException e ) {
+        } catch(CmdLineException e) {
             System.err.println(e.getMessage());
             System.err.println("java SampleMain [options...] arguments...");
             parser.printUsage(System.err);
@@ -97,6 +91,8 @@ public class CaliperSequenceGenerator {
             System.err.println("  Example: java SampleMain"+parser.printExample(ExampleMode.ALL));
             return;
         }
+
+        //System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
 
         initialize();
         System.out.println(ansi().fg(YELLOW).a("Caliper Sequence Generator...").reset());
@@ -107,8 +103,11 @@ public class CaliperSequenceGenerator {
 
         Options opts = new Options();
         opts.setApiKey(apiKey == null ? DEFAULT_API_KEY : apiKey);
-        opts.setHost("http://" + (host == null ? DEFAULT_HOST : host)  + ":" + (port == null ? DEFAULT_PORT : port));
-        Sensor.initialize(opts);
+        opts.setHost("http://" + (host == null ? DEFAULT_HOST : host) + ":" + (port == null ? DEFAULT_PORT : port));
+        Client caliperStore = new Client(opts);
+
+        //TODO: Generalize the creation of these events to example-common,
+        // so they can be used in both test-cli and webapp
 
         // EVENT 01 -  Generate navigation event when user launches assessment
         LearningContext learningContext = buildCanvasLearningContext();
@@ -131,6 +130,8 @@ public class CaliperSequenceGenerator {
                 .startedAtTime(DateTime.now().minusSeconds(1000).getMillis())
                 .build();
 
+
+        //TODO: Remove the swallowing of exceptions in java-caliper so they can be handled here.
         // Process Event
         Sensor.send(navEvent);
     }
