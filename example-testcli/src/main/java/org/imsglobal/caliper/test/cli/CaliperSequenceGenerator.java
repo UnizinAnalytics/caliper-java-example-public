@@ -16,6 +16,7 @@ import org.imsglobal.caliper.profiles.AssessmentProfile;
 import org.joda.time.DateTime;
 import org.fusesource.jansi.AnsiConsole;
 import org.kohsuke.args4j.*;
+import org.kohsuke.args4j.spi.OptionHandler;
 
 import static org.fusesource.jansi.Ansi.*;
 import static org.fusesource.jansi.Ansi.Color.*;
@@ -28,22 +29,22 @@ import static com.pnayak.test.CaliperSampleAssets.buildCanvasLearningContext;
  */
 public class CaliperSequenceGenerator {
 
-    @Option(name="-h",usage="hostname to send events to", metaVar = "STORE_HOST")
+    @Option(name="-h", usage="hostname to send events to", metaVar="STORE_HOST")
     private String host;
 
-    @Option(name="-p",usage="port of host connecting to", metaVar = "STORE_PORT")
+    @Option(name="-p", usage="port of host connecting to", metaVar="STORE_PORT")
     private Integer port;
+
+    @Option(name="-k", usage="caliper api key", metaVar="API_KEY")
+    private String apiKey;
 
 //    @Option(name="-m",usage="mode of events to send", metaVar = "EVENT_MODE", handler = EventModeOptionHandler.class)
 //    private EventMode mode;
 
-    @Option(name="-k",usage="caliper api key", metaVar = "API_KEY")
-    private String apiKey;
-
     private static String DEFAULT_HOST  = "localhost";
     private static Integer DEFAULT_PORT = 1080;
-//    private static EventMode DEFAULT_MODE = EventMode.assessment;
     private static String DEFAULT_API_KEY = "FEFNtMyXRZqwAH4svMakTw";
+//    private static EventMode DEFAULT_MODE = EventMode.assessment;
 
 //    public static enum EventMode{
 //        assessment,
@@ -72,16 +73,8 @@ public class CaliperSequenceGenerator {
 //        }
 //    }
 
-    public void initialize(){
+    public void initialize(String[] args){
         AnsiConsole.systemInstall();
-
-    }
-
-    public static void main(String[] args){
-        new CaliperSequenceGenerator().doMain(args);
-    }
-
-    public void doMain(String[] args) {
         CmdLineParser parser = new CmdLineParser(this);
         try {
             parser.parseArgument(args);
@@ -93,19 +86,26 @@ public class CaliperSequenceGenerator {
             System.err.println("  Example: java SampleMain"+parser.printExample(ExampleMode.ALL));
             return;
         }
+        host = host == null ? DEFAULT_HOST : host;
+        port = port == null ? DEFAULT_PORT : port;
+        apiKey = apiKey == null ? DEFAULT_API_KEY : apiKey;
+    }
 
-        //System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
+    public static void main(String[] args){
+        new CaliperSequenceGenerator().doMain(args);
+    }
 
-        initialize();
+    public void doMain(String[] args) {
+        initialize(args);
         System.out.println(ansi().fg(YELLOW).a("Caliper Sequence Generator...").reset());
-        System.out.println(ansi().fg(CYAN).a("  Got args:").reset());
-        for(int i=0; i<args.length; i++){
-            System.out.println(ansi().fg(CYAN).a("    " + (i + 1) + ". " + args[i]).reset());
-        }
+        System.out.println(ansi().fg(CYAN).a("Using:").reset());
+        System.out.println(ansi().fg(CYAN).a("    host:    " + host).reset());
+        System.out.println(ansi().fg(CYAN).a("    port:    " + port).reset());
+        System.out.println(ansi().fg(CYAN).a("    api key: " + apiKey).reset());
 
         Options opts = new Options();
-        opts.setApiKey(apiKey == null ? DEFAULT_API_KEY : apiKey);
-        opts.setHost("http://" + (host == null ? DEFAULT_HOST : host) + ":" + (port == null ? DEFAULT_PORT : port));
+        opts.setApiKey(apiKey);
+        opts.setHost("http://" + host + ":" + port);
         Client caliperStore = new Client(opts);
 
         //TODO: add other Sequences, flagged by a cli param
@@ -116,16 +116,9 @@ public class CaliperSequenceGenerator {
         LearningContext learningContext = CaliperSampleAssets.buildCanvasLearningContext();
         Assessment assessment = CaliperSampleAssets.buildAssessment();
 
-        // EVENT 01 -  Generate navigation event when user launches assessment
         NavigationEvent navEvent = CaliperSampleEvents.generateNavigationEvent(learningContext, assessment);
-
-        // Process Event
         sendEvent(caliperStore, navEvent);
-
-        // EVENT 02 - Started Assessment Event
         AssessmentEvent assessmentEvent = CaliperSampleEvents.generateStartedAssessmentEvent(learningContext, assessment);
-
-        // Process Event
         sendEvent(caliperStore, assessmentEvent);
 
         for(AssessmentItem assessmentItem: assessment.getAssessmentItems()) {
@@ -133,26 +126,14 @@ public class CaliperSequenceGenerator {
             sendEvent(caliperStore, CaliperSampleEvents.generateCompletedAssessmentItemEvent(learningContext, assessment, assessmentItem));
         }
 
-        // Process Event
-        sendEvent(caliperStore, navEvent);
-
-        // EVENT # 09 - Submitted Assessment Event
         assessmentEvent = CaliperSampleEvents.generateSubmittedAssessmentEvent(learningContext, assessment);
-
-        // Process Event
         sendEvent(caliperStore, assessmentEvent);
-
-        // EVENT # 10 Generate OutcomeProfile triggered by Outcome Event
         OutcomeEvent outcomeEvent = CaliperSampleEvents.generateOutcomeEvent(learningContext, assessment);
-
-        // Process Event
         sendEvent(caliperStore, outcomeEvent);
-
     }
 
     public void sendEvent(Client client, Event event){
         //TODO: Remove the swallowing of exceptions in java-caliper so they can be handled here.
-        // Process Event
         client.send(event);
     }
 
