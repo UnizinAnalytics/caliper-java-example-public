@@ -2,7 +2,7 @@ package com.pnayak.test;
 
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.Sensor;
-import org.imsglobal.caliper.entities.Agent;
+import org.imsglobal.caliper.entities.foaf.Agent;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.WebPage;
 import org.imsglobal.caliper.entities.assessment.Assessment;
