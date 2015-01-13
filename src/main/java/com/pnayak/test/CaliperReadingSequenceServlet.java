@@ -3,13 +3,13 @@ package com.pnayak.test;
 import com.google.common.collect.Lists;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.Sensor;
-import org.imsglobal.caliper.entities.Agent;
 import org.imsglobal.caliper.entities.DigitalResource;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.annotation.BookmarkAnnotation;
 import org.imsglobal.caliper.entities.annotation.HighlightAnnotation;
 import org.imsglobal.caliper.entities.annotation.SharedAnnotation;
 import org.imsglobal.caliper.entities.annotation.TagAnnotation;
+import org.imsglobal.caliper.entities.foaf.Agent;
 import org.imsglobal.caliper.entities.lis.Person;
 import org.imsglobal.caliper.entities.reading.Frame;
 import org.imsglobal.caliper.events.AnnotationEvent;
@@ -541,7 +541,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         // Retrieve agents
         SharedAnnotation shared = (SharedAnnotation) annotationEvent.getObject();
         for (Agent agent: shared.getWithAgents()) {
-            output.append("Shared with: " + agent.getId() + "\n");
+            output.append("Shared with: " + ((Person) agent).getId() + "\n");
         }
 
         output.append("FINIS\n\n");

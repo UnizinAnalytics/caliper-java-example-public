@@ -1,9 +1,14 @@
 package com.pnayak.test;
 
 import com.google.common.collect.ImmutableList;
-import org.imsglobal.caliper.entities.*;
+import org.imsglobal.caliper.entities.DigitalResource;
+import org.imsglobal.caliper.entities.LearningContext;
+import org.imsglobal.caliper.entities.LearningObjective;
+import org.imsglobal.caliper.entities.SoftwareApplication;
+import org.imsglobal.caliper.entities.WebPage;
 import org.imsglobal.caliper.entities.assessment.Assessment;
 import org.imsglobal.caliper.entities.assessment.AssessmentItem;
+import org.imsglobal.caliper.entities.foaf.Agent;
 import org.imsglobal.caliper.entities.lis.CourseSection;
 import org.imsglobal.caliper.entities.lis.Person;
 import org.imsglobal.caliper.entities.media.VideoObject;
