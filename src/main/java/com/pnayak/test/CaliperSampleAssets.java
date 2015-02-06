@@ -1,11 +1,7 @@
 package com.pnayak.test;
 
 import com.google.common.collect.ImmutableList;
-import org.imsglobal.caliper.entities.DigitalResource;
-import org.imsglobal.caliper.entities.LearningContext;
-import org.imsglobal.caliper.entities.LearningObjective;
-import org.imsglobal.caliper.entities.SoftwareApplication;
-import org.imsglobal.caliper.entities.WebPage;
+import org.imsglobal.caliper.entities.*;
 import org.imsglobal.caliper.entities.assessment.Assessment;
 import org.imsglobal.caliper.entities.assessment.AssessmentItem;
 import org.imsglobal.caliper.entities.foaf.Agent;
@@ -15,8 +11,10 @@ import org.imsglobal.caliper.entities.media.VideoObject;
 import org.imsglobal.caliper.entities.reading.EpubSubChapter;
 import org.imsglobal.caliper.entities.reading.EpubVolume;
 import org.joda.time.DateTime;
-import org.joda.time.Days;
-import org.joda.time.Weeks;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
 public class CaliperSampleAssets {
 
@@ -34,7 +32,8 @@ public class CaliperSampleAssets {
             //.sectionNumber("001") TODO add section number property?
             .label("Am Rev 101")
             .name("American Revolution 101")
-            .lastModifiedTime(now.minus(Weeks.weeks(4)).getMillis())
+            .dateCreated(getDefaultDateCreated())
+            .dateModified(getDefaultDateModified())
             .build();
     }
 
@@ -46,11 +45,12 @@ public class CaliperSampleAssets {
         return WebPage.builder()
             .id("AmRev-101-landingPage")
             .name("American Revolution 101 Landing Page")
-            .partOf(SoftwareApplication.builder()
-                .id("https://canvas.instructure.com")
-                //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms") // WARN CaliperEntity prop
-                .lastModifiedTime(now.minus(Weeks.weeks(10)).getMillis())
-                .build())
+            .isPartOf(SoftwareApplication.builder()
+                    .id("https://canvas.instructure.com")
+                    .dateCreated(getDefaultDateCreated())
+                    .dateModified(getDefaultDateModified())
+                    .build())
+            .dateCreated(getDefaultDateCreated())
             .build();
     }
 
@@ -62,11 +62,11 @@ public class CaliperSampleAssets {
         return Assessment.builder()
             .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
             .name("American Revolution - Key Figures Assessment")
-            .dateCreated(now.minus(Weeks.weeks(1)).getMillis())
-            .datePublished(now.minus(Weeks.weeks(1)).getMillis())
-            .dateToActivate(now.minus(Days.days(1)).getMillis())
-            .dateToShow(now.minus(Days.days(1)).getMillis())
-            .dateToSubmit(now.minus(Days.days(10)).getMillis())
+            .dateCreated(getDefaultDateCreated())
+            .datePublished(getDefaultDatePublished())
+            .dateToActivate(getDefaultDateToActivate())
+            .dateToShow(getDefaultDateToShow())
+            .dateToSubmit(getDefaultDateToSubmit())
             .maxAttempts(2)
             .maxSubmits(2)
             .maxScore(5) // WARN original value "5.0d"
@@ -83,17 +83,17 @@ public class CaliperSampleAssets {
             .add(AssessmentItem.builder()
                 .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item1")
                 .name("Assessment Item 1")
-                .partOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
+                .isPartOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
                 .build())
             .add(AssessmentItem.builder()
                 .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item2")
                 .name("Assessment Item 2")
-                .partOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
+                .isPartOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
                 .build())
             .add(AssessmentItem.builder()
                 .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item3")
                 .name("Assessment Item 3")
-                .partOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
+                .isPartOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
                 .build())
             .build();
     }
@@ -108,8 +108,8 @@ public class CaliperSampleAssets {
         return LearningContext.builder()
             .edApp(SoftwareApplication.builder()
                 .id("https://canvas.instructure.com")
-                //.context("http://purl.imsglobal.org/ctx/caliper/v1/edApp/lms") // WARN CaliperEntity prop
-                .lastModifiedTime(now.minus(Weeks.weeks(10)).getMillis())
+                .dateCreated(getDefaultDateCreated())
+                .dateModified(getDefaultDateModified())
                 .build())
             .lisOrganization(buildAmRev101CourseSection())
             .agent(buildStudent554433())
@@ -126,7 +126,8 @@ public class CaliperSampleAssets {
         return LearningContext.builder()
             .edApp(SoftwareApplication.builder()
                 .id("http://www.coursesmart.com/reader")
-                .lastModifiedTime(now.minus(Weeks.weeks(6)).getMillis())
+                .dateCreated(getDefaultDateCreated())
+                .dateModified(getDefaultDateModified())
                 .build())
             .lisOrganization(buildAmRev101CourseSection())
             .agent(buildStudent554433())
@@ -141,7 +142,8 @@ public class CaliperSampleAssets {
         return EpubSubChapter.builder()
             .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
             .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
-            .lastModifiedTime(now.minus(Weeks.weeks(53)).getMillis())
+            .dateCreated(getDefaultDateCreated())
+            .dateModified(getDefaultDateModified())
             .build();
     }
 
@@ -153,12 +155,14 @@ public class CaliperSampleAssets {
         return EpubSubChapter.builder()
             .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3/1)")
             .name("Key Figures: George Washington")
-            .lastModifiedTime(now.minus(Weeks.weeks(53)).getMillis())
-            .partOf(EpubSubChapter.builder()
-                .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
-                .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
-                .lastModifiedTime(now.minus(Weeks.weeks(53)).getMillis())
-                .build())
+                .dateCreated(getDefaultDateCreated())
+                .dateModified(getDefaultDateModified())
+                .isPartOf(EpubSubChapter.builder()
+                    .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
+                    .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
+                    .dateCreated(getDefaultDateCreated())
+                    .dateModified(getDefaultDateModified())
+                    .build())
             .build();
     }
 
@@ -170,12 +174,14 @@ public class CaliperSampleAssets {
         return EpubSubChapter.builder()
             .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3/2)")
             .name("Key Figures: Lord North")
-            .lastModifiedTime(now.minus(Weeks.weeks(53)).getMillis())
-            .partOf(EpubSubChapter.builder()
-                .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
-                .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
-                .lastModifiedTime(now.minus(Weeks.weeks(53)).getMillis())
-                .build())
+                .dateCreated(getDefaultDateCreated())
+                .dateModified(getDefaultDateModified())
+                .isPartOf(EpubSubChapter.builder()
+                    .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
+                    .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
+                    .dateCreated(getDefaultDateCreated())
+                    .dateModified(getDefaultDateModified())
+                    .build())
             .build();
     }
 
@@ -187,12 +193,14 @@ public class CaliperSampleAssets {
         return EpubSubChapter.builder()
             .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3/3)")
             .name("Key Figures: John Adams")
-            .lastModifiedTime(now.minus(Weeks.weeks(53)).getMillis())
-            .partOf(EpubSubChapter.builder()
-                .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
-                .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
-                .lastModifiedTime(now.minus(Weeks.weeks(53)).getMillis())
-                .build())
+                .dateCreated(getDefaultDateCreated())
+                .dateModified(getDefaultDateModified())
+                .isPartOf(EpubSubChapter.builder()
+                    .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
+                    .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
+                    .dateCreated(getDefaultDateCreated())
+                    .dateModified(getDefaultDateModified())
+                    .build())
             .build();
     }
 
@@ -204,7 +212,8 @@ public class CaliperSampleAssets {
         return EpubVolume.builder()
             .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
             .name("The American Revolution: A Concise History | 978-0-19-531295-9")
-            .lastModifiedTime(now.minus(Weeks.weeks(22)).getMillis())
+            .dateCreated(getDefaultDateCreated())
+            .dateModified(getDefaultDateModified())
             .build();
     }
 
@@ -216,12 +225,14 @@ public class CaliperSampleAssets {
         return EpubSubChapter.builder()
             .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322/aXfsadf12")
             .name("The Boston Tea Party")
-            .lastModifiedTime(now.minus(Weeks.weeks(22)).getMillis())
-            .partOf((DigitalResource) EpubVolume.builder()
-                .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
-                .name("The American Revolution: A Concise History | 978-0-19-531295-9")
-                .lastModifiedTime(now.minus(Weeks.weeks(22)).getMillis())
-                .build())
+                .dateCreated(getDefaultDateCreated())
+                .dateModified(getDefaultDateModified())
+                .isPartOf((DigitalResource) EpubVolume.builder()
+                    .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
+                    .name("The American Revolution: A Concise History | 978-0-19-531295-9")
+                    .dateCreated(getDefaultDateCreated())
+                    .dateModified(getDefaultDateModified())
+                    .build())
             .build();
     }
 
@@ -234,7 +245,8 @@ public class CaliperSampleAssets {
         return LearningContext.builder()
             .edApp(SoftwareApplication.builder()
                 .id("https://github.com/readium/readium-js-viewer")
-                .lastModifiedTime(now.minus(Weeks.weeks(8)).getMillis())
+                .dateCreated(getDefaultDateCreated())
+                .dateModified(getDefaultDateModified())
                 .build())
             .lisOrganization(buildAmRev101CourseSection())
             .agent(buildStudent554433())
@@ -248,7 +260,8 @@ public class CaliperSampleAssets {
     public static final Agent buildStudent554433() {
         return Person.builder()
             .id("https://some-university.edu/students/554433")
-            .lastModifiedTime(now.minus(Weeks.weeks(3)).getMillis())
+            .dateCreated(getDefaultDateCreated())
+            .dateModified(getDefaultDateModified())
             .build();
     }
 
@@ -260,7 +273,8 @@ public class CaliperSampleAssets {
         return LearningContext.builder()
             .edApp(SoftwareApplication.builder()
                 .id("https://com.sat/super-assessment-tool")
-                .lastModifiedTime(now.minus(Weeks.weeks(8)).getMillis())
+                .dateCreated(getDefaultDateCreated())
+                .dateModified(getDefaultDateModified())
                 .build())
             .lisOrganization(buildAmRev101CourseSection())
             .agent(buildStudent554433())
@@ -275,7 +289,8 @@ public class CaliperSampleAssets {
         return LearningContext.builder()
             .edApp(SoftwareApplication.builder()
                 .id("https://com.sat/super-media-tool")
-                .lastModifiedTime(now.minus(Weeks.weeks(8)).getMillis())
+                .dateCreated(getDefaultDateCreated())
+                .dateModified(getDefaultDateModified())
                 .build())
             .lisOrganization(buildAmRev101CourseSection())
             .agent(buildStudent554433())
@@ -295,5 +310,139 @@ public class CaliperSampleAssets {
                 .build())
             .duration(1420)
             .build();
+    }
+
+    /**
+     * Generate create date.
+     * @return ISO-8601 date
+     */
+    public static Date getDefaultDateCreated(){
+        //January 1, 2015, 06:00:00.000 GMT
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+        cal.set(Calendar.YEAR, 2015);
+        cal.set(Calendar.MONTH, Calendar.JANUARY);
+        cal.set(Calendar.DATE, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 6);
+        cal.set(Calendar.MINUTE,0);
+        cal.set(Calendar.SECOND,0);
+        cal.set(Calendar.MILLISECOND,0);
+        return cal.getTime();
+    }
+
+    /**
+     * Generate modified date.
+     * @return ISO-8601 date
+     */
+    public static Date getDefaultDateModified(){
+        //February 2, 2015, 11:30:00.000 GMT
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+        cal.set(Calendar.YEAR, 2015);
+        cal.set(Calendar.MONTH, Calendar.FEBRUARY);
+        cal.set(Calendar.DATE, 2);
+        cal.set(Calendar.HOUR_OF_DAY, 11);
+        cal.set(Calendar.MINUTE, 30);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    /**
+     * Generate published date.
+     * @return ISO-8601 date
+     */
+    public static Date getDefaultDatePublished(){
+        //January 15, 2015, 09:30:00.000 GMT
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+        cal.set(Calendar.YEAR, 2015);
+        cal.set(Calendar.MONTH, Calendar.JANUARY);
+        cal.set(Calendar.DATE, 15);
+        cal.set(Calendar.HOUR_OF_DAY, 9);
+        cal.set(Calendar.MINUTE, 30);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    /**
+     * Generate activated date
+     * @return ISO-8601 date
+     */
+    public static Date getDefaultDateToActivate(){
+        //January 16, 2015, 05:00:00.000 GMT
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+        cal.set(Calendar.YEAR, 2015);
+        cal.set(Calendar.MONTH, Calendar.JANUARY);
+        cal.set(Calendar.DATE, 16);
+        cal.set(Calendar.HOUR_OF_DAY, 5);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    /**
+     * Generate shown date
+     * @return ISO-8601 date
+     */
+    public static Date getDefaultDateToShow() {
+        return getDefaultDateToActivate();
+    }
+
+    /**
+     * Generate submit date
+     * @return ISO-8601 date
+     */
+    public static Date getDefaultDateToSubmit() {
+        //February 28, 2015, 11:59:59.000 GMT
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+        cal.set(Calendar.YEAR, 2015);
+        cal.set(Calendar.MONTH, Calendar.FEBRUARY);
+        cal.set(Calendar.DATE, 28);
+        cal.set(Calendar.HOUR_OF_DAY, 11);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    /**
+     * Generate started at time.
+     * @return ISO-8601 date
+     */
+    public static Date getDefaultStartedAtTime() {
+        //February 15, 2015, 10:15:00.000 GMT
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+        cal.set(Calendar.YEAR, 2015);
+        cal.set(Calendar.MONTH, Calendar.FEBRUARY);
+        cal.set(Calendar.DATE, 15);
+        cal.set(Calendar.HOUR_OF_DAY, 10);
+        cal.set(Calendar.MINUTE, 15);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+
+    /**
+     * Generate ended at time.
+     * @return ISO-8601 date
+     */
+    public static Date getDefaultEndedAtTime() {
+        //February 15, 2015, 11:05:00.000 GMT
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+        cal.set(Calendar.YEAR, 2015);
+        cal.set(Calendar.MONTH, Calendar.FEBRUARY);
+        cal.set(Calendar.DATE, 15);
+        cal.set(Calendar.HOUR_OF_DAY, 11);
+        cal.set(Calendar.MINUTE, 05);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
 }
