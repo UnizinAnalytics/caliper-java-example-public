@@ -35,39 +35,8 @@ public class CaliperSequenceGenerator {
     @Option(name="-k", usage="caliper api key", metaVar="API_KEY")
     private String apiKey;
 
-//    @Option(name="-m",usage="mode of events to send", metaVar = "EVENT_MODE", handler = EventModeOptionHandler.class)
-//    private EventMode mode;
-
     private static String DEFAULT_HOST  = "http://localhost:1080";
     private static String DEFAULT_API_KEY = "FEFNtMyXRZqwAH4svMakTw";
-//    private static EventMode DEFAULT_MODE = EventMode.assessment;
-
-//    public static enum EventMode{
-//        assessment,
-//        media,
-//        reading
-//    }
-//
-//    public class EventModeOptionHandler extends OptionHandler<EventMode>{
-//        public EventModeOptionHandler(CmdLineParser parser, OptionDef option, Setter<? super EventMode> setter) {
-//            super(parser, option, setter);
-//        }
-//
-//        @Override
-//        public int parseArguments(Parameters parameters) throws CmdLineException {
-//            if(EventMode.valueOf(parameters.getParameter(0)) != null){
-//                setter.addValue(EventMode.valueOf(parameters.getParameter(0)));
-//                return 0;
-//            } else {
-//                return 1;
-//            }
-//        }
-//
-//        @Override
-//        public String getDefaultMetaVariable() {
-//            return "EVENT_MODE";
-//        }
-//    }
 
     public void initialize(String[] args){
         AnsiConsole.systemInstall();
@@ -112,23 +81,36 @@ public class CaliperSequenceGenerator {
 
         NavigationEvent navEvent = CaliperSampleEvents.generateNavigationEvent(learningContext, assessment);
         sendEvent(caliperStore, navEvent);
+        printEventMessage("Sent Navigation Event");
+
         AssessmentEvent assessmentEvent = CaliperSampleEvents.generateStartedAssessmentEvent(learningContext, assessment);
         sendEvent(caliperStore, assessmentEvent);
+        printEventMessage("Sent Started Assessment Event");
 
         for(AssessmentItem assessmentItem: assessment.getAssessmentItems()) {
             sendEvent(caliperStore, CaliperSampleEvents.generateStartedAssessmentItemEvent(learningContext, assessment, assessmentItem));
+            printEventMessage("Sent Started Assessment Item Event");
             sendEvent(caliperStore, CaliperSampleEvents.generateCompletedAssessmentItemEvent(learningContext, assessment, assessmentItem));
+            printEventMessage("Sent Completed Assessment Item Event");
         }
 
         assessmentEvent = CaliperSampleEvents.generateSubmittedAssessmentEvent(learningContext, assessment);
         sendEvent(caliperStore, assessmentEvent);
+        printEventMessage("Sent Submitted Assessment Event");
+
         OutcomeEvent outcomeEvent = CaliperSampleEvents.generateOutcomeEvent(learningContext, assessment);
         sendEvent(caliperStore, outcomeEvent);
+        printEventMessage("Sent Outcome Event");
+
     }
 
     public void sendEvent(Client client, Event event){
         //TODO: Remove the swallowing of exceptions in java-caliper so they can be handled here.
         client.send(event);
+    }
+
+    public void printEventMessage(String message){
+        System.out.println(ansi().fg(MAGENTA).a(message).reset());
     }
 
 }
