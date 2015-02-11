@@ -32,17 +32,13 @@ public class CaliperSequenceGenerator {
     @Option(name="-h", usage="hostname to send events to", metaVar="STORE_HOST")
     private String host;
 
-    @Option(name="-p", usage="port of host connecting to", metaVar="STORE_PORT")
-    private Integer port;
-
     @Option(name="-k", usage="caliper api key", metaVar="API_KEY")
     private String apiKey;
 
 //    @Option(name="-m",usage="mode of events to send", metaVar = "EVENT_MODE", handler = EventModeOptionHandler.class)
 //    private EventMode mode;
 
-    private static String DEFAULT_HOST  = "localhost";
-    private static Integer DEFAULT_PORT = 1080;
+    private static String DEFAULT_HOST  = "http://localhost:1080";
     private static String DEFAULT_API_KEY = "FEFNtMyXRZqwAH4svMakTw";
 //    private static EventMode DEFAULT_MODE = EventMode.assessment;
 
@@ -87,7 +83,6 @@ public class CaliperSequenceGenerator {
             return;
         }
         host = host == null ? DEFAULT_HOST : host;
-        port = port == null ? DEFAULT_PORT : port;
         apiKey = apiKey == null ? DEFAULT_API_KEY : apiKey;
     }
 
@@ -100,12 +95,11 @@ public class CaliperSequenceGenerator {
         System.out.println(ansi().fg(YELLOW).a("Caliper Sequence Generator...").reset());
         System.out.println(ansi().fg(CYAN).a("Using:").reset());
         System.out.println(ansi().fg(CYAN).a("    host:    " + host).reset());
-        System.out.println(ansi().fg(CYAN).a("    port:    " + port).reset());
         System.out.println(ansi().fg(CYAN).a("    api key: " + apiKey).reset());
 
         Options opts = new Options();
         opts.setApiKey(apiKey);
-        opts.setHost("http://" + host + ":" + port);
+        opts.setHost(host);
         Client caliperStore = new Client(opts);
 
         //TODO: add other Sequences, flagged by a cli param
