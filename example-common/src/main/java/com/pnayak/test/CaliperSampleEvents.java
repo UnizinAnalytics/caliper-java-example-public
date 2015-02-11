@@ -1,11 +1,12 @@
 package com.pnayak.test;
 
-import org.imsglobal.caliper.entities.Agent;
+import org.imsglobal.caliper.entities.foaf.Agent;
 import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.WebPage;
 import org.imsglobal.caliper.entities.assessment.Assessment;
 import org.imsglobal.caliper.entities.assessment.AssessmentItem;
 import org.imsglobal.caliper.entities.assignable.Attempt;
+import org.imsglobal.caliper.entities.lis.Person;
 import org.imsglobal.caliper.entities.outcome.Result;
 import org.imsglobal.caliper.entities.reading.Frame;
 import org.imsglobal.caliper.events.AssessmentEvent;
@@ -14,7 +15,11 @@ import org.imsglobal.caliper.events.NavigationEvent;
 import org.imsglobal.caliper.events.OutcomeEvent;
 import org.imsglobal.caliper.profiles.AssessmentItemProfile;
 import org.imsglobal.caliper.profiles.AssessmentProfile;
+import org.imsglobal.caliper.profiles.NavigationProfile;
+import org.imsglobal.caliper.profiles.OutcomeProfile;
 import org.joda.time.DateTime;
+
+import static com.pnayak.test.CaliperSampleAssets.getDefaultStartedAtTime;
 
 
 /**
@@ -26,19 +31,19 @@ public class CaliperSampleEvents {
         return NavigationEvent.builder()
                 .edApp(learningContext.getEdApp())
                 .lisOrganization(learningContext.getLisOrganization())
-                .actor(learningContext.getAgent())
+                .actor((Person) learningContext.getAgent())
                 .object(assessment)
-                .action(AssessmentProfile.Actions.NAVIGATED_TO.key())
+                .action(NavigationProfile.Actions.NAVIGATED_TO.key())
                 .fromResource(WebPage.builder()
                         .id("AmRev-101-landingPage")
                         .name("American Revolution 101 Landing Page")
-                        .partOf(learningContext.getLisOrganization())
+                        .isPartOf(learningContext.getLisOrganization())
                         .build())
                 .target(Frame.builder()
                         .id(assessment.getId())
                         .index(0)
                         .build())
-                .startedAtTime(DateTime.now().getMillis())
+                .startedAtTime(getDefaultStartedAtTime())
                 .build();
     }
 
@@ -46,16 +51,16 @@ public class CaliperSampleEvents {
         return AssessmentEvent.builder()
                 .edApp(learningContext.getEdApp())
                 .lisOrganization(learningContext.getLisOrganization())
-                .actor(learningContext.getAgent())
+                .actor((Person) learningContext.getAgent())
                 .object(assessment)
-                .action(AssessmentProfile.Actions.NAVIGATED_TO.key())
+                .action(AssessmentProfile.Actions.STARTED.key())
                 .generated(Attempt.builder()
                         .id(assessment.getId() + "/attempt1")
                         .assignable(assessment)
-                        .actor(learningContext.getAgent())
+                        .actor((Person) learningContext.getAgent())
                         .count(1) // First attempt
                         .build())
-                .startedAtTime(DateTime.now().getMillis())
+                .startedAtTime(getDefaultStartedAtTime())
                 .build();
     }
 
@@ -63,10 +68,10 @@ public class CaliperSampleEvents {
         return AssessmentItemEvent.builder()
                 .edApp(learningContext.getEdApp())
                 .lisOrganization(learningContext.getLisOrganization())
-                .actor(learningContext.getAgent())
+                .actor((Person) learningContext.getAgent())
                 .object(item)
-                .action(AssessmentItemProfile.AssessmentItemActions.STARTED.key())
-                .startedAtTime(DateTime.now().getMillis())
+                .action(AssessmentItemProfile.Actions.STARTED.key())
+                .startedAtTime(getDefaultStartedAtTime())
                 .build();
     }
 
@@ -74,10 +79,10 @@ public class CaliperSampleEvents {
         return AssessmentItemEvent.builder()
                 .edApp(learningContext.getEdApp())
                 .lisOrganization(learningContext.getLisOrganization())
-                .actor(learningContext.getAgent())
+                .actor((Person) learningContext.getAgent())
                 .object(item)
-                .action(AssessmentItemProfile.AssessmentItemActions.COMPLETED.key())
-                .startedAtTime(DateTime.now().getMillis())
+                .action(AssessmentItemProfile.Actions.COMPLETED.key())
+                .startedAtTime(getDefaultStartedAtTime())
                 .build();
     }
 
@@ -85,16 +90,16 @@ public class CaliperSampleEvents {
         return AssessmentEvent.builder()
                 .edApp(learningContext.getEdApp())
                 .lisOrganization(learningContext.getLisOrganization())
-                .actor(learningContext.getAgent())
+                .actor((Person) learningContext.getAgent())
                 .object(assessment)
-                .action(AssessmentProfile.AssessmentActions.SUBMITTED.key())
+                .action(AssessmentProfile.Actions.SUBMITTED.key())
                 .generated(Attempt.builder()
                         .id(assessment.getId() + "/attempt1")
                         .assignable(assessment)
-                        .actor(learningContext.getAgent())
+                        .actor((Person) learningContext.getAgent())
                         .count(1) // First attempt
                         .build())
-                .startedAtTime(DateTime.now().getMillis())
+                .startedAtTime(getDefaultStartedAtTime())
                 .build();
     }
 
@@ -106,17 +111,17 @@ public class CaliperSampleEvents {
                 .object(Attempt.builder()
                         .id(assessment.getId() + "/attempt1")
                         .assignable(assessment)
-                        .actor(learningContext.getAgent())
+                        .actor((Person) learningContext.getAgent())
                         .count(1) // First attempt
                         .build())
-                .action(AssessmentProfile.AssessmentActions.SUBMITTED.key())
+                .action(OutcomeProfile.Actions.GRADED.key())
                 .generated(Result.builder()
                         .id("https://some-university.edu/politicalScience/2014/american-revolution-101/activityContext1/attempt1/result")
                         .totalScore(4.2d)
                         .normalScore(4.2d)
-                        .scoredBy(learningContext.getEdApp())
+                        .scoredBy(learningContext.getAgent())
                         .build())
-                .startedAtTime(DateTime.now().getMillis())
+                .startedAtTime(getDefaultStartedAtTime())
                 .build();
     }
 
