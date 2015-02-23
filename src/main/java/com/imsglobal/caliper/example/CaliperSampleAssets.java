@@ -1,4 +1,4 @@
-package com.pnayak.test;
+package com.imsglobal.caliper.example;
 
 import com.google.common.collect.ImmutableList;
 import org.imsglobal.caliper.entities.*;
@@ -10,11 +10,10 @@ import org.imsglobal.caliper.entities.lis.Person;
 import org.imsglobal.caliper.entities.media.VideoObject;
 import org.imsglobal.caliper.entities.reading.EpubSubChapter;
 import org.imsglobal.caliper.entities.reading.EpubVolume;
+import org.imsglobal.caliper.events.SessionEvent;
+import org.imsglobal.caliper.profiles.SessionProfile;
 import org.joda.time.DateTime;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
+import org.joda.time.DateTimeZone;
 
 public class CaliperSampleAssets {
 
@@ -43,13 +42,13 @@ public class CaliperSampleAssets {
      */
     public static final WebPage buildAmRev101LandingPage() {
         return WebPage.builder()
-            .id("AmRev-101-landingPage")
+            .id("https://some-university.edu/politicalScience/2014/american-revolution-101/index.html")
             .name("American Revolution 101 Landing Page")
             .isPartOf(SoftwareApplication.builder()
-                    .id("https://canvas.instructure.com")
-                    .dateCreated(getDefaultDateCreated())
-                    .dateModified(getDefaultDateModified())
-                    .build())
+                .id("https://canvas.instructure.com")
+                .dateCreated(getDefaultDateCreated())
+                .dateModified(getDefaultDateModified())
+                .build())
             .dateCreated(getDefaultDateCreated())
             .build();
     }
@@ -80,20 +79,20 @@ public class CaliperSampleAssets {
      */
     public static final ImmutableList<AssessmentItem> buildAssessmentItems() {
         return ImmutableList.<AssessmentItem>builder()
-            .add(AssessmentItem.builder()
-                .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item1")
-                .name("Assessment Item 1")
-                .isPartOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
+                .add(AssessmentItem.builder()
+                        .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item1")
+                        .name("Assessment Item 1")
+                        .isPartOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
                 .build())
-            .add(AssessmentItem.builder()
-                .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item2")
-                .name("Assessment Item 2")
-                .isPartOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
+                .add(AssessmentItem.builder()
+                        .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item2")
+                        .name("Assessment Item 2")
+                        .isPartOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
                 .build())
-            .add(AssessmentItem.builder()
-                .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item3")
-                .name("Assessment Item 3")
-                .isPartOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
+                .add(AssessmentItem.builder()
+                        .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item3")
+                        .name("Assessment Item 3")
+                        .isPartOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
                 .build())
             .build();
     }
@@ -106,13 +105,52 @@ public class CaliperSampleAssets {
      */
     public static final LearningContext buildCanvasLearningContext() {
         return LearningContext.builder()
-            .edApp(SoftwareApplication.builder()
+                .edApp(SoftwareApplication.builder()
                 .id("https://canvas.instructure.com")
                 .dateCreated(getDefaultDateCreated())
-                .dateModified(getDefaultDateModified())
+                        .dateModified(getDefaultDateModified())
                 .build())
             .lisOrganization(buildAmRev101CourseSection())
             .agent(buildStudent554433())
+            .build();
+    }
+
+    /**
+     * Build Canvas login event
+     * @return sessionEvent
+     */
+    public static SessionEvent buildCanvasLoginEvent() {
+        LearningContext canvas = buildCanvasLearningContext();
+
+        return SessionEvent.builder()
+                .edApp(canvas.getEdApp())
+            .lisOrganization(canvas.getLisOrganization())
+                .actor((Person) canvas.getAgent())
+            .action(SessionProfile.Actions.LOGGEDIN.key())
+                .object(canvas.getEdApp())
+                .target(buildEpubSubChap43())
+                .generated(buildSessionStart())
+                .startedAtTime(getDefaultStartedAtTime())
+            .build();
+    }
+
+    /**
+     * Build Canvas Logout event
+     * @return sessionEvent
+     */
+    public static SessionEvent buildCanvasLogoutEvent() {
+        LearningContext canvas = buildCanvasLearningContext();
+
+        return SessionEvent.builder()
+                .edApp(canvas.getEdApp())
+            .lisOrganization(canvas.getLisOrganization())
+                .actor((Person) canvas.getAgent())
+            .action(SessionProfile.Actions.LOGGEDOUT.key())
+                .object(canvas.getEdApp())
+                .target(buildSessionEnd())
+            .startedAtTime(getDefaultStartedAtTime())
+                .endedAtTime(getDefaultEndedAtTime())
+            .duration("PT3000S")
             .build();
     }
 
@@ -254,6 +292,34 @@ public class CaliperSampleAssets {
     }
 
     /**
+     * @return Session
+     */
+    public static Session buildSessionStart() {
+        return Session.builder()
+            .id("https://univ.instructure.com/session-123456789")
+            .name("session-123456789")
+            .actor(buildStudent554433())
+            .dateCreated(getDefaultDateCreated())
+            .startedAtTime(getDefaultStartedAtTime())
+            .build();
+    }
+
+    /**
+     * @return Session
+     */
+    public static Session buildSessionEnd() {
+        return Session.builder()
+            .id("https://univ.instructure.com/session-123456789")
+            .name("session-123456789")
+            .actor(buildStudent554433())
+            .dateCreated(getDefaultDateCreated())
+            .startedAtTime(getDefaultStartedAtTime())
+            .endedAtTime(getDefaultEndedAtTime())
+            .duration("PT3000S")
+                .build();
+    }
+
+    /**
      * Sample student.
      * @return agent
      */
@@ -313,136 +379,74 @@ public class CaliperSampleAssets {
     }
 
     /**
-     * Generate create date.
-     * @return ISO-8601 date
+     * January 1, 2015, 06:00:00.000 GMT
+     * @return return date created
      */
-    public static Date getDefaultDateCreated(){
-        //January 1, 2015, 06:00:00.000 GMT
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-        cal.set(Calendar.YEAR, 2015);
-        cal.set(Calendar.MONTH, Calendar.JANUARY);
-        cal.set(Calendar.DATE, 1);
-        cal.set(Calendar.HOUR_OF_DAY, 6);
-        cal.set(Calendar.MINUTE,0);
-        cal.set(Calendar.SECOND,0);
-        cal.set(Calendar.MILLISECOND,0);
-        return cal.getTime();
+    public static DateTime getDefaultDateCreated() {
+        return new DateTime(2015, 1, 1, 6, 0, 0, 0, DateTimeZone.UTC);
     }
 
     /**
-     * Generate modified date.
-     * @return ISO-8601 date
+     * February 2, 2015, 11:30:00.000 GMT
+     * @return return date modified
      */
-    public static Date getDefaultDateModified(){
-        //February 2, 2015, 11:30:00.000 GMT
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-        cal.set(Calendar.YEAR, 2015);
-        cal.set(Calendar.MONTH, Calendar.FEBRUARY);
-        cal.set(Calendar.DATE, 2);
-        cal.set(Calendar.HOUR_OF_DAY, 11);
-        cal.set(Calendar.MINUTE, 30);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
+    public static DateTime getDefaultDateModified() {
+        return new DateTime(2015, 2, 2, 11, 30, 0, 0, DateTimeZone.UTC);
     }
 
     /**
-     * Generate published date.
-     * @return ISO-8601 date
+     * January 15, 2015, 09:30:00.000 GMT
+     * @return return date published
      */
-    public static Date getDefaultDatePublished(){
-        //January 15, 2015, 09:30:00.000 GMT
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-        cal.set(Calendar.YEAR, 2015);
-        cal.set(Calendar.MONTH, Calendar.JANUARY);
-        cal.set(Calendar.DATE, 15);
-        cal.set(Calendar.HOUR_OF_DAY, 9);
-        cal.set(Calendar.MINUTE, 30);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
+    public static DateTime getDefaultDatePublished(){
+        return new DateTime(2015, 1, 15, 9, 30, 0, 0, DateTimeZone.UTC);
     }
 
     /**
-     * Generate activated date
-     * @return ISO-8601 date
+     * January 16, 2015, 05:00:00.000 GMT
+     * @return date to activate
      */
-    public static Date getDefaultDateToActivate(){
-        //January 16, 2015, 05:00:00.000 GMT
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-        cal.set(Calendar.YEAR, 2015);
-        cal.set(Calendar.MONTH, Calendar.JANUARY);
-        cal.set(Calendar.DATE, 16);
-        cal.set(Calendar.HOUR_OF_DAY, 5);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
+    public static DateTime getDefaultDateToActivate(){
+        return new DateTime(2015, 1, 16, 5, 0, 0, 0, DateTimeZone.UTC);
     }
 
     /**
-     * Generate shown date
-     * @return ISO-8601 date
+     * Same date as activate date
+     * @return date to show
      */
-    public static Date getDefaultDateToShow() {
+    public static DateTime getDefaultDateToShow() {
         return getDefaultDateToActivate();
     }
 
     /**
-     * Generate submit date
-     * @return ISO-8601 date
+     * Same date as activate date
+     * @return date to start on
      */
-    public static Date getDefaultDateToSubmit() {
-        //February 28, 2015, 11:59:59.000 GMT
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-        cal.set(Calendar.YEAR, 2015);
-        cal.set(Calendar.MONTH, Calendar.FEBRUARY);
-        cal.set(Calendar.DATE, 28);
-        cal.set(Calendar.HOUR_OF_DAY, 11);
-        cal.set(Calendar.MINUTE, 59);
-        cal.set(Calendar.SECOND, 59);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
+    public static DateTime getDefaultDateToStartOn() {
+        return getDefaultDateToActivate();
     }
 
     /**
-     * Generate started at time.
-     * @return ISO-8601 date
+     * February 28, 2015, 11:59:59.000 GMT
+     * @return date to submit
      */
-    public static Date getDefaultStartedAtTime() {
-        //February 15, 2015, 10:15:00.000 GMT
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-        cal.set(Calendar.YEAR, 2015);
-        cal.set(Calendar.MONTH, Calendar.FEBRUARY);
-        cal.set(Calendar.DATE, 15);
-        cal.set(Calendar.HOUR_OF_DAY, 10);
-        cal.set(Calendar.MINUTE, 15);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
+    public static DateTime getDefaultDateToSubmit() {
+        return new DateTime(2015, 2, 28, 11, 59, 59, 0, DateTimeZone.UTC);
     }
 
     /**
-     * Generate ended at time.
-     * @return ISO-8601 date
+     * February 15, 2015, 10:15:00.000 GMT
+     * @return started at time
      */
-    public static Date getDefaultEndedAtTime() {
-        //February 15, 2015, 11:05:00.000 GMT
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-        cal.set(Calendar.YEAR, 2015);
-        cal.set(Calendar.MONTH, Calendar.FEBRUARY);
-        cal.set(Calendar.DATE, 15);
-        cal.set(Calendar.HOUR_OF_DAY, 11);
-        cal.set(Calendar.MINUTE, 05);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
+    public static DateTime getDefaultStartedAtTime() {
+        return new DateTime(2015, 2, 15, 10, 15, 0, 0, DateTimeZone.UTC);
+    }
+
+    /**
+     * February 15, 2015, 11:05:00.000 GMT
+     * @return ended at time
+     */
+    public static DateTime getDefaultEndedAtTime() {
+        return new DateTime(2015, 2, 15, 11, 05, 0, 0, DateTimeZone.UTC);
     }
 }
