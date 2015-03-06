@@ -286,26 +286,23 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // Annotation Event: highlighted text
         learningContext = CaliperSampleAssets.buildReadiumLearningContext();
-        target = CaliperSampleAssets.buildEpubSubChap432();
+        reading = CaliperSampleAssets.buildEpubSubChap432();
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(240);
         AnnotationEvent annoEvent = AnnotationEvent.builder()
             .edApp(learningContext.getEdApp())
             .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
-            .object(HighlightAnnotation.builder()
+            .object(Frame.builder()
+                .id(reading.getId())
+                .index(2)
+                .build())
+            .action(AnnotationProfile.Actions.HIGHLIGHTED.key())
+            .generated(HighlightAnnotation.builder()
                 .id("https://someEduApp.edu/highlights/" + UUID.randomUUID().toString())
+                .annotatedId(reading.getId())
                 .selectionStart(Integer.toString(455))
                 .selectionEnd(Integer.toString(489))
                 .selectionText("Life, Liberty and the pursuit of Happiness")
-                .target(Frame.builder()
-                    .id(target.getId())
-                    .index(2)
-                    .build())
-                .build())
-            .action(AnnotationProfile.Actions.HIGHLIGHTED.key())
-            .target(Frame.builder()
-                .id(target.getId())
-                .index(2)
                 .build())
             .startedAtTime(incrementTime)
             .build();
@@ -315,9 +312,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Generated Highlight AnnotationEvent \n");
         output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
         output.append("action : " + annoEvent.getAction() + "\n");
-        output.append("object : " + ((HighlightAnnotation) annoEvent.getObject()).getId()  + "\n");
-        output.append("target : " + ((Frame) annoEvent.getTarget()).getId() + "\n");
-        output.append("highlighted : " + ((HighlightAnnotation) annoEvent.getObject()).getSelectionText() + "\n\n");
+        output.append("object : " + ((Frame) annoEvent.getObject()).getId() + "\n");
+        output.append("generated : " + ((HighlightAnnotation) annoEvent.getGenerated()).getId()  + "\n");
+        output.append("highlighted : " + ((HighlightAnnotation) annoEvent.getGenerated()).getSelectionText() + "\n\n");
 
         // Navigation Event: navigated to #epubcfi(/4/3/3) (Paul Revere)
         learningContext = CaliperSampleAssets.buildReadiumLearningContext();
@@ -376,21 +373,21 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // BookmarkAnnotationEvent: bookmarked the reading with a note
         learningContext = CaliperSampleAssets.buildReadiumLearningContext();
-        target = CaliperSampleAssets.buildEpubSubChap433();
+        reading = CaliperSampleAssets.buildEpubSubChap433();
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(325);
         annoEvent = AnnotationEvent.builder()
             .edApp(learningContext.getEdApp())
             .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
-            .object(BookmarkAnnotation.builder()
-                .id("https://someEduApp.edu/bookmarks/" + UUID.randomUUID().toString())
-                .bookmarkNotes("The Intolerable Acts (1774)--bad idea Lord North")
-                .target(target)
-                .build())
             .action(AnnotationProfile.Actions.BOOKMARKED.key())
-            .target(Frame.builder()
-                .id(target.getId())
+            .object(Frame.builder()
+                .id(reading.getId())
                 .index(3)
+                .build())
+            .generated(BookmarkAnnotation.builder()
+                .id("https://someEduApp.edu/bookmarks/" + UUID.randomUUID().toString())
+                .annotatedId(reading.getId())
+                .bookmarkNotes("The Intolerable Acts (1774)--bad idea Lord North")
                 .build())
             .startedAtTime(incrementTime)
             .build();
@@ -400,9 +397,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Generated Bookmark AnnotationEvent \n");
         output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
         output.append("action : " + annoEvent.getAction() + "\n");
-        output.append("object : " + ((BookmarkAnnotation) annoEvent.getObject()).getId()  + "\n");
-        output.append("target : " + ((Frame) annoEvent.getTarget()).getId() + "\n");
-        output.append("bookmark notes : " + ((BookmarkAnnotation) annoEvent.getObject()).getBookmarkNotes() + "\n\n");
+        output.append("object : " + ((Frame) annoEvent.getObject()).getId() + "\n");
+        output.append("generated : " + ((BookmarkAnnotation) annoEvent.getGenerated()).getId()  + "\n");
+        output.append("bookmark notes : " + ((BookmarkAnnotation) annoEvent.getGenerated()).getBookmarkNotes() + "\n\n");
 
         // TODO ADD LAUNCH EVENT
 
@@ -492,21 +489,21 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         // Tag AnnotationEvent: tagged reading
         learningContext = CaliperSampleAssets.buildCourseSmartLearningContext();
-        target = CaliperSampleAssets.buildAllisonAmRevEpubSubChap();
+        reading = CaliperSampleAssets.buildAllisonAmRevEpubSubChap();
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(420);
         annoEvent = AnnotationEvent.builder()
             .edApp(learningContext.getEdApp())
             .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
-            .object(TagAnnotation.builder()
-                .id("https://someEduApp.edu/tags/" + UUID.randomUUID().toString())
-                .tags(Lists.newArrayList("to-read", "1776", "shared-with-project-team"))
-                .target(target)
-                .build())
             .action(AnnotationProfile.Actions.TAGGED.key())
-            .target(Frame.builder()
+            .object(Frame.builder()
                 .id(target.getId())
                 .index(1)
+                .build())
+            .generated(TagAnnotation.builder()
+                .id("https://someEduApp.edu/tags/" + UUID.randomUUID().toString())
+                .annotatedId(reading.getId())
+                .tags(Lists.newArrayList("to-read", "1776", "shared-with-project-team"))
                 .build())
             .startedAtTime(incrementTime)
             .build();
@@ -516,20 +513,26 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Generated Tag AnnotationEvent \n");
         output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
         output.append("action : " + annoEvent.getAction() + "\n");
-        output.append("object : " + ((TagAnnotation) annoEvent.getObject()).getId()  + "\n");
-        output.append("target : " + ((Frame) annoEvent.getTarget()).getId() + "\n");
-        output.append("tags : " + ((TagAnnotation) annoEvent.getObject()).getTags().toString() + "\n\n");
+        output.append("object : " + ((Frame) annoEvent.getObject()).getId() + "\n");
+        output.append("generated : " + ((TagAnnotation) annoEvent.getGenerated()).getId()  + "\n");
+        output.append("tags : " + ((TagAnnotation) annoEvent.getGenerated()).getTags().toString() + "\n\n");
 
         // Shared AnnotationEvent: shared reading with other students
         learningContext = CaliperSampleAssets.buildCourseSmartLearningContext();
-        target = CaliperSampleAssets.buildAllisonAmRevEpubSubChap();
+        reading = CaliperSampleAssets.buildAllisonAmRevEpubSubChap();
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(440);
         annoEvent = AnnotationEvent.builder()
             .edApp(learningContext.getEdApp())
             .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
-            .object(SharedAnnotation.builder()
+            .action(AnnotationProfile.Actions.SHARED.key())
+            .object(Frame.builder()
+                .id(target.getId())
+                .index(1)
+                .build())
+            .generated(SharedAnnotation.builder()
                 .id("https://someEduApp.edu/shared/" + UUID.randomUUID().toString())
+                .annotatedId(reading.getId())
                 .withAgents(Lists.<Agent>newArrayList(
                     Person.builder()
                         .id("https://some-university.edu/students/657585")
@@ -542,11 +545,6 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
                         .dateModified(CaliperSampleAssets.getDefaultDateModified())
                         .build()))
                 .build())
-            .action(AnnotationProfile.Actions.SHARED.key())
-            .target(Frame.builder()
-                    .id(target.getId())
-                    .index(1)
-                    .build())
             .startedAtTime(incrementTime)
             .build();
 
@@ -555,11 +553,11 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         output.append("Generated Shared AnnotationEvent \n");
         output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
         output.append("action : " + annoEvent.getAction() + "\n");
-        output.append("object : " + ((SharedAnnotation) annoEvent.getObject()).getId()  + "\n");
-        output.append("target : " + ((Frame) annoEvent.getTarget()).getId() + "\n");
+        output.append("object : " + ((Frame) annoEvent.getObject()).getId() + "\n");
+        output.append("generated : " + ((SharedAnnotation) annoEvent.getGenerated()).getId()  + "\n");
 
         // Retrieve agents
-        SharedAnnotation shared = (SharedAnnotation) annoEvent.getObject();
+        SharedAnnotation shared = (SharedAnnotation) annoEvent.getGenerated();
         for (Agent agent: shared.getWithAgents()) {
             output.append("Shared with: " + ((Person) agent).getId() + "\n");
         }
