@@ -25,4 +25,12 @@
         </developer>
     </developers>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.imsglobal.caliper</groupId>
+            <artifactId>caliper-java</artifactId>
+            <version>0.6.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
 </project>
