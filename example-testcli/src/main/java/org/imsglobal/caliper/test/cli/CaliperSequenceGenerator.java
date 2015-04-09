@@ -1,28 +1,18 @@
 package org.imsglobal.caliper.test.cli;
 
-import com.pnayak.test.CaliperSampleAssets;
-import com.pnayak.test.CaliperSampleEvents;
-import org.apache.http.conn.HttpHostConnectException;
+import org.imsglobal.caliper.test.CaliperSampleAssets;
+import org.imsglobal.caliper.test.CaliperSampleEvents;
 import org.imsglobal.caliper.Client;
 import org.imsglobal.caliper.Options;
-import org.imsglobal.caliper.Sensor;
 import org.imsglobal.caliper.entities.LearningContext;
-import org.imsglobal.caliper.entities.WebPage;
 import org.imsglobal.caliper.entities.assessment.Assessment;
 import org.imsglobal.caliper.entities.assessment.AssessmentItem;
-import org.imsglobal.caliper.entities.reading.Frame;
 import org.imsglobal.caliper.events.*;
-import org.imsglobal.caliper.profiles.AssessmentProfile;
-import org.joda.time.DateTime;
 import org.fusesource.jansi.AnsiConsole;
 import org.kohsuke.args4j.*;
-import org.kohsuke.args4j.spi.OptionHandler;
 
 import static org.fusesource.jansi.Ansi.*;
 import static org.fusesource.jansi.Ansi.Color.*;
-
-import static com.pnayak.test.CaliperSampleAssets.buildAssessment;
-import static com.pnayak.test.CaliperSampleAssets.buildCanvasLearningContext;
 
 /**
  * Created by pgray on 12/23/14.
