@@ -21,6 +21,9 @@ import org.imsglobal.caliper.events.SessionEvent;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+/**
+ * Set of sample entities that are used in the construction of a Caliper event.
+ */
 public class CaliperSampleAssets {
 
     private static DateTime now = DateTime.now();
@@ -83,8 +86,8 @@ public class CaliperSampleAssets {
                 .name("American Revolution - Key Figures Assessment")
                 .dateCreated(getDefaultDateCreated())
                 .startedAtTime(getDefaultStartedAtTime())
-                .assignableId("assignableId")
-                .actorId("actorId")
+                .assignable(buildAssessment())
+                .actor(buildStudent554433())
                 .count(1)
                 .build();
     }
@@ -95,8 +98,8 @@ public class CaliperSampleAssets {
                 .name("American Revolution - Key Figures Assessment")
                 .dateCreated(getDefaultDateCreated())
                 .startedAtTime(getDefaultStartedAtTime())
-                .assignableId("assignableId")
-                .actorId("actorId")
+                .assignable(buildAssessment())
+                .actor(buildStudent554433())
                 .value("sdafgdfas")
                 .attempt(buildAttempt())
                 .build();

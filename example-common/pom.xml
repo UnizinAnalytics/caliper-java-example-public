@@ -1,35 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.imsglobal.caliper</groupId>
         <artifactId>caliper-java-example</artifactId>
-        <version>0.6.0-SNAPSHOT</version>
+        <version>0.9.0-SNAPSHOT</version>
     </parent>
+
     <groupId>org.imsglobal.caliper</groupId>
     <artifactId>caliper-java-example-common</artifactId>
-    <packaging>jar</packaging>
     <name>Caliper Java Example Common</name>
-    <url>http://maven.apache.org</url>
 
-    <developers>
-        <developer>
-            <id>pnayak</id>
-            <name>Prashant Nayak</name>
-            <email>prashant@intellifylearning.com</email>
-        </developer>
-        <developer>
-            <id>arwhyte</id>
-            <name>Anthony Whyte</name>
-            <email>arwhyte@umich.edu</email>
-        </developer>
-    </developers>
+    <organization>
+        <name>IMS Global</name>
+        <url>http://imsglobal.org/caliper/</url>
+    </organization>
+
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.imsglobal.caliper</groupId>
             <artifactId>caliper-java</artifactId>
-            <version>0.6.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
