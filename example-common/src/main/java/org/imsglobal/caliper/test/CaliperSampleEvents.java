@@ -16,7 +16,7 @@ import org.imsglobal.caliper.events.OutcomeEvent;
 import static org.imsglobal.caliper.test.CaliperSampleAssets.*;
 
 /**
- * Created by pgray on 12/26/14.
+ * Example set of Caliper event builders
  */
 public class CaliperSampleEvents {
 
@@ -46,8 +46,8 @@ public class CaliperSampleEvents {
                 .action(Action.STARTED)
                 .generated(Attempt.builder()
                         .id(assessment.getId() + "/attempt1")
-                        .assignableId(assessment.getId())
-                        .actorId("actorId")
+                        .assignable(assessment)
+                        .actor(learningContext.getAgent())
                         .count(1) // First attempt
                         .startedAtTime(getDefaultStartedAtTime())
                         .build())
@@ -85,8 +85,8 @@ public class CaliperSampleEvents {
                 .action(Action.SUBMITTED)
                 .generated(Attempt.builder()
                         .id(assessment.getId() + "/attempt1")
-                        .assignableId(assessment.getId())
-                        .actorId("actorId")
+                        .assignable(assessment)
+                        .actor(learningContext.getAgent())
                         .count(1) // First attempt
                         .startedAtTime(getDefaultStartedAtTime())
                         .build())
@@ -100,8 +100,8 @@ public class CaliperSampleEvents {
                 .actor(learningContext.getAgent())
                 .object(Attempt.builder()
                         .id(assessment.getId() + "/attempt1")
-                        .assignableId(assessment.getId())
-                        .actorId("actorId")
+                        .assignable(assessment)
+                        .actor(learningContext.getAgent())
                         .count(1) // First attempt
                         .startedAtTime(getDefaultStartedAtTime())
                         .build())
@@ -111,11 +111,10 @@ public class CaliperSampleEvents {
                         .totalScore(4.2d)
                         .normalScore(4.2d)
                         .scoredBy(learningContext.getAgent())
-                        .assignableId("assignableId")
-                        .actorId("actorId")
+                        .assignable(assessment)
+                        .actor(learningContext.getAgent())
                         .build())
                 .startedAtTime(getDefaultStartedAtTime())
                 .build();
     }
-
 }
