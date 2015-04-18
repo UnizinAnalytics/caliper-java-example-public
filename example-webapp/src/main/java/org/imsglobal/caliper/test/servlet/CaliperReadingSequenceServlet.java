@@ -1,29 +1,28 @@
-package com.imsglobal.caliper.example;
+package org.imsglobal.caliper.test.servlet;
 
 import com.google.common.collect.Lists;
+import org.imsglobal.caliper.Client;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.Sensor;
+import org.imsglobal.caliper.actions.Action;
 import org.imsglobal.caliper.entities.DigitalResource;
 import org.imsglobal.caliper.entities.LearningContext;
-import org.imsglobal.caliper.entities.Session;
-import org.imsglobal.caliper.entities.SoftwareApplication;
+import org.imsglobal.caliper.entities.agent.Person;
+import org.imsglobal.caliper.entities.agent.SoftwareApplication;
 import org.imsglobal.caliper.entities.annotation.BookmarkAnnotation;
 import org.imsglobal.caliper.entities.annotation.HighlightAnnotation;
 import org.imsglobal.caliper.entities.annotation.SharedAnnotation;
 import org.imsglobal.caliper.entities.annotation.TagAnnotation;
 import org.imsglobal.caliper.entities.foaf.Agent;
-import org.imsglobal.caliper.entities.lis.Person;
 import org.imsglobal.caliper.entities.reading.EpubSubChapter;
 import org.imsglobal.caliper.entities.reading.EpubVolume;
 import org.imsglobal.caliper.entities.reading.Frame;
+import org.imsglobal.caliper.entities.session.Session;
 import org.imsglobal.caliper.events.AnnotationEvent;
 import org.imsglobal.caliper.events.NavigationEvent;
 import org.imsglobal.caliper.events.ReadingEvent;
 import org.imsglobal.caliper.events.SessionEvent;
-import org.imsglobal.caliper.profiles.AnnotationProfile;
-import org.imsglobal.caliper.profiles.Profile;
-import org.imsglobal.caliper.profiles.ReadingProfile;
-import org.imsglobal.caliper.profiles.SessionProfile;
+import org.imsglobal.caliper.test.CaliperSampleAssets;
 import org.joda.time.DateTime;
 
 import javax.servlet.ServletException;
@@ -35,7 +34,7 @@ import java.util.Random;
 import java.util.UUID;
 
 /**
- * Servlet implementation class CaliperReadingSequenceServlet
+ * Servlet implementation class org.imsglobal.caliper.test.servlet.CaliperReadingSequenceServlet
  */
 public class CaliperReadingSequenceServlet extends HttpServlet {
 
@@ -49,12 +48,14 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
     private Random r;
     StringBuilder output = new StringBuilder();
 
+    Sensor<String> sensor = new Sensor();
+
     // Initialize the sensor - this needs to be done only once
     private void initialize() {
         Options options = new Options();
         options.setHost(HOST);
         options.setApiKey(API_KEY);
-        Sensor.initialize(options);
+        sensor.registerClient("example", new Client(options));
 
         r = new Random();
     }
@@ -82,7 +83,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         generateReadingAnnotationEventSequence(output);
 
-        output.append(Sensor.getStatistics().toString());
+        output.append(sensor.getStatistics().toString());
 
         response.getWriter().write(output.toString());
 
@@ -125,16 +126,15 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         SessionEvent sessionEvent = SessionEvent.builder()
             .edApp(canvas.getEdApp())
-            .lisOrganization(canvas.getLisOrganization())
             .actor((Person) canvas.getAgent())
-            .action(SessionProfile.Actions.LOGGEDIN.key())
+            .action(Action.LOGGED_IN)
             .object(canvas.getEdApp())
             .target(reading)
             .generated(CaliperSampleAssets.buildSessionStart())
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(sessionEvent);
+        sensor.send(sessionEvent);
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
@@ -152,10 +152,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(10);
         NavigationEvent navEvent = NavigationEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(reading)
-            .action(Profile.Actions.NAVIGATED_TO.key())
+            .action(Action.NAVIGATED_TO)
             .fromResource(fromResource)
             .target(Frame.builder()
                 .id(reading.getId())
@@ -164,7 +163,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(navEvent);
+        sensor.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -180,10 +179,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(15);
         navEvent = NavigationEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(reading)
-            .action(Profile.Actions.NAVIGATED_TO.key())
+            .action(Action.NAVIGATED_TO)
             .fromResource(fromResource)
             .target(Frame.builder()
                 .id(target.getId())
@@ -192,7 +190,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(navEvent);
+        sensor.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -209,10 +207,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(60);
         ReadingEvent readEvent = ReadingEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(reading)
-            .action(ReadingProfile.Actions.VIEWED.key())
+            .action(Action.VIEWED)
             .target(Frame.builder()
                 .id(target.getId())
                 .index(1)
@@ -220,7 +217,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(readEvent);
+        sensor.send(readEvent);
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + ((Person) readEvent.getActor()).getId() + "\n");
@@ -236,10 +233,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(65);
         navEvent = NavigationEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(reading)
-            .action(Profile.Actions.NAVIGATED_TO.key())
+            .action(Action.NAVIGATED_TO)
             .fromResource(fromResource)
             .target(Frame.builder()
                 .id(target.getId())
@@ -248,7 +244,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
                 .build();
 
-        Sensor.send(navEvent);
+        sensor.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -265,10 +261,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(230);
         readEvent = ReadingEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(reading)
-            .action(ReadingProfile.Actions.VIEWED.key())
+            .action(Action.VIEWED)
             .target(Frame.builder()
                 .id(target.getId())
                 .index(2)
@@ -276,7 +271,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(readEvent);
+        sensor.send(readEvent);
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + ((Person) readEvent.getActor()).getId() + "\n");
@@ -290,16 +285,15 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(240);
         AnnotationEvent annoEvent = AnnotationEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(Frame.builder()
                 .id(reading.getId())
                 .index(2)
                 .build())
-            .action(AnnotationProfile.Actions.HIGHLIGHTED.key())
+            .action(Action.HIGHLIGHTED)
             .generated(HighlightAnnotation.builder()
                 .id("https://someEduApp.edu/highlights/" + UUID.randomUUID().toString())
-                .annotatedId(reading.getId())
+                .annotated(reading)
                 .selectionStart(Integer.toString(455))
                 .selectionEnd(Integer.toString(489))
                 .selectionText("Life, Liberty and the pursuit of Happiness")
@@ -307,7 +301,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(annoEvent);
+        sensor.send(annoEvent);
 
         output.append("Generated Highlight AnnotationEvent \n");
         output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
@@ -324,10 +318,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(250);
         navEvent = NavigationEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(reading)
-            .action(Profile.Actions.NAVIGATED_TO.key())
+            .action(Action.NAVIGATED_TO)
             .fromResource(fromResource)
             .target(Frame.builder()
                 .id(target.getId())
@@ -336,7 +329,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(navEvent);
+        sensor.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -352,10 +345,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(320);
         readEvent = ReadingEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(reading)
-            .action(ReadingProfile.Actions.VIEWED.key())
+            .action(Action.VIEWED)
             .target(Frame.builder()
                     .id(target.getId())
                     .index(3)
@@ -363,7 +355,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(readEvent);
+        sensor.send(readEvent);
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -377,22 +369,21 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(325);
         annoEvent = AnnotationEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
-            .action(AnnotationProfile.Actions.BOOKMARKED.key())
+            .action(Action.BOOKMARKED)
             .object(Frame.builder()
                 .id(reading.getId())
                 .index(3)
                 .build())
             .generated(BookmarkAnnotation.builder()
                 .id("https://someEduApp.edu/bookmarks/" + UUID.randomUUID().toString())
-                .annotatedId(reading.getId())
+                .annotated(reading)
                 .bookmarkNotes("The Intolerable Acts (1774)--bad idea Lord North")
                 .build())
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(annoEvent);
+        sensor.send(annoEvent);
 
         output.append("Generated Bookmark AnnotationEvent \n");
         output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
@@ -410,10 +401,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(330);
         navEvent = NavigationEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(reading)
-            .action(Profile.Actions.NAVIGATED_TO.key())
+            .action(Action.NAVIGATED_TO)
             .fromResource(fromResource)
             .target(Frame.builder()
                 .id(reading.getId())
@@ -422,7 +412,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(navEvent);
+        sensor.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -439,10 +429,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(340);
         navEvent = NavigationEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(reading)
-            .action(Profile.Actions.NAVIGATED_TO.key())
+            .action(Action.NAVIGATED_TO)
             .fromResource(fromResource)
             .target(Frame.builder()
                 .id(target.getId())
@@ -452,7 +441,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(navEvent);
+        sensor.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -468,10 +457,9 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(400);
         readEvent = ReadingEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(reading)
-            .action(ReadingProfile.Actions.VIEWED.key())
+            .action(Action.VIEWED)
             .target(Frame.builder()
                 .id(target.getId())
                 .index(1)
@@ -479,7 +467,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(readEvent);
+        sensor.send(readEvent);
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + ((Person) readEvent.getActor()).getId() + "\n");
@@ -493,22 +481,21 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(420);
         annoEvent = AnnotationEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
-            .action(AnnotationProfile.Actions.TAGGED.key())
+            .action(Action.TAGGED)
             .object(Frame.builder()
                 .id(target.getId())
                 .index(1)
                 .build())
             .generated(TagAnnotation.builder()
                 .id("https://someEduApp.edu/tags/" + UUID.randomUUID().toString())
-                .annotatedId(reading.getId())
+                .annotated(reading)
                 .tags(Lists.newArrayList("to-read", "1776", "shared-with-project-team"))
                 .build())
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(annoEvent);
+        sensor.send(annoEvent);
 
         output.append("Generated Tag AnnotationEvent \n");
         output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
@@ -523,16 +510,15 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
         incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(440);
         annoEvent = AnnotationEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
-            .action(AnnotationProfile.Actions.SHARED.key())
+            .action(Action.SHARED)
             .object(Frame.builder()
                 .id(target.getId())
                 .index(1)
                 .build())
             .generated(SharedAnnotation.builder()
                 .id("https://someEduApp.edu/shared/" + UUID.randomUUID().toString())
-                .annotatedId(reading.getId())
+                .annotated(reading)
                 .withAgents(Lists.<Agent>newArrayList(
                     Person.builder()
                         .id("https://some-university.edu/students/657585")
@@ -548,7 +534,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(annoEvent);
+        sensor.send(annoEvent);
 
         output.append("Generated Shared AnnotationEvent \n");
         output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
@@ -568,9 +554,8 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
 
         sessionEvent = SessionEvent.builder()
             .edApp(canvas.getEdApp())
-            .lisOrganization(canvas.getLisOrganization())
             .actor((Person) canvas.getAgent())
-            .action(SessionProfile.Actions.LOGGEDOUT.key())
+            .action(Action.LOGGED_OUT)
             .object(canvas.getEdApp())
             .target(CaliperSampleAssets.buildSessionEnd())
             .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
@@ -578,7 +563,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .duration("PT3000S")
             .build();
 
-        Sensor.send(sessionEvent);
+        sensor.send(sessionEvent);
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");

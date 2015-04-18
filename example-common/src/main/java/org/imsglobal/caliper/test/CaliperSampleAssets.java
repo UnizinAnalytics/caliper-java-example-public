@@ -1,20 +1,29 @@
-package com.imsglobal.caliper.example;
+package org.imsglobal.caliper.test;
 
 import com.google.common.collect.ImmutableList;
+import org.imsglobal.caliper.actions.Action;
 import org.imsglobal.caliper.entities.*;
+import org.imsglobal.caliper.entities.agent.Person;
+import org.imsglobal.caliper.entities.agent.SoftwareApplication;
 import org.imsglobal.caliper.entities.assessment.Assessment;
 import org.imsglobal.caliper.entities.assessment.AssessmentItem;
+import org.imsglobal.caliper.entities.assignable.Attempt;
 import org.imsglobal.caliper.entities.foaf.Agent;
 import org.imsglobal.caliper.entities.lis.CourseSection;
-import org.imsglobal.caliper.entities.lis.Person;
 import org.imsglobal.caliper.entities.media.VideoObject;
 import org.imsglobal.caliper.entities.reading.EpubSubChapter;
 import org.imsglobal.caliper.entities.reading.EpubVolume;
+import org.imsglobal.caliper.entities.reading.WebPage;
+import org.imsglobal.caliper.entities.response.Response;
+import org.imsglobal.caliper.entities.response.SelectTextResponse;
+import org.imsglobal.caliper.entities.session.Session;
 import org.imsglobal.caliper.events.SessionEvent;
-import org.imsglobal.caliper.profiles.SessionProfile;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+/**
+ * Set of sample entities that are used in the construction of a Caliper event.
+ */
 public class CaliperSampleAssets {
 
     private static DateTime now = DateTime.now();
@@ -26,10 +35,8 @@ public class CaliperSampleAssets {
     public static final CourseSection buildAmRev101CourseSection() {
         return CourseSection.builder()
             .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
-            .semester("Spring-2014")
+            .academicSession("Spring-2014")
             .courseNumber("AmRev-101")
-            //.sectionNumber("001") TODO add section number property?
-            .label("Am Rev 101")
             .name("American Revolution 101")
             .dateCreated(getDefaultDateCreated())
             .dateModified(getDefaultDateModified())
@@ -73,6 +80,32 @@ public class CaliperSampleAssets {
             .build();
     }
 
+    public static final Attempt buildAttempt() {
+        return Attempt.builder()
+                .id("https://some-university.edu/politicalScience/2014/american-revolution-101/attempt1")
+                .name("American Revolution - Key Figures Assessment")
+                .dateCreated(getDefaultDateCreated())
+                .startedAtTime(getDefaultStartedAtTime())
+                .assignable(buildAssessment())
+                .actor(buildStudent554433())
+                .count(1)
+                .build();
+    }
+
+    public static final Response buildResponse() {
+        return SelectTextResponse.builder()
+                .id("https://some-university.edu/politicalScience/2014/american-revolution-101/response1")
+                .name("American Revolution - Key Figures Assessment")
+                .dateCreated(getDefaultDateCreated())
+                .startedAtTime(getDefaultStartedAtTime())
+                .assignable(buildAssessment())
+                .actor(buildStudent554433())
+                .value("sdafgdfas")
+                .attempt(buildAttempt())
+                .build();
+    }
+
+
     /**
      * Sample assessment items
      * @return immutable list
@@ -106,11 +139,10 @@ public class CaliperSampleAssets {
     public static final LearningContext buildCanvasLearningContext() {
         return LearningContext.builder()
                 .edApp(SoftwareApplication.builder()
-                .id("https://canvas.instructure.com")
-                .dateCreated(getDefaultDateCreated())
+                        .id("https://canvas.instructure.com")
+                        .dateCreated(getDefaultDateCreated())
                         .dateModified(getDefaultDateModified())
-                .build())
-            .lisOrganization(buildAmRev101CourseSection())
+                        .build())
             .agent(buildStudent554433())
             .build();
     }
@@ -124,9 +156,8 @@ public class CaliperSampleAssets {
 
         return SessionEvent.builder()
                 .edApp(canvas.getEdApp())
-            .lisOrganization(canvas.getLisOrganization())
-                .actor((Person) canvas.getAgent())
-            .action(SessionProfile.Actions.LOGGEDIN.key())
+                .actor(canvas.getAgent())
+            .action(Action.LOGGED_IN)
                 .object(canvas.getEdApp())
                 .target(buildEpubSubChap43())
                 .generated(buildSessionStart())
@@ -143,9 +174,8 @@ public class CaliperSampleAssets {
 
         return SessionEvent.builder()
                 .edApp(canvas.getEdApp())
-            .lisOrganization(canvas.getLisOrganization())
-                .actor((Person) canvas.getAgent())
-            .action(SessionProfile.Actions.LOGGEDOUT.key())
+                .actor(canvas.getAgent())
+            .action(Action.LOGGED_OUT)
                 .object(canvas.getEdApp())
                 .target(buildSessionEnd())
             .startedAtTime(getDefaultStartedAtTime())
@@ -163,11 +193,10 @@ public class CaliperSampleAssets {
     public static final LearningContext buildCourseSmartLearningContext() {
         return LearningContext.builder()
             .edApp(SoftwareApplication.builder()
-                .id("http://www.coursesmart.com/reader")
-                .dateCreated(getDefaultDateCreated())
-                .dateModified(getDefaultDateModified())
-                .build())
-            .lisOrganization(buildAmRev101CourseSection())
+                    .id("http://www.coursesmart.com/reader")
+                    .dateCreated(getDefaultDateCreated())
+                    .dateModified(getDefaultDateModified())
+                    .build())
             .agent(buildStudent554433())
             .build();
     }
@@ -282,11 +311,10 @@ public class CaliperSampleAssets {
     public static final LearningContext buildReadiumLearningContext() {
         return LearningContext.builder()
             .edApp(SoftwareApplication.builder()
-                .id("https://github.com/readium/readium-js-viewer")
-                .dateCreated(getDefaultDateCreated())
-                .dateModified(getDefaultDateModified())
-                .build())
-            .lisOrganization(buildAmRev101CourseSection())
+                    .id("https://github.com/readium/readium-js-viewer")
+                    .dateCreated(getDefaultDateCreated())
+                    .dateModified(getDefaultDateModified())
+                    .build())
             .agent(buildStudent554433())
             .build();
     }
@@ -328,6 +356,7 @@ public class CaliperSampleAssets {
             .id("https://some-university.edu/students/554433")
             .dateCreated(getDefaultDateCreated())
             .dateModified(getDefaultDateModified())
+            .name("Student 1")
             .build();
     }
 
@@ -342,7 +371,6 @@ public class CaliperSampleAssets {
                 .dateCreated(getDefaultDateCreated())
                 .dateModified(getDefaultDateModified())
                 .build())
-            .lisOrganization(buildAmRev101CourseSection())
             .agent(buildStudent554433())
             .build();
     }
@@ -358,7 +386,6 @@ public class CaliperSampleAssets {
                 .dateCreated(getDefaultDateCreated())
                 .dateModified(getDefaultDateModified())
                 .build())
-            .lisOrganization(buildAmRev101CourseSection())
             .agent(buildStudent554433())
             .build();
     }

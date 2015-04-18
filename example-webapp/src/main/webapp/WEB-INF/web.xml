@@ -8,19 +8,19 @@
 		<servlet-name>ReadingSequenceServlet</servlet-name>
 		<display-name>ReadingSequenceServlet</display-name>
 		<description></description>
-		<servlet-class>com.imsglobal.caliper.example.CaliperReadingSequenceServlet</servlet-class>
+		<servlet-class>org.imsglobal.caliper.test.servlet.CaliperReadingSequenceServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<servlet-name>AssessmentSequenceServlet</servlet-name>
 		<display-name>AssessmentSequenceServlet</display-name>
 		<description></description>
-		<servlet-class>com.imsglobal.caliper.example.CaliperAssessmentSequenceServlet</servlet-class>
+		<servlet-class>CaliperAssessmentSequenceServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<servlet-name>MediaSequenceServlet</servlet-name>
 		<display-name>MediaSequenceServlet</display-name>
 		<description></description>
-		<servlet-class>com.imsglobal.caliper.example.CaliperMediaSequenceServlet</servlet-class>
+		<servlet-class>org.imsglobal.caliper.test.servlet.CaliperMediaSequenceServlet</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ReadingSequenceServlet</servlet-name>

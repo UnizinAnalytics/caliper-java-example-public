@@ -1,18 +1,23 @@
-package com.imsglobal.caliper.example;
+package org.imsglobal.caliper.test.servlet;
 
+import org.imsglobal.caliper.Client;
 import org.imsglobal.caliper.Options;
 import org.imsglobal.caliper.Sensor;
+import org.imsglobal.caliper.actions.Action;
 import org.imsglobal.caliper.entities.*;
+import org.imsglobal.caliper.entities.agent.Person;
+import org.imsglobal.caliper.entities.agent.SoftwareApplication;
 import org.imsglobal.caliper.entities.assessment.Assessment;
 import org.imsglobal.caliper.entities.assessment.AssessmentItem;
 import org.imsglobal.caliper.entities.assignable.Attempt;
 import org.imsglobal.caliper.entities.foaf.Agent;
-import org.imsglobal.caliper.entities.lis.Person;
 import org.imsglobal.caliper.entities.outcome.Result;
 import org.imsglobal.caliper.entities.reading.Frame;
+import org.imsglobal.caliper.entities.reading.WebPage;
+import org.imsglobal.caliper.entities.response.MultipleChoiceResponse;
+import org.imsglobal.caliper.entities.session.Session;
 import org.imsglobal.caliper.events.*;
-import org.imsglobal.caliper.profiles.*;
-import org.imsglobal.caliper.response.MultipleChoiceResponse;
+import org.imsglobal.caliper.test.CaliperSampleAssets;
 import org.joda.time.DateTime;
 
 import javax.servlet.ServletException;
@@ -21,8 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Random;
-
-import static com.imsglobal.caliper.example.CaliperSampleAssets.*;
 
 /**
  * Servlet implementation class CaliperAssessmentServlet
@@ -39,13 +42,15 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
     private Random r;
     StringBuffer output = new StringBuffer();
 
+    Sensor<String> sensor = new Sensor();
+
     // Initialize the sensor - this needs to be done only once
     private void initialize() {
         Options options = new Options();
         options.setHost(HOST);
         options.setApiKey(API_KEY);
-        Sensor.initialize(options);
 
+        sensor.registerClient("example", new Client(options));
         r = new Random();
     }
 
@@ -72,7 +77,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
 
         generateAAOSequence(output);
 
-        output.append(Sensor.getStatistics().toString());
+        output.append(sensor.getStatistics().toString());
 
         response.getWriter().write(output.toString());
 
@@ -109,22 +114,21 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("Sending events  . . .\n\n");
 
         // Session Event: logged in to Canvas LMS
-        LearningContext canvas = buildCanvasLearningContext();
-        DigitalResource reading = buildEpubSubChap43();
-        DateTime incrementTime = getDefaultStartedAtTime();
+        LearningContext canvas = CaliperSampleAssets.buildCanvasLearningContext();
+        DigitalResource reading = CaliperSampleAssets.buildEpubSubChap43();
+        DateTime incrementTime = CaliperSampleAssets.getDefaultStartedAtTime();
 
         SessionEvent sessionEvent = SessionEvent.builder()
             .edApp(canvas.getEdApp())
-            .lisOrganization(canvas.getLisOrganization())
-            .actor((Person) canvas.getAgent())
-            .action(SessionProfile.Actions.LOGGEDIN.key())
+            .actor(canvas.getAgent())
+            .action(Action.LOGGED_IN)
             .object(canvas.getEdApp())
             .target(reading)
-            .generated(buildSessionStart())
+            .generated(CaliperSampleAssets.buildSessionStart())
             .startedAtTime(incrementTime)
             .build();
 
-        Sensor.send(sessionEvent);
+        sensor.send(sessionEvent);
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
@@ -134,25 +138,24 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("generated : " + ((Session) sessionEvent.getGenerated()).getId() + "\n\n");
 
         //NavigationEvent: navigated to assessment
-        LearningContext learningContext = buildCanvasLearningContext();
-        Assessment assessment = buildAssessment();
-        incrementTime = getDefaultStartedAtTime().plusSeconds(200);
+        LearningContext learningContext = CaliperSampleAssets.buildCanvasLearningContext();
+        Assessment assessment = CaliperSampleAssets.buildAssessment();
+        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(200);
         NavigationEvent navEvent = NavigationEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(assessment)
-            .action(Profile.Actions.NAVIGATED_TO.key())
-            .fromResource(buildAmRev101LandingPage())
+            .action(Action.NAVIGATED_TO)
+            .fromResource(CaliperSampleAssets.buildAmRev101LandingPage())
             .target(Frame.builder()
-                .id(assessment.getId())
-                .index(0)
-                .build())
+                    .id(assessment.getId())
+                    .index(0)
+                    .build())
             .startedAtTime(incrementTime)
             .build();
 
         // Process Event
-        Sensor.send(navEvent);
+        sensor.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -162,27 +165,26 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
         // AssessmentEvent: started assessment
-        learningContext = buildSuperAssessmentToolLearningContext();
-        assessment = buildAssessment();
-        incrementTime = getDefaultStartedAtTime().plusSeconds(210);
+        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
+        assessment = CaliperSampleAssets.buildAssessment();
+        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(210);
         AssessmentEvent assessmentEvent = AssessmentEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(assessment)
-            .action(AssessmentProfile.Actions.STARTED.key())
+            .action(Action.STARTED)
             .generated(Attempt.builder()
-                .id(assessment.getId() + "/attempt1")
-                .assignableId(assessment.getId())
-                .actorId(((Person) learningContext.getAgent()).getId())
-                .count(1) // First attempt
-                .startedAtTime(getDefaultStartedAtTime())
-                .build())
+                    .id(assessment.getId() + "/attempt1")
+                    .assignable(assessment)
+                    .actor(learningContext.getAgent())
+                    .count(1) // First attempt
+                    .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
+                    .build())
             .startedAtTime(incrementTime)
             .build();
 
         // Process Event
-        Sensor.send(assessmentEvent);
+        sensor.send(assessmentEvent);
 
         output.append("Generated AssessmentEvent \n");
         output.append("actor : " + ((Person) assessmentEvent.getActor()).getId() + "\n");
@@ -191,28 +193,27 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("generated attempt count : " + Integer.toString(((Attempt) assessmentEvent.getGenerated()).getCount()) + "\n\n");
 
         // AssessmentItem Event: started item 01
-        learningContext = buildSuperAssessmentToolLearningContext();
-        assessment = buildAssessment();
+        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
+        assessment = CaliperSampleAssets.buildAssessment();
         AssessmentItem item = assessment.getAssessmentItems().get(0);
-        incrementTime = getDefaultStartedAtTime().plusSeconds(220);
+        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(220);
         AssessmentItemEvent itemEvent = AssessmentItemEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(item)
-            .action(AssessmentItemProfile.Actions.STARTED.key())
+            .action(Action.STARTED)
             .generated(Attempt.builder()
-                .id(assessment.getId() + "/item1/attempt1")
-                .actorId(((Person) learningContext.getAgent()).getId())
-                .assignableId(item.getId())
-                .count(1)
-                .startedAtTime(getDefaultStartedAtTime())
-                .build())
+                    .id(assessment.getId() + "/item1/attempt1")
+                    .actor(learningContext.getAgent())
+                    .assignable(item)
+                    .count(1)
+                    .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
+                    .build())
             .startedAtTime(incrementTime)
             .build();
 
         // Process Event
-        Sensor.send(itemEvent);
+        sensor.send(itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
@@ -221,26 +222,25 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("generated attempt count : " + Integer.toString(((Attempt) itemEvent.getGenerated()).getCount()) + "\n\n");
 
         // AssessmentItemEvent: completed item 01
-        learningContext = buildSuperAssessmentToolLearningContext();
-        assessment = buildAssessment();
+        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
+        assessment = CaliperSampleAssets.buildAssessment();
         item = assessment.getAssessmentItems().get(0);
-        incrementTime = getDefaultStartedAtTime().plusSeconds(225);
+        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(225);
         itemEvent = AssessmentItemEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(item)
-            .action(AssessmentItemProfile.Actions.COMPLETED.key())
+            .action(Action.COMPLETED)
             .generated(MultipleChoiceResponse.builder()
                 .id(item.getId())
-                .assignableId(assessment.getId())
-                .actorId(((Person) learningContext.getAgent()).getId())
+                .assignable(assessment)
+                .actor(learningContext.getAgent())
                 .attempt(Attempt.builder()
                     .id(assessment.getId() + "/item1/attempt1")
-                    .actorId(((Person) learningContext.getAgent()).getId())
-                    .assignableId(item.getId())
+                    .actor(learningContext.getAgent())
+                    .assignable(item)
                     .count(1)
-                    .startedAtTime(getDefaultStartedAtTime())
+                    .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
                     .build())
                 .value("A")
                 .startedAtTime(incrementTime)
@@ -249,7 +249,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        Sensor.send(itemEvent);
+        sensor.send(itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
@@ -258,28 +258,27 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("generated response : " + ((MultipleChoiceResponse) itemEvent.getGenerated()).getValue() + "\n\n");
 
         // AssessmentItemEvent: started item 02
-        learningContext = buildSuperAssessmentToolLearningContext();
-        assessment = buildAssessment();
+        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
+        assessment = CaliperSampleAssets.buildAssessment();
         item = assessment.getAssessmentItems().get(1);
-        incrementTime = getDefaultStartedAtTime().plusSeconds(230);
+        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(230);
         itemEvent = AssessmentItemEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(item)
-            .action(AssessmentItemProfile.Actions.STARTED.key())
+            .action(Action.STARTED)
             .generated(Attempt.builder()
                 .id(assessment.getId() + "/item2/attempt1")
-                .actorId(((Person) learningContext.getAgent()).getId())
-                .assignableId(item.getId())
+                .actor((learningContext.getAgent()))
+                .assignable(item)
                 .count(1)
-                .startedAtTime(getDefaultStartedAtTime())
+                .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
                 .build())
             .startedAtTime(incrementTime)
             .build();
 
         // Process Event
-        Sensor.send(itemEvent);
+        sensor.send(itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
@@ -288,26 +287,25 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("generated attempt count : " + Integer.toString(((Attempt) itemEvent.getGenerated()).getCount()) + "\n\n");
 
         // AssessmentItemEvent: completed item 02
-        learningContext = buildSuperAssessmentToolLearningContext();
-        assessment = buildAssessment();
+        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
+        assessment = CaliperSampleAssets.buildAssessment();
         item = assessment.getAssessmentItems().get(1);
-        incrementTime = getDefaultStartedAtTime().plusSeconds(240);
+        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(240);
         itemEvent = AssessmentItemEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(item)
-            .action(AssessmentItemProfile.Actions.COMPLETED.key())
+            .action(Action.COMPLETED)
             .generated(MultipleChoiceResponse.builder()
                 .id(item.getId())
-                .assignableId(assessment.getId())
-                .actorId(((Person) learningContext.getAgent()).getId())
+                .assignable(assessment)
+                .actor(learningContext.getAgent())
                 .attempt(Attempt.builder()
                         .id(assessment.getId() + "/item2/attempt1")
-                        .actorId(((Person) learningContext.getAgent()).getId())
-                        .assignableId(item.getId())
+                        .actor(learningContext.getAgent())
+                        .assignable(item)
                         .count(1)
-                        .startedAtTime(getDefaultStartedAtTime())
+                        .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
                         .build())
                 .value("C")
                 .startedAtTime(incrementTime)
@@ -316,7 +314,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        Sensor.send(itemEvent);
+        sensor.send(itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
@@ -325,28 +323,27 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("generated response : " + ((MultipleChoiceResponse) itemEvent.getGenerated()).getValue() + "\n\n");
 
         // AssessmentItemEvent: started item 03
-        learningContext = buildSuperAssessmentToolLearningContext();
-        assessment = buildAssessment();
+        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
+        assessment = CaliperSampleAssets.buildAssessment();
         item = assessment.getAssessmentItems().get(2);
-        incrementTime = getDefaultStartedAtTime().plusSeconds(250);
+        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(250);
         itemEvent = AssessmentItemEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(item)
-            .action(AssessmentItemProfile.Actions.STARTED.key())
+            .action(Action.STARTED)
             .generated(Attempt.builder()
                     .id(assessment.getId() + "/item3/attempt1")
-                    .actorId(((Person) learningContext.getAgent()).getId())
-                    .assignableId(item.getId())
+                    .actor(learningContext.getAgent())
+                    .assignable(item)
                     .count(1)
-                    .startedAtTime(getDefaultStartedAtTime())
+                    .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
                     .build())
             .startedAtTime(incrementTime)
             .build();
 
         // Process Event
-        Sensor.send(itemEvent);
+        sensor.send(itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
@@ -355,35 +352,34 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("generated attempt count : " + Integer.toString(((Attempt) itemEvent.getGenerated()).getCount()) + "\n\n");
 
         // AssessmentItemEvent: completed item 03
-        learningContext = buildSuperAssessmentToolLearningContext();
-        assessment = buildAssessment();
+        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
+        assessment = CaliperSampleAssets.buildAssessment();
         item = assessment.getAssessmentItems().get(2);
-        incrementTime = getDefaultStartedAtTime().plusSeconds(260);
+        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(260);
         itemEvent = AssessmentItemEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(item)
-            .action(AssessmentItemProfile.Actions.COMPLETED.key())
+            .action(Action.COMPLETED)
             .generated(MultipleChoiceResponse.builder()
-                .id(item.getId())
-                .assignableId(assessment.getId())
-                .actorId(((Person) learningContext.getAgent()).getId())
+                    .id(item.getId())
+                    .assignable(assessment)
+                    .actor(learningContext.getAgent())
                     .attempt(Attempt.builder()
                             .id(assessment.getId() + "/item3/attempt1")
-                            .actorId(((Person) learningContext.getAgent()).getId())
-                            .assignableId(item.getId())
+                            .actor(learningContext.getAgent())
+                            .assignable(item)
                             .count(1)
-                            .startedAtTime(getDefaultStartedAtTime())
+                            .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
                             .build())
-                .value("B")
-                .startedAtTime(incrementTime)
-                .build())
+                    .value("B")
+                    .startedAtTime(incrementTime)
+                    .build())
             .startedAtTime(incrementTime)
             .build();
 
         // Process Event
-        Sensor.send(navEvent);
+        sensor.send(navEvent);
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
@@ -392,27 +388,26 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("generated response : " + ((MultipleChoiceResponse) itemEvent.getGenerated()).getValue() + "\n\n");
 
         // AssessmentEvent: submitted assessment
-        learningContext = buildSuperAssessmentToolLearningContext();
-        assessment = buildAssessment();
-        incrementTime = getDefaultStartedAtTime().plusSeconds(270);
+        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
+        assessment = CaliperSampleAssets.buildAssessment();
+        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(270);
         assessmentEvent = AssessmentEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor((Person) learningContext.getAgent())
             .object(assessment)
-            .action(AssessmentProfile.Actions.SUBMITTED.key())
+            .action(Action.SUBMITTED)
             .generated(Attempt.builder()
                 .id(assessment.getId() + "/attempt1")
-                .assignableId(assessment.getId())
-                .actorId(((Person) learningContext.getAgent()).getId())
+                .assignable(assessment)
+                .actor(learningContext.getAgent())
                 .count(1) // First attempt
-                .startedAtTime(getDefaultStartedAtTime())
+                .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
                 .build())
             .startedAtTime(incrementTime)
             .build();
 
         // Process Event
-        Sensor.send(assessmentEvent);
+        sensor.send(assessmentEvent);
 
         output.append("Generated AssessmentEvent \n");
         output.append("actor : " + ((Person) assessmentEvent.getActor()).getId() + "\n");
@@ -421,21 +416,20 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("generated attempt : " + Integer.toString(((Attempt) assessmentEvent.getGenerated()).getCount()) + "\n\n");
 
         // Session Event: logged out of Canvas LMS
-        canvas = buildCanvasLearningContext();
+        canvas = CaliperSampleAssets.buildCanvasLearningContext();
 
         sessionEvent = SessionEvent.builder()
                 .edApp(canvas.getEdApp())
-                .lisOrganization(canvas.getLisOrganization())
                 .actor((Person) canvas.getAgent())
-                .action(SessionProfile.Actions.LOGGEDOUT.key())
+                .action(Action.LOGGED_OUT)
                 .object(canvas.getEdApp())
-                .target(buildSessionEnd())
-                .startedAtTime(getDefaultStartedAtTime())
-                .endedAtTime(getDefaultEndedAtTime())
+                .target(CaliperSampleAssets.buildSessionEnd())
+                .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
+                .endedAtTime(CaliperSampleAssets.getDefaultEndedAtTime())
                 .duration("PT3000S")
             .build();
 
-        Sensor.send(sessionEvent);
+        sensor.send(sessionEvent);
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
@@ -444,22 +438,21 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         output.append("target : " + ((Session) sessionEvent.getTarget()).getId() + "\n\n");
 
         // OutcomeEvent: generated result
-        learningContext = buildSuperAssessmentToolLearningContext();
-        assessment = buildAssessment();
+        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
+        assessment = CaliperSampleAssets.buildAssessment();
         Agent gradingEngine = learningContext.getEdApp();
-        incrementTime = getDefaultStartedAtTime().plusSeconds(280);
+        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(280);
         OutcomeEvent outcomeEvent = OutcomeEvent.builder()
             .edApp(learningContext.getEdApp())
-            .lisOrganization(learningContext.getLisOrganization())
             .actor(learningContext.getAgent())
             .object(Attempt.builder()
                     .id(assessment.getId() + "/attempt1")
-                    .assignableId(assessment.getId())
-                    .actorId(((Person) learningContext.getAgent()).getId())
+                    .assignable(assessment)
+                    .actor(learningContext.getAgent())
                     .count(1) // First attempt
-                    .startedAtTime(getDefaultStartedAtTime())
+                    .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
                     .build())
-            .action(OutcomeProfile.Actions.GRADED.key())
+            .action(Action.GRADED)
             .generated(Result.builder()
                     .id("https://some-university.edu/politicalScience/2014/american-revolution-101/activityContext1/attempt1/result")
                     .totalScore(4.2d)
@@ -470,7 +463,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        Sensor.send(outcomeEvent);
+        sensor.send(outcomeEvent);
 
         output.append("Generated OutcomeEvent \n");
         output.append("actor : " + ((Person) outcomeEvent.getActor()).getId() + "\n");
