@@ -61,7 +61,9 @@ public class CaliperSampleAssets {
     }
 
     /**
-     * Sample Assessment.
+     * Sample Assessment.  Pass a slim version of the parent assessment to .assessmentItems(Assessment parent)
+     * in order to avoid generating an infinite loop during instance construction.
+     *
      * @return assessment
      */
     public static final Assessment buildAssessment() {
@@ -76,7 +78,9 @@ public class CaliperSampleAssets {
             .maxAttempts(2)
             .maxSubmits(2)
             .maxScore(5) // WARN original value "5.0d"
-            .assessmentItems(buildAssessmentItems())
+            .assessmentItems(buildAssessmentItems(Assessment.builder()
+                .id("https://some-university.edu/politicalScience/2015/american-revolution-101/assessment1")
+                .build()))
             .build();
     }
 
@@ -110,22 +114,23 @@ public class CaliperSampleAssets {
      * Sample assessment items
      * @return immutable list
      */
-    public static final ImmutableList<AssessmentItem> buildAssessmentItems() {
+    public static final ImmutableList<AssessmentItem> buildAssessmentItems(Assessment parent) {
+
         return ImmutableList.<AssessmentItem>builder()
                 .add(AssessmentItem.builder()
                         .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item1")
                         .name("Assessment Item 1")
-                        .isPartOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
+                        .isPartOf(parent)
                 .build())
                 .add(AssessmentItem.builder()
                         .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item2")
                         .name("Assessment Item 2")
-                        .isPartOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
+                        .isPartOf(parent)
                 .build())
                 .add(AssessmentItem.builder()
                         .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item3")
                         .name("Assessment Item 3")
-                        .isPartOf("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
+                        .isPartOf(parent)
                 .build())
             .build();
     }
