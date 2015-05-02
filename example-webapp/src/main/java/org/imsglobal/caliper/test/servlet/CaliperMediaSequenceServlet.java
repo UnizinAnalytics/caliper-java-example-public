@@ -10,11 +10,14 @@ import org.imsglobal.caliper.entities.agent.SoftwareApplication;
 import org.imsglobal.caliper.entities.media.MediaLocation;
 import org.imsglobal.caliper.entities.media.VideoObject;
 import org.imsglobal.caliper.entities.session.Session;
+import org.imsglobal.caliper.events.Event;
 import org.imsglobal.caliper.events.MediaEvent;
 import org.imsglobal.caliper.events.NavigationEvent;
 import org.imsglobal.caliper.events.SessionEvent;
 import org.imsglobal.caliper.entities.agent.Person;
 import org.imsglobal.caliper.test.CaliperSampleAssets;
+import org.imsglobal.caliper.test.EventSender;
+import org.imsglobal.caliper.test.SequenceGenerator;
 import org.joda.time.DateTime;
 
 import javax.servlet.ServletException;
@@ -108,184 +111,10 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
      * @param output
      */
     private void generateMediaSequence(StringBuffer output) {
-
-        // For reference, the current time
-        DateTime now = DateTime.now();
-        output.append(now + "\n\n");
-        output.append("Sending events . . .\n\n");
-
-        // Session Event: logged in to Media tool
-        LearningContext tool = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-        DigitalResource reading = CaliperSampleAssets.buildEpubSubChap43();
-        DateTime incrementTime = CaliperSampleAssets.getDefaultStartedAtTime();
-
-        SessionEvent sessionEvent = SessionEvent.builder()
-            .edApp(tool.getEdApp())
-            .actor((Person) tool.getAgent())
-            .action(Action.LOGGED_IN)
-            .object(tool.getEdApp())
-            .target(reading)
-            .generated(CaliperSampleAssets.buildSessionStart())
-            .startedAtTime(incrementTime)
-            .build();
-
-        // Process Event
-        sensor.send(sensor, sessionEvent);
-
-        output.append("Generated SessionEvent \n");
-        output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
-        output.append("action : " + sessionEvent.getAction() + "\n");
-        output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
-        output.append("target : " + ((DigitalResource) sessionEvent.getTarget()).getId() + "\n");
-        output.append("generated : " + ((Session) sessionEvent.getGenerated()).getId() + "\n\n");
-
-        // NavigationEvent: navigated to media content
-        LearningContext learningContext = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-        VideoObject video = CaliperSampleAssets.buildVideoWithLearningObjective();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(10);
-        NavigationEvent navEvent = NavigationEvent.builder()
-            .edApp(learningContext.getEdApp())
-            .actor((Person) learningContext.getAgent())
-            .object(video)
-            .action(Action.NAVIGATED_TO)
-            .fromResource(CaliperSampleAssets.buildAmRev101LandingPage())
-            .target(MediaLocation.builder()
-                .id(video.getId()) // Don't forget to set the Id
-                .currentTime(0).build())
-            .startedAtTime(incrementTime)
-            .build();
-
-        // Process Event
-        sensor.send(sensor, navEvent);
-
-        output.append("Generated NavigationEvent \n");
-        output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
-        output.append("action : " + navEvent.getAction() + "\n");
-        output.append("object : " + ((DigitalResource) navEvent.getObject()).getId() + "\n");
-        output.append("target media location : " + ((MediaLocation) navEvent.getTarget()).getCurrentTime() + "\n\n");
-
-        // MediaEvent: started video
-        learningContext = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-        video = CaliperSampleAssets.buildVideoWithLearningObjective();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(20);
-        MediaEvent mediaEvent = MediaEvent.builder()
-            .edApp(learningContext.getEdApp())
-            .actor((Person) learningContext.getAgent())
-            .object(video)
-            .action(Action.STARTED)
-            .target(MediaLocation.builder()
-                .id(video.getId()) // Don't forget to set the Id
-                .currentTime(0)
-                .build())
-            .startedAtTime(incrementTime)
-            .build();
-
-        sensor.send(sensor, mediaEvent);
-
-        output.append("Generated MediaEvent \n");
-        output.append("actor : " + ((Person) mediaEvent.getActor()).getId() + "\n");
-        output.append("action : " + mediaEvent.getAction() + "\n");
-        output.append("object : " + ((DigitalResource) mediaEvent.getObject()).getId() + "\n");
-        output.append("target media location : " + ((MediaLocation) mediaEvent.getTarget()).getCurrentTime() + "\n\n");
-
-        // MediaEvent: paused video
-        learningContext = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-        video = CaliperSampleAssets.buildVideoWithLearningObjective();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(730);
-        mediaEvent = MediaEvent.builder()
-            .edApp(learningContext.getEdApp())
-            .actor((Person) learningContext.getAgent())
-            .object(video)
-            .action(Action.PAUSED)
-            .target(MediaLocation.builder()
-                .id(video.getId()) // Don't forget to set the Id
-                .currentTime(710)
-                .build())
-            .startedAtTime(incrementTime)
-            .build();
-
-        // Process Event
-        sensor.send(sensor, mediaEvent);
-
-        output.append("Generated MediaEvent \n");
-        output.append("actor : " + ((Person) mediaEvent.getActor()).getId() + "\n");
-        output.append("action : " + mediaEvent.getAction() + "\n");
-        output.append("object : " + ((DigitalResource) mediaEvent.getObject()).getId() + "\n");
-        output.append("target media location : " + ((MediaLocation) mediaEvent.getTarget()).getCurrentTime() + "\n\n");
-
-        // MediaEvent: resume video
-        learningContext = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-        video = CaliperSampleAssets.buildVideoWithLearningObjective();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(750);
-        mediaEvent = MediaEvent.builder()
-            .edApp(learningContext.getEdApp())
-            .actor((Person) learningContext.getAgent())
-            .object(video)
-            .action(Action.RESUMED)
-            .target(MediaLocation.builder()
-                .id(video.getId()) // Don't forget to set the Id
-                .currentTime(710)
-                .build())
-            .startedAtTime(incrementTime)
-            .build();
-
-        // Process Event
-        sensor.send(sensor, mediaEvent);
-
-        output.append("Generated MediaEvent \n");
-        output.append("actor : " + ((Person) mediaEvent.getActor()).getId() + "\n");
-        output.append("action : " + mediaEvent.getAction() + "\n");
-        output.append("object : " + ((DigitalResource) mediaEvent.getObject()).getId() + "\n");
-        output.append("target media location : " + ((MediaLocation) mediaEvent.getTarget()).getCurrentTime() + "\n\n");
-
-        // MediaEvent: completed video
-        learningContext = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-        video = CaliperSampleAssets.buildVideoWithLearningObjective();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(2170);
-        mediaEvent = MediaEvent.builder()
-            .edApp(learningContext.getEdApp())
-            .actor((Person) learningContext.getAgent())
-            .object(video)
-            .action(Action.ENDED)
-            .target(MediaLocation.builder()
-                .id(video.getId()) // Don't forget to set the Id
-                .currentTime(1420)
-                .build())
-            .startedAtTime(incrementTime)
-            .build();
-
-        // Process Event
-        sensor.send(sensor, mediaEvent);
-
-        output.append("Generated MediaEvent \n");
-        output.append("actor : " + ((Person) mediaEvent.getActor()).getId() + "\n");
-        output.append("action : " + mediaEvent.getAction() + "\n");
-        output.append("object : " + ((DigitalResource) mediaEvent.getObject()).getId() + "\n");
-        output.append("target media location : " + ((MediaLocation) mediaEvent.getTarget()).getCurrentTime() + "\n\n");
-
-        // Session Event: logged out of Canvas LMS
-        tool = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-
-        sessionEvent = SessionEvent.builder()
-            .edApp(tool.getEdApp())
-
-            .actor((Person) tool.getAgent())
-            .action(Action.LOGGED_OUT)
-            .object(tool.getEdApp())
-            .target(CaliperSampleAssets.buildSessionEnd())
-            .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-            .endedAtTime(CaliperSampleAssets.getDefaultEndedAtTime())
-            .duration("PT3000S")
-            .build();
-
-        sensor.send(sensor, sessionEvent);
-
-        output.append("Generated SessionEvent \n");
-        output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
-        output.append("action : " + sessionEvent.getAction() + "\n");
-        output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
-        output.append("target : " + ((Session) sessionEvent.getTarget()).getId() + "\n\n");
-
-        output.append("FINIS\n\n");
+        SequenceGenerator.generateAndSendMediaSequence(new EventSender() {
+            public void send(Event event) {
+                sensor.send(sensor, event);
+            }
+        }, output);
     }
 }

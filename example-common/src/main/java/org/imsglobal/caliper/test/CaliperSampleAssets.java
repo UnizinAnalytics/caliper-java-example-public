@@ -410,6 +410,15 @@ public class CaliperSampleAssets {
             .build();
     }
 
+    public static final DigitalResource buildDigitalResource(){
+        return (DigitalResource) EpubVolume.builder()
+                .id("http://www.coursesmart.com/the-american-revolution-a-concise-history/robert-j-allison/dp/9780199347322")
+                .name("The American Revolution: A Concise History | 978-0-19-531295-9")
+                .dateCreated(getDefaultDateCreated())
+                .dateModified(getDefaultDateModified())
+                .build();
+    }
+
     /**
      * January 1, 2015, 06:00:00.000 GMT
      * @return return date created
