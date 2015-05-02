@@ -48,14 +48,14 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
     private Random r;
     StringBuilder output = new StringBuilder();
 
-    Sensor<String> sensor = new Sensor();
+    Sensor<String> sensor = new Sensor("sensorId");
 
     // Initialize the sensor - this needs to be done only once
     private void initialize() {
         Options options = new Options();
         options.setHost(HOST);
         options.setApiKey(API_KEY);
-        sensor.registerClient("example", new Client(options));
+        sensor.registerClient("example", new Client("clientId", options));
 
         r = new Random();
     }
@@ -134,7 +134,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(sessionEvent);
+        sensor.send(sensor, sessionEvent);
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
@@ -163,7 +163,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(navEvent);
+        sensor.send(sensor, navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -190,7 +190,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(navEvent);
+        sensor.send(sensor, navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -217,7 +217,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(readEvent);
+        sensor.send(sensor, readEvent);
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + ((Person) readEvent.getActor()).getId() + "\n");
@@ -244,7 +244,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
                 .build();
 
-        sensor.send(navEvent);
+        sensor.send(sensor, navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -271,7 +271,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(readEvent);
+        sensor.send(sensor, readEvent);
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + ((Person) readEvent.getActor()).getId() + "\n");
@@ -301,7 +301,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(annoEvent);
+        sensor.send(sensor, annoEvent);
 
         output.append("Generated Highlight AnnotationEvent \n");
         output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
@@ -329,7 +329,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(navEvent);
+        sensor.send(sensor, navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -355,7 +355,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(readEvent);
+        sensor.send(sensor, readEvent);
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -383,7 +383,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(annoEvent);
+        sensor.send(sensor, annoEvent);
 
         output.append("Generated Bookmark AnnotationEvent \n");
         output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
@@ -412,7 +412,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(navEvent);
+        sensor.send(sensor, navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -441,7 +441,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(navEvent);
+        sensor.send(sensor, navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -467,7 +467,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(readEvent);
+        sensor.send(sensor, readEvent);
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + ((Person) readEvent.getActor()).getId() + "\n");
@@ -495,7 +495,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(annoEvent);
+        sensor.send(sensor, annoEvent);
 
         output.append("Generated Tag AnnotationEvent \n");
         output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
@@ -534,7 +534,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(annoEvent);
+        sensor.send(sensor, annoEvent);
 
         output.append("Generated Shared AnnotationEvent \n");
         output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
@@ -563,7 +563,7 @@ public class CaliperReadingSequenceServlet extends HttpServlet {
             .duration("PT3000S")
             .build();
 
-        sensor.send(sessionEvent);
+        sensor.send(sensor, sessionEvent);
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");

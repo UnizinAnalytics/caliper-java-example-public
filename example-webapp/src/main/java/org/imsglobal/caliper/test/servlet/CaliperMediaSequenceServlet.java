@@ -39,14 +39,14 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
     private Random r;
     StringBuffer output = new StringBuffer();
 
-    Sensor<String> sensor = new Sensor();
+    Sensor<String> sensor = new Sensor("sensorId");
 
     // Initialize the sensor - this needs to be done only once
     private void initialize() {
         Options options = new Options();
         options.setHost(HOST);
         options.setApiKey(API_KEY);
-        sensor.registerClient("example", new Client(options));
+        sensor.registerClient("example", new Client("clientId", options));
 
         r = new Random();
     }
@@ -130,7 +130,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(sessionEvent);
+        sensor.send(sensor, sessionEvent);
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
@@ -156,7 +156,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(navEvent);
+        sensor.send(sensor, navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -180,7 +180,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(mediaEvent);
+        sensor.send(sensor, mediaEvent);
 
         output.append("Generated MediaEvent \n");
         output.append("actor : " + ((Person) mediaEvent.getActor()).getId() + "\n");
@@ -205,7 +205,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(mediaEvent);
+        sensor.send(sensor, mediaEvent);
 
         output.append("Generated MediaEvent \n");
         output.append("actor : " + ((Person) mediaEvent.getActor()).getId() + "\n");
@@ -230,7 +230,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(mediaEvent);
+        sensor.send(sensor, mediaEvent);
 
         output.append("Generated MediaEvent \n");
         output.append("actor : " + ((Person) mediaEvent.getActor()).getId() + "\n");
@@ -255,7 +255,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(mediaEvent);
+        sensor.send(sensor, mediaEvent);
 
         output.append("Generated MediaEvent \n");
         output.append("actor : " + ((Person) mediaEvent.getActor()).getId() + "\n");
@@ -278,7 +278,7 @@ public class CaliperMediaSequenceServlet extends HttpServlet {
             .duration("PT3000S")
             .build();
 
-        sensor.send(sessionEvent);
+        sensor.send(sensor, sessionEvent);
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");

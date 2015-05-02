@@ -1,5 +1,6 @@
 package org.imsglobal.caliper.test.cli;
 
+import org.imsglobal.caliper.Sensor;
 import org.imsglobal.caliper.test.CaliperSampleAssets;
 import org.imsglobal.caliper.test.CaliperSampleEvents;
 import org.imsglobal.caliper.Client;
@@ -59,7 +60,7 @@ public class CaliperSequenceGenerator {
         Options opts = new Options();
         opts.setApiKey(apiKey);
         opts.setHost(host);
-        Client caliperStore = new Client(opts);
+        Client caliperStore = new Client("clientid?", opts);
 
         //TODO: add other Sequences, flagged by a cli param
         generateAndSendAssessmentSequence(caliperStore);
@@ -96,7 +97,7 @@ public class CaliperSequenceGenerator {
 
     public void sendEvent(Client client, Event event){
         //TODO: Remove the swallowing of exceptions in java-caliper so they can be handled here.
-        client.send(event);
+        client.send(new Sensor("sensorid?"), event);
     }
 
     public void printEventMessage(String message){

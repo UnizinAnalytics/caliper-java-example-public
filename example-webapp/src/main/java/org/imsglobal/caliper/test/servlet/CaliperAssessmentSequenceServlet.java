@@ -42,7 +42,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
     private Random r;
     StringBuffer output = new StringBuffer();
 
-    Sensor<String> sensor = new Sensor();
+    Sensor<String> sensor = new Sensor("sensorId");
 
     // Initialize the sensor - this needs to be done only once
     private void initialize() {
@@ -50,7 +50,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
         options.setHost(HOST);
         options.setApiKey(API_KEY);
 
-        sensor.registerClient("example", new Client(options));
+        sensor.registerClient("example", new Client("clientid?", options));
         r = new Random();
     }
 
@@ -128,7 +128,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .startedAtTime(incrementTime)
             .build();
 
-        sensor.send(sessionEvent);
+        sensor.send(sensor, sessionEvent);
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
@@ -155,7 +155,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(navEvent);
+        sensor.send(sensor, navEvent);
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
@@ -184,7 +184,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(assessmentEvent);
+        sensor.send(sensor, assessmentEvent);
 
         output.append("Generated AssessmentEvent \n");
         output.append("actor : " + ((Person) assessmentEvent.getActor()).getId() + "\n");
@@ -213,7 +213,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(itemEvent);
+        sensor.send(sensor, itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
@@ -249,7 +249,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(itemEvent);
+        sensor.send(sensor, itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
@@ -278,7 +278,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(itemEvent);
+        sensor.send(sensor, itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
@@ -314,7 +314,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(itemEvent);
+        sensor.send(sensor, itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
@@ -343,7 +343,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(itemEvent);
+        sensor.send(sensor, itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
@@ -379,7 +379,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(navEvent);
+        sensor.send(sensor, navEvent);
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
@@ -407,7 +407,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(assessmentEvent);
+        sensor.send(sensor, assessmentEvent);
 
         output.append("Generated AssessmentEvent \n");
         output.append("actor : " + ((Person) assessmentEvent.getActor()).getId() + "\n");
@@ -429,7 +429,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
                 .duration("PT3000S")
             .build();
 
-        sensor.send(sessionEvent);
+        sensor.send(sensor, sessionEvent);
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
@@ -463,7 +463,7 @@ public class CaliperAssessmentSequenceServlet extends HttpServlet {
             .build();
 
         // Process Event
-        sensor.send(outcomeEvent);
+        sensor.send(sensor, outcomeEvent);
 
         output.append("Generated OutcomeEvent \n");
         output.append("actor : " + ((Person) outcomeEvent.getActor()).getId() + "\n");
