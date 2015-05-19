@@ -1,21 +1,19 @@
 package org.imsglobal.caliper.test.cli;
 
-import org.imsglobal.caliper.Sensor;
-import org.imsglobal.caliper.test.CaliperSampleAssets;
-import org.imsglobal.caliper.test.CaliperSampleEvents;
+import org.fusesource.jansi.AnsiConsole;
 import org.imsglobal.caliper.Client;
 import org.imsglobal.caliper.Options;
-import org.imsglobal.caliper.entities.LearningContext;
-import org.imsglobal.caliper.entities.assessment.Assessment;
-import org.imsglobal.caliper.entities.assessment.AssessmentItem;
-import org.imsglobal.caliper.events.*;
-import org.fusesource.jansi.AnsiConsole;
+import org.imsglobal.caliper.Sensor;
+import org.imsglobal.caliper.events.Event;
 import org.imsglobal.caliper.test.EventSender;
 import org.imsglobal.caliper.test.SequenceGenerator;
-import org.kohsuke.args4j.*;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.ExampleMode;
+import org.kohsuke.args4j.Option;
 
-import static org.fusesource.jansi.Ansi.*;
 import static org.fusesource.jansi.Ansi.Color.*;
+import static org.fusesource.jansi.Ansi.ansi;
 
 /**
  * Created by pgray on 12/23/14.

@@ -14,7 +14,7 @@
 		<servlet-name>AssessmentSequenceServlet</servlet-name>
 		<display-name>AssessmentSequenceServlet</display-name>
 		<description></description>
-		<servlet-class>CaliperAssessmentSequenceServlet</servlet-class>
+		<servlet-class>org.imsglobal.caliper.test.servlet.CaliperAssessmentSequenceServlet</servlet-class>
 	</servlet>
 	<servlet>
 		<servlet-name>MediaSequenceServlet</servlet-name>

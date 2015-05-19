@@ -28,7 +28,7 @@ mvn clean package
 ```
 * Copy the WAR into tomcat/webapps
 ```
-cp ./target/caliper-java-example.war /usr/local/tomcat/webapps/
+cp ./example-webapp/target/caliper-java-example.war /usr/local/tomcat/webapps/
 ```
 
 * In order to make sure the events get to the store.. you'd want to also clone the reference event store and have it started up
