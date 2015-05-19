@@ -3,7 +3,6 @@ package org.imsglobal.caliper.test;
 import com.google.common.collect.Lists;
 import org.imsglobal.caliper.actions.Action;
 import org.imsglobal.caliper.entities.DigitalResource;
-import org.imsglobal.caliper.entities.LearningContext;
 import org.imsglobal.caliper.entities.agent.Person;
 import org.imsglobal.caliper.entities.agent.SoftwareApplication;
 import org.imsglobal.caliper.entities.annotation.BookmarkAnnotation;
@@ -14,20 +13,30 @@ import org.imsglobal.caliper.entities.assessment.Assessment;
 import org.imsglobal.caliper.entities.assessment.AssessmentItem;
 import org.imsglobal.caliper.entities.assignable.Attempt;
 import org.imsglobal.caliper.entities.foaf.Agent;
+import org.imsglobal.caliper.entities.lis.Membership;
+import org.imsglobal.caliper.entities.lis.Role;
+import org.imsglobal.caliper.entities.lis.Status;
 import org.imsglobal.caliper.entities.media.MediaLocation;
 import org.imsglobal.caliper.entities.media.VideoObject;
 import org.imsglobal.caliper.entities.outcome.Result;
+import org.imsglobal.caliper.entities.reading.EpubPart;
 import org.imsglobal.caliper.entities.reading.EpubSubChapter;
 import org.imsglobal.caliper.entities.reading.EpubVolume;
 import org.imsglobal.caliper.entities.reading.Frame;
-import org.imsglobal.caliper.entities.reading.WebPage;
 import org.imsglobal.caliper.entities.response.MultipleChoiceResponse;
 import org.imsglobal.caliper.entities.session.Session;
-import org.imsglobal.caliper.events.*;
+import org.imsglobal.caliper.entities.w3c.Organization;
+import org.imsglobal.caliper.events.AnnotationEvent;
+import org.imsglobal.caliper.events.AssessmentEvent;
+import org.imsglobal.caliper.events.AssessmentItemEvent;
+import org.imsglobal.caliper.events.MediaEvent;
+import org.imsglobal.caliper.events.NavigationEvent;
+import org.imsglobal.caliper.events.OutcomeEvent;
+import org.imsglobal.caliper.events.ReadingEvent;
+import org.imsglobal.caliper.events.SessionEvent;
 import org.joda.time.DateTime;
 
 import java.util.UUID;
-import java.util.logging.Logger;
 
 /**
  * Builds & sends sequences of events
@@ -41,175 +50,175 @@ public class SequenceGenerator {
         output.append(now + "\n\n");
         output.append("Sending events . . .\n\n");
 
-        // Session Event: logged in to Media tool
-        LearningContext tool = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-        DigitalResource reading = CaliperSampleAssets.buildEpubSubChap43();
-        DateTime incrementTime = CaliperSampleAssets.getDefaultStartedAtTime();
+        // EdApp, Agent, Organization (CourseSection), Membership, Video
+        SoftwareApplication edApp = SampleAgentEntities.buildMediaTool();
+        Person actor = SampleAgentEntities.buildStudent554433();
+        Organization organization = SampleLISEntities.buildAmRev101CourseSection();
+        Membership membership = SampleLISEntities.buildAmRev101Membership(actor, organization, Role.LEARNER, Status.ACTIVE);
+        VideoObject video = SampleMediaEntities.buildVideoWithLearningObjective();
 
+        // SessionEvent: logged in to Media tool
         SessionEvent sessionEvent = SessionEvent.builder()
-                .edApp(tool.getEdApp())
-                .actor((Person) tool.getAgent())
-                .action(Action.LOGGED_IN)
-                .object(tool.getEdApp())
-                .target(reading)
-                .generated(CaliperSampleAssets.buildSessionStart())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.LOGGED_IN)
+            .object(edApp)
+            .target(video)
+            .generated(SampleSessionEntities.buildSessionStart(actor))
+            .startedAtTime(SampleTime.getDefaultStartedAtTime())
+            .edApp(edApp)
+            .group(organization)
+            .membership(membership)
+            .build();
 
-        // Process Event
+        // Process event
         eventSender.send(sessionEvent);
 
         output.append("Generated SessionEvent \n");
-        output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
-        output.append("action : " + sessionEvent.getAction() + "\n");
+        output.append("actor : " + sessionEvent.getActor().getId() + "\n");
+        output.append("action : " + sessionEvent.getAction().getValue() + "\n");
         output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
         output.append("target : " + ((DigitalResource) sessionEvent.getTarget()).getId() + "\n");
         output.append("generated : " + ((Session) sessionEvent.getGenerated()).getId() + "\n\n");
 
         // NavigationEvent: navigated to media content
-        LearningContext learningContext = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-        VideoObject video = CaliperSampleAssets.buildVideoWithLearningObjective();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(10);
         NavigationEvent navEvent = NavigationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(video)
-                .action(Action.NAVIGATED_TO)
-                .fromResource(CaliperSampleAssets.buildAmRev101LandingPage())
-                .target(MediaLocation.builder()
-                        .id(video.getId()) // Don't forget to set the Id
-                        .currentTime(0).build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.NAVIGATED_TO)
+            .object(video)
+            .fromResource(SampleReadingEntities.buildAmRev101LandingPage())
+            .target(MediaLocation.builder()
+                .id(video.getId()) // Don't forget to set the Id
+                .currentTime(0).build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(10))
+            .edApp(edApp)
+            .group(organization)
+            .membership(membership)
+            .build();
 
-        // Process Event
+        // Process event
         eventSender.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
-        output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
-        output.append("action : " + navEvent.getAction() + "\n");
+        output.append("actor : " + navEvent.getActor().getId() + "\n");
+        output.append("action : " + navEvent.getAction().getValue() + "\n");
         output.append("object : " + ((DigitalResource) navEvent.getObject()).getId() + "\n");
         output.append("target media location : " + ((MediaLocation) navEvent.getTarget()).getCurrentTime() + "\n\n");
 
         // MediaEvent: started video
-        learningContext = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-        video = CaliperSampleAssets.buildVideoWithLearningObjective();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(20);
         MediaEvent mediaEvent = MediaEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(video)
-                .action(Action.STARTED)
-                .target(MediaLocation.builder()
-                        .id(video.getId()) // Don't forget to set the Id
-                        .currentTime(0)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.STARTED)
+            .object(video)
+            .target(MediaLocation.builder()
+                .id(video.getId())
+                .currentTime(0)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(20))
+            .edApp(edApp)
+            .group(organization)
+            .membership(membership)
+            .build();
 
         eventSender.send(mediaEvent);
 
         output.append("Generated MediaEvent \n");
-        output.append("actor : " + ((Person) mediaEvent.getActor()).getId() + "\n");
-        output.append("action : " + mediaEvent.getAction() + "\n");
+        output.append("actor : " + mediaEvent.getActor().getId() + "\n");
+        output.append("action : " + mediaEvent.getAction().getValue() + "\n");
         output.append("object : " + ((DigitalResource) mediaEvent.getObject()).getId() + "\n");
         output.append("target media location : " + ((MediaLocation) mediaEvent.getTarget()).getCurrentTime() + "\n\n");
 
         // MediaEvent: paused video
-        learningContext = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-        video = CaliperSampleAssets.buildVideoWithLearningObjective();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(730);
         mediaEvent = MediaEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(video)
-                .action(Action.PAUSED)
-                .target(MediaLocation.builder()
-                        .id(video.getId()) // Don't forget to set the Id
-                        .currentTime(710)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.PAUSED)
+            .object(video)
+            .target(MediaLocation.builder()
+                .id(video.getId())
+                .currentTime(710)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(730))
+            .edApp(edApp)
+            .group(organization)
+            .membership(membership)
+            .build();
 
-        // Process Event
+        // Process event
         eventSender.send(mediaEvent);
 
         output.append("Generated MediaEvent \n");
-        output.append("actor : " + ((Person) mediaEvent.getActor()).getId() + "\n");
-        output.append("action : " + mediaEvent.getAction() + "\n");
+        output.append("actor : " + mediaEvent.getActor().getId() + "\n");
+        output.append("action : " + mediaEvent.getAction().getValue() + "\n");
         output.append("object : " + ((DigitalResource) mediaEvent.getObject()).getId() + "\n");
         output.append("target media location : " + ((MediaLocation) mediaEvent.getTarget()).getCurrentTime() + "\n\n");
 
         // MediaEvent: resume video
-        learningContext = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-        video = CaliperSampleAssets.buildVideoWithLearningObjective();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(750);
         mediaEvent = MediaEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(video)
-                .action(Action.RESUMED)
-                .target(MediaLocation.builder()
-                        .id(video.getId()) // Don't forget to set the Id
-                        .currentTime(710)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.RESUMED)
+            .object(video)
+            .target(MediaLocation.builder()
+                .id(video.getId()) // Don't forget to set the Id
+                .currentTime(710)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(750))
+            .edApp(edApp)
+            .group(organization)
+            .membership(membership)
+            .build();
 
-        // Process Event
+        // Process event
         eventSender.send(mediaEvent);
 
         output.append("Generated MediaEvent \n");
-        output.append("actor : " + ((Person) mediaEvent.getActor()).getId() + "\n");
-        output.append("action : " + mediaEvent.getAction() + "\n");
+        output.append("actor : " + mediaEvent.getActor().getId() + "\n");
+        output.append("action : " + mediaEvent.getAction().getValue() + "\n");
         output.append("object : " + ((DigitalResource) mediaEvent.getObject()).getId() + "\n");
         output.append("target media location : " + ((MediaLocation) mediaEvent.getTarget()).getCurrentTime() + "\n\n");
 
         // MediaEvent: completed video
-        learningContext = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-        video = CaliperSampleAssets.buildVideoWithLearningObjective();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(2170);
         mediaEvent = MediaEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(video)
-                .action(Action.ENDED)
-                .target(MediaLocation.builder()
-                        .id(video.getId()) // Don't forget to set the Id
-                        .currentTime(1420)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.ENDED)
+            .object(video)
+            .target(MediaLocation.builder()
+                .id(video.getId()) // Don't forget to set the Id
+                .currentTime(1420)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(2170))
+            .edApp(edApp)
+            .group(organization)
+            .membership(membership)
+            .build();
 
-        // Process Event
+        // Process event
         eventSender.send(mediaEvent);
 
         output.append("Generated MediaEvent \n");
-        output.append("actor : " + ((Person) mediaEvent.getActor()).getId() + "\n");
-        output.append("action : " + mediaEvent.getAction() + "\n");
+        output.append("actor : " + mediaEvent.getActor().getId() + "\n");
+        output.append("action : " + mediaEvent.getAction().getValue() + "\n");
         output.append("object : " + ((DigitalResource) mediaEvent.getObject()).getId() + "\n");
         output.append("target media location : " + ((MediaLocation) mediaEvent.getTarget()).getCurrentTime() + "\n\n");
 
-        // Session Event: logged out of Canvas LMS
-        tool = CaliperSampleAssets.buildSuperMediaToolLearningContext();
-
+        // SessionEvent: logged out
         sessionEvent = SessionEvent.builder()
-                .edApp(tool.getEdApp())
+            .actor(actor)
+            .action(Action.LOGGED_OUT)
+            .object(edApp)
+            .target(SampleSessionEntities.buildSessionEnd(actor))
+            .startedAtTime(SampleTime.getDefaultStartedAtTime())
+            .endedAtTime(SampleTime.getDefaultEndedAtTime())
+            .duration("PT3000S")
+            .edApp(edApp)
+            .group(organization)
+            .membership(membership)
+            .build();
 
-                .actor((Person) tool.getAgent())
-                .action(Action.LOGGED_OUT)
-                .object(tool.getEdApp())
-                .target(CaliperSampleAssets.buildSessionEnd())
-                .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-                .endedAtTime(CaliperSampleAssets.getDefaultEndedAtTime())
-                .duration("PT3000S")
-                .build();
-
+        // Process event
         eventSender.send(sessionEvent);
 
         output.append("Generated SessionEvent \n");
-        output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
-        output.append("action : " + sessionEvent.getAction() + "\n");
+        output.append("actor : " + sessionEvent.getActor().getId() + "\n");
+        output.append("action : " + sessionEvent.getAction().getValue() + "\n");
         output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Session) sessionEvent.getTarget()).getId() + "\n\n");
 
@@ -222,455 +231,545 @@ public class SequenceGenerator {
         output.append(now + "\n\n");
         output.append("Sending events . . .\n\n");
 
-        // Session Event: logged in to Canvas LMS
-        LearningContext canvas = CaliperSampleAssets.buildCanvasLearningContext();
-        DigitalResource reading = CaliperSampleAssets.buildEpubSubChap43();
-        DateTime incrementTime = CaliperSampleAssets.getDefaultStartedAtTime();
+        // EdApp, Agent, Organization (CourseSection), Membership
+        SoftwareApplication canvas = SampleAgentEntities.buildCanvas();
+        Person actor = SampleAgentEntities.buildStudent554433();
+        Organization organization = SampleLISEntities.buildAmRev101CourseSection();
+        Membership membership = SampleLISEntities.buildAmRev101Membership(actor, organization, Role.LEARNER, Status.ACTIVE);
 
+        // SessionEvent: logged in to Canvas
         SessionEvent sessionEvent = SessionEvent.builder()
-                .edApp(canvas.getEdApp())
-                .actor((Person) canvas.getAgent())
-                .action(Action.LOGGED_IN)
-                .object(canvas.getEdApp())
-                .target(reading)
-                .generated(CaliperSampleAssets.buildSessionStart())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.LOGGED_IN)
+            .object(canvas)
+            .target(SampleReadingEntities.buildAmRev101LandingPage())
+            .generated(SampleSessionEntities.buildSessionStart(actor))
+            .startedAtTime(SampleTime.getDefaultStartedAtTime())
+            .edApp(canvas)
+            .group(organization)
+            .membership(membership)
+            .build();
 
+        // Process event
         eventSender.send(sessionEvent);
 
         output.append("Generated SessionEvent \n");
-        output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
-        output.append("action : " + sessionEvent.getAction() + "\n");
+        output.append("actor : " + sessionEvent.getActor().getId() + "\n");
+        output.append("action : " + sessionEvent.getAction().getValue() + "\n");
         output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
         output.append("target : " + ((DigitalResource) sessionEvent.getTarget()).getId() + "\n");
         output.append("generated : " + ((Session) sessionEvent.getGenerated()).getId() + "\n\n");
 
-        //TODO ADD LAUNCH EVENT
+        // TODO add LTI launch event
 
-        // Navigation Event: navigated to #epubcfi(/4/3)
-        LearningContext learningContext = CaliperSampleAssets.buildCanvasLearningContext();
-        reading = CaliperSampleAssets.buildEpubSubChap43();
-        DigitalResource fromResource = CaliperSampleAssets.buildAmRev101LandingPage();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(10);
+        // Navigation Event: navigated to ePub chapter #epubcfi(/4/3)
+        SoftwareApplication readium = SampleAgentEntities.buildReadium();
+        DigitalResource chapter = SampleReadingEntities.buildEpubGloriousCauseSubChap43();
         NavigationEvent navEvent = NavigationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(reading)
-                .action(Action.NAVIGATED_TO)
-                .fromResource(fromResource)
-                .target(Frame.builder()
-                        .id(reading.getId())
-                        .index(0)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.NAVIGATED_TO)
+            .object(chapter)
+            .fromResource(SampleReadingEntities.buildAmRev101LandingPage())
+            .target(Frame.builder()
+                .id(chapter.getId())
+                .name(chapter.getName())
+                .index(0)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(10))
+            .edApp(readium)
+            .group(organization)
+            .membership(membership)
+            .build();
 
+        // Process event
         eventSender.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
-        output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
-        output.append("action : " + navEvent.getAction() + "\n");
+        output.append("actor : " + navEvent.getActor().getId() + "\n");
+        output.append("action : " + navEvent.getAction().getValue() + "\n");
         output.append("object : " + ((DigitalResource) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
-        // Navigation Event: navigated to #epubcfi(/4/3/1) (George Washington)
-        learningContext = CaliperSampleAssets.buildReadiumLearningContext();
-        reading = CaliperSampleAssets.buildEpubSubChap43();
-        DigitalResource target = CaliperSampleAssets.buildEpubSubChap431();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(15);
-        navEvent = NavigationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(reading)
-                .action(Action.NAVIGATED_TO)
-                .fromResource(fromResource)
-                .target(Frame.builder()
-                        .id(target.getId())
-                        .index(1)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+        // ViewEvent: viewed #epubcfi(/4/3)
+        ReadingEvent readEvent = ReadingEvent.builder()
+            .actor(actor)
+            .action(Action.VIEWED)
+            .object(chapter)
+            .target(Frame.builder()
+                .id(chapter.getId())
+                .name(chapter.getName())
+                .isPartOf(chapter.getIsPartOf())
+                .index(0)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(60))
+            .edApp(readium)
+            .group(organization)
+            .membership(membership)
+            .build();
 
+        // Process event
+        eventSender.send(readEvent);
+
+        output.append("Generated ViewEvent \n");
+        output.append("actor : " + readEvent.getActor().getId() + "\n");
+        output.append("action : " + readEvent.getAction().getValue() + "\n");
+        output.append("object : " + ((EpubSubChapter) readEvent.getObject()).getId() + "\n");
+        output.append("target : " + ((Frame) readEvent.getTarget()).getId() + "\n\n");
+
+        // NavigationEvent: navigated to #epubcfi(/4/3/1) (George Washington)
+        DigitalResource part431 = SampleReadingEntities.buildEpubGloriousCausePart431();
+        navEvent = NavigationEvent.builder()
+            .actor(actor)
+            .action(Action.NAVIGATED_TO)
+            .object(part431)
+            .fromResource(Frame.builder()
+                .id(chapter.getId())
+                .name(chapter.getName())
+                .isPartOf(chapter.getIsPartOf())
+                .index(0)
+                .build())
+            .target(Frame.builder()
+                .id(part431.getId())
+                .name(part431.getName())
+                .isPartOf(part431.getIsPartOf())
+                .index(1)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(15))
+            .edApp(readium)
+            .group(organization)
+            .membership(membership)
+            .build();
+
+        // Process event
         eventSender.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
-        output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
-        output.append("action : " + navEvent.getAction() + "\n");
-        output.append("object : " + ((EpubSubChapter) navEvent.getObject()).getId() + "\n");
+        output.append("actor : " + navEvent.getActor().getId() + "\n");
+        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("object : " + ((EpubPart) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
         // View Event: viewed #epubcfi(/4/3/1) (George Washington)
-        // TODO viewed = object or target?
-        learningContext = CaliperSampleAssets.buildReadiumLearningContext();
-        reading = CaliperSampleAssets.buildEpubSubChap43();
-        target = CaliperSampleAssets.buildEpubSubChap431();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(60);
-        ReadingEvent readEvent = ReadingEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(reading)
-                .action(Action.VIEWED)
-                .target(Frame.builder()
-                        .id(target.getId())
-                        .index(1)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+        readEvent = ReadingEvent.builder()
+            .actor(actor)
+            .action(Action.VIEWED)
+            .object(part431)
+            .target(Frame.builder()
+                .id(part431.getId())
+                .name(part431.getName())
+                .isPartOf(part431.getIsPartOf())
+                .index(1)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(60))
+            .edApp(readium)
+            .group(organization)
+            .membership(membership)
+            .build();
 
+        // Process event
         eventSender.send(readEvent);
 
         output.append("Generated ViewEvent \n");
-        output.append("actor : " + ((Person) readEvent.getActor()).getId() + "\n");
-        output.append("action : " + readEvent.getAction() + "\n");
-        output.append("object : " + ((EpubSubChapter) readEvent.getObject()).getId() + "\n");
+        output.append("actor : " + readEvent.getActor().getId() + "\n");
+        output.append("action : " + readEvent.getAction().getValue() + "\n");
+        output.append("object : " + ((EpubPart) readEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Frame) readEvent.getTarget()).getId() + "\n\n");
 
         // Navigation Event: navigated to #epubcfi(/4/3/2) (Lord Cornwallis)
-        learningContext = CaliperSampleAssets.buildReadiumLearningContext();
-        reading = CaliperSampleAssets.buildEpubSubChap43();
-        fromResource = CaliperSampleAssets.buildEpubSubChap431();
-        target = CaliperSampleAssets.buildEpubSubChap432();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(65);
+        DigitalResource part432 = SampleReadingEntities.buildEpubGloriousCausePart432();
         navEvent = NavigationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(reading)
-                .action(Action.NAVIGATED_TO)
-                .fromResource(fromResource)
-                .target(Frame.builder()
-                        .id(target.getId())
-                        .index(2)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.NAVIGATED_TO)
+            .object(part432)
+            .fromResource(Frame.builder()
+                .id(part431.getId())
+                .name(part431.getName())
+                .isPartOf(part431.getIsPartOf())
+                .index(1)
+                .build())
+            .target(Frame.builder()
+                .id(part432.getId())
+                .name(part432.getName())
+                .isPartOf(part432.getIsPartOf())
+                .index(2)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(65))
+            .edApp(readium)
+            .group(organization)
+            .membership(membership)
+            .build();
 
+        // Process event
         eventSender.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
-        output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
-        output.append("action : " + navEvent.getAction() + "\n");
-        output.append("object : " + ((EpubSubChapter) navEvent.getObject()).getId() + "\n");
+        output.append("actor : " + navEvent.getActor().getId() + "\n");
+        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("object : " + ((EpubPart) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
-        // View Event: viewed #epubcfi(/4/3/2) (Lord Cornwallis)
-        // TODO viewed = object or target?
-        learningContext = CaliperSampleAssets.buildReadiumLearningContext();
-        reading = CaliperSampleAssets.buildEpubSubChap43();
-        target = CaliperSampleAssets.buildEpubSubChap432();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(230);
+        // ViewEvent: viewed #epubcfi(/4/3/2) (Lord Cornwallis)
         readEvent = ReadingEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(reading)
-                .action(Action.VIEWED)
-                .target(Frame.builder()
-                        .id(target.getId())
-                        .index(2)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.VIEWED)
+            .object(part432)
+            .target(Frame.builder()
+                .id(part432.getId())
+                .name(part432.getName())
+                .isPartOf(part432.getIsPartOf())
+                .index(2)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(230))
+            .edApp(readium)
+            .group(organization)
+            .membership(membership)
+            .build();
 
+        // Process event
         eventSender.send(readEvent);
 
         output.append("Generated ViewEvent \n");
-        output.append("actor : " + ((Person) readEvent.getActor()).getId() + "\n");
-        output.append("action : " + readEvent.getAction() + "\n");
-        output.append("object : " + ((EpubSubChapter) readEvent.getObject()).getId() + "\n");
+        output.append("actor : " + readEvent.getActor().getId() + "\n");
+        output.append("action : " + readEvent.getAction().getValue() + "\n");
+        output.append("object : " + ((EpubPart) readEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Frame) readEvent.getTarget()).getId() + "\n\n");
 
-        // Annotation Event: highlighted text
-        learningContext = CaliperSampleAssets.buildReadiumLearningContext();
-        reading = CaliperSampleAssets.buildEpubSubChap432();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(240);
+        // AnnotationEvent: highlighted text
         AnnotationEvent annoEvent = AnnotationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(Frame.builder()
-                        .id(reading.getId())
-                        .index(2)
-                        .build())
-                .action(Action.HIGHLIGHTED)
-                .generated(HighlightAnnotation.builder()
-                        .id("https://someEduApp.edu/highlights/" + UUID.randomUUID().toString())
-                        .annotated(reading)
-                        .selectionStart(Integer.toString(455))
-                        .selectionEnd(Integer.toString(489))
-                        .selectionText("Life, Liberty and the pursuit of Happiness")
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.HIGHLIGHTED)
+            .object(Frame.builder()
+                .id(part432.getId())
+                .name(part432.getName())
+                .isPartOf(part432.getIsPartOf())
+                .index(2)
+                .build())
+            .generated(HighlightAnnotation.builder()
+                .id("https://someEduApp.edu/highlights/" + UUID.randomUUID().toString())
+                .annotated(Frame.builder()
+                    .id(part432.getId())
+                    .name(part432.getName())
+                    .isPartOf(part432.getIsPartOf())
+                    .index(2)
+                    .build())
+                .selectionStart(Integer.toString(455))
+                .selectionEnd(Integer.toString(489))
+                .selectionText("Life, Liberty and the pursuit of Happiness")
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(240))
+            .edApp(readium)
+            .group(organization)
+            .membership(membership)
+            .build();
 
+        // Process event
         eventSender.send(annoEvent);
 
         output.append("Generated Highlight AnnotationEvent \n");
-        output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
-        output.append("action : " + annoEvent.getAction() + "\n");
+        output.append("actor : " + annoEvent.getActor().getId() + "\n");
+        output.append("action : " + annoEvent.getAction().getValue() + "\n");
         output.append("object : " + ((Frame) annoEvent.getObject()).getId() + "\n");
         output.append("generated : " + ((HighlightAnnotation) annoEvent.getGenerated()).getId()  + "\n");
         output.append("highlighted : " + ((HighlightAnnotation) annoEvent.getGenerated()).getSelectionText() + "\n\n");
 
         // Navigation Event: navigated to #epubcfi(/4/3/3) (Paul Revere)
-        learningContext = CaliperSampleAssets.buildReadiumLearningContext();
-        reading = CaliperSampleAssets.buildEpubSubChap43();
-        fromResource = CaliperSampleAssets.buildEpubSubChap432();
-        target = CaliperSampleAssets.buildEpubSubChap433();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(250);
+        DigitalResource part433 = SampleReadingEntities.buildEpubGloriousCausePart433();
         navEvent = NavigationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(reading)
-                .action(Action.NAVIGATED_TO)
-                .fromResource(fromResource)
-                .target(Frame.builder()
-                        .id(target.getId())
-                        .index(3)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.NAVIGATED_TO)
+            .object(part433)
+            .fromResource(Frame.builder()
+                .id(part432.getId())
+                .name(part432.getName())
+                .isPartOf(part432.getIsPartOf())
+                .index(2)
+                .build())
+            .target(Frame.builder()
+                .id(part433.getId())
+                .name(part433.getName())
+                .isPartOf(part433.getIsPartOf())
+                .index(3)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(250))
+            .edApp(readium)
+            .group(organization)
+            .membership(membership)
+            .build();
 
+        // Process event
         eventSender.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
-        output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
-        output.append("action : " + navEvent.getAction() + "\n");
-        output.append("object : " + ((EpubSubChapter) navEvent.getObject()).getId() + "\n");
+        output.append("actor : " + navEvent.getActor().getId() + "\n");
+        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("object : " + ((EpubPart) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
         // ViewEvent: viewed #epubcfi(/4/3/3) (Paul Revere)
-        learningContext = CaliperSampleAssets.buildReadiumLearningContext();
-        reading = CaliperSampleAssets.buildEpubSubChap43();
-        target = CaliperSampleAssets.buildEpubSubChap433();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(320);
         readEvent = ReadingEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(reading)
-                .action(Action.VIEWED)
-                .target(Frame.builder()
-                        .id(target.getId())
-                        .index(3)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.VIEWED)
+            .object(part433)
+            .target(Frame.builder()
+                .id(part433.getId())
+                .name(part433.getName())
+                .isPartOf(part433.getIsPartOf())
+                .index(3)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(320))
+            .edApp(readium)
+            .group(organization)
+            .membership(membership)
+            .build();
 
+        // Process event
         eventSender.send(readEvent);
 
         output.append("Generated ViewEvent \n");
-        output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
-        output.append("action : " + navEvent.getAction() + "\n");
-        output.append("object : " + ((EpubSubChapter) readEvent.getObject()).getId() + "\n");
+        output.append("actor : " + navEvent.getActor().getId() + "\n");
+        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("object : " + ((EpubPart) readEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Frame) readEvent.getTarget()).getId() + "\n\n");
 
         // BookmarkAnnotationEvent: bookmarked the reading with a note
-        learningContext = CaliperSampleAssets.buildReadiumLearningContext();
-        reading = CaliperSampleAssets.buildEpubSubChap433();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(325);
         annoEvent = AnnotationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .action(Action.BOOKMARKED)
-                .object(Frame.builder()
-                        .id(reading.getId())
-                        .index(3)
-                        .build())
-                .generated(BookmarkAnnotation.builder()
-                        .id("https://someEduApp.edu/bookmarks/" + UUID.randomUUID().toString())
-                        .annotated(reading)
-                        .bookmarkNotes("The Intolerable Acts (1774)--bad idea Lord North")
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.BOOKMARKED)
+            .object(Frame.builder()
+                .id(part433.getId())
+                .name(part433.getName())
+                .isPartOf(part433.getIsPartOf())
+                .index(3)
+                .build())
+            .generated(BookmarkAnnotation.builder()
+                .id("https://someEduApp.edu/bookmarks/" + UUID.randomUUID().toString())
+                .annotated(Frame.builder()
+                    .id(part433.getId())
+                    .name(part433.getName())
+                    .isPartOf(part433.getIsPartOf())
+                    .index(3)
+                    .build())
+                .bookmarkNotes("The Intolerable Acts (1774)--bad idea Lord North")
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(325))
+            .edApp(readium)
+            .group(organization)
+            .membership(membership)
+            .build();
 
         eventSender.send(annoEvent);
 
         output.append("Generated Bookmark AnnotationEvent \n");
-        output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
-        output.append("action : " + annoEvent.getAction() + "\n");
+        output.append("actor : " + annoEvent.getActor().getId() + "\n");
+        output.append("action : " + annoEvent.getAction().getValue() + "\n");
         output.append("object : " + ((Frame) annoEvent.getObject()).getId() + "\n");
         output.append("generated : " + ((BookmarkAnnotation) annoEvent.getGenerated()).getId()  + "\n");
         output.append("bookmark notes : " + ((BookmarkAnnotation) annoEvent.getGenerated()).getBookmarkNotes() + "\n\n");
 
-        // TODO ADD LAUNCH EVENT
-
         // NavigationEvent: navigated to CourseSmart content
-        learningContext = CaliperSampleAssets.buildCourseSmartLearningContext();
-        reading = CaliperSampleAssets.buildAllisonAmRevEpubVolume();
-        fromResource = CaliperSampleAssets.buildAmRev101LandingPage();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(330);
-        navEvent = NavigationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(reading)
-                .action(Action.NAVIGATED_TO)
-                .fromResource(fromResource)
-                .target(Frame.builder()
-                        .id(reading.getId())
-                        .index(0)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+        SoftwareApplication courseSmart = SampleAgentEntities.buildCourseSmartReader();
+        DigitalResource volume = SampleReadingEntities.buildEpubAllisonAmRevVolume();
+        DigitalResource fromResource = SampleReadingEntities.buildAmRev101LandingPage();
 
+        navEvent = NavigationEvent.builder()
+            .actor(actor)
+            .action(Action.NAVIGATED_TO)
+            .object(volume)
+            .fromResource(fromResource)
+            .target(Frame.builder()
+                .id(volume.getId())
+                .name(volume.getName())
+                .index(0)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(330))
+            .edApp(courseSmart)
+            .group(organization)
+            .membership(membership)
+            .build();
+
+        // Process event
         eventSender.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
-        output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
-        output.append("action : " + navEvent.getAction() + "\n");
+        output.append("actor : " + navEvent.getActor().getId() + "\n");
+        output.append("action : " + navEvent.getAction().getValue() + "\n");
         output.append("object : " + ((EpubVolume) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
         // NavigationEvent: navigated to aXfsadf12
-        learningContext = CaliperSampleAssets.buildCourseSmartLearningContext();
-        reading = CaliperSampleAssets.buildAllisonAmRevEpubVolume();
-        fromResource = CaliperSampleAssets.buildAllisonAmRevEpubVolume();
-        target = CaliperSampleAssets.buildAllisonAmRevEpubSubChap();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(340);
+        chapter = SampleReadingEntities.buildEpubAllisonAmRevSubChapter();
         navEvent = NavigationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(reading)
-                .action(Action.NAVIGATED_TO)
-                .fromResource(fromResource)
-                .target(Frame.builder()
-                        .id(target.getId())
-                        .name(target.getName())
-                        .index(1)
-                        .build())
-                .startedAtTime(incrementTime)
+            .actor(actor)
+            .action(Action.NAVIGATED_TO)
+            .object(chapter)
+            .fromResource(Frame.builder()
+                .id(volume.getId())
+                .index(0)
+                .build())
+            .target(Frame.builder()
+                .id(chapter.getId())
+                .name(chapter.getName())
+                .isPartOf(chapter.getIsPartOf())
+                .index(1)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(340))
+            .edApp(courseSmart)
+            .group(organization)
+            .membership(membership)
                 .build();
 
         eventSender.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
-        output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
-        output.append("action : " + navEvent.getAction() + "\n");
-        output.append("object : " + ((EpubVolume) navEvent.getObject()).getId() + "\n");
+        output.append("actor : " + navEvent.getActor().getId() + "\n");
+        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("object : " + ((EpubSubChapter) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
         // ViewEvent: viewed aXfsadf12
-        learningContext = CaliperSampleAssets.buildCourseSmartLearningContext();
-        reading = CaliperSampleAssets.buildAllisonAmRevEpubVolume();
-        target = CaliperSampleAssets.buildAllisonAmRevEpubSubChap();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(400);
         readEvent = ReadingEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(reading)
-                .action(Action.VIEWED)
-                .target(Frame.builder()
-                        .id(target.getId())
-                        .index(1)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.VIEWED)
+            .object(chapter)
+            .target(Frame.builder()
+                .id(chapter.getId())
+                .name(chapter.getName())
+                .isPartOf(chapter.getIsPartOf())
+                .version(chapter.getVersion())
+                .index(1)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(400))
+            .edApp(courseSmart)
+            .group(organization)
+            .membership(membership)
+            .build();
 
         eventSender.send(readEvent);
 
         output.append("Generated ViewEvent \n");
-        output.append("actor : " + ((Person) readEvent.getActor()).getId() + "\n");
-        output.append("action : " + readEvent.getAction() + "\n");
-        output.append("object : " + ((EpubVolume) readEvent.getObject()).getId() + "\n");
+        output.append("actor : " + readEvent.getActor().getId() + "\n");
+        output.append("action : " + readEvent.getAction().getValue() + "\n");
+        output.append("object : " + ((EpubSubChapter) readEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Frame) readEvent.getTarget()).getId() + "\n\n");
 
         // Tag AnnotationEvent: tagged reading
-        learningContext = CaliperSampleAssets.buildCourseSmartLearningContext();
-        reading = CaliperSampleAssets.buildAllisonAmRevEpubSubChap();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(420);
         annoEvent = AnnotationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .action(Action.TAGGED)
-                .object(Frame.builder()
-                        .id(target.getId())
-                        .index(1)
-                        .build())
-                .generated(TagAnnotation.builder()
-                        .id("https://someEduApp.edu/tags/" + UUID.randomUUID().toString())
-                        .annotated(reading)
-                        .tags(Lists.newArrayList("to-read", "1776", "shared-with-project-team"))
-                        .build())
-                .startedAtTime(incrementTime)
+            .actor(actor)
+            .action(Action.TAGGED)
+            .object(Frame.builder()
+                .id(chapter.getId())
+                .name(chapter.getName())
+                .isPartOf(chapter.getIsPartOf())
+                .version(chapter.getVersion())
+                .index(1)
+                .build())
+            .generated(TagAnnotation.builder()
+                .id("https://someEduApp.edu/tags/" + UUID.randomUUID().toString())
+                .annotated(Frame.builder()
+                    .id(chapter.getId())
+                    .name(chapter.getName())
+                    .isPartOf(chapter.getIsPartOf())
+                    .version(chapter.getVersion())
+                    .index(1)
+                    .build())
+                .tags(Lists.newArrayList("to-read", "1776", "shared-with-project-team"))
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(420))
+            .edApp(courseSmart)
+            .group(organization)
+            .membership(membership)
                 .build();
 
+        // Process event
         eventSender.send(annoEvent);
 
         output.append("Generated Tag AnnotationEvent \n");
-        output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
-        output.append("action : " + annoEvent.getAction() + "\n");
+        output.append("actor : " + annoEvent.getActor().getId() + "\n");
+        output.append("action : " + annoEvent.getAction().getValue() + "\n");
         output.append("object : " + ((Frame) annoEvent.getObject()).getId() + "\n");
         output.append("generated : " + ((TagAnnotation) annoEvent.getGenerated()).getId()  + "\n");
         output.append("tags : " + ((TagAnnotation) annoEvent.getGenerated()).getTags().toString() + "\n\n");
 
         // Shared AnnotationEvent: shared reading with other students
-        learningContext = CaliperSampleAssets.buildCourseSmartLearningContext();
-        reading = CaliperSampleAssets.buildAllisonAmRevEpubSubChap();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(440);
         annoEvent = AnnotationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .action(Action.SHARED)
-                .object(Frame.builder()
-                        .id(target.getId())
-                        .index(1)
-                        .build())
-                .generated(SharedAnnotation.builder()
-                        .id("https://someEduApp.edu/shared/" + UUID.randomUUID().toString())
-                        .annotated(reading)
-                        .withAgents(Lists.<Agent>newArrayList(
-                                Person.builder()
-                                        .id("https://some-university.edu/students/657585")
-                                        .dateCreated(CaliperSampleAssets.getDefaultDateCreated())
-                                        .dateModified(CaliperSampleAssets.getDefaultDateModified())
-                                        .build(),
-                                Person.builder()
-                                        .id("https://some-university.edu/students/667788")
-                                        .dateCreated(CaliperSampleAssets.getDefaultDateCreated())
-                                        .dateModified(CaliperSampleAssets.getDefaultDateModified())
-                                        .build()))
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.SHARED)
+            .object(Frame.builder()
+                .id(chapter.getId())
+                .name(chapter.getName())
+                .isPartOf(chapter.getIsPartOf())
+                .version(chapter.getVersion())
+                .index(1)
+                .build())
+            .generated(SharedAnnotation.builder()
+                .id("https://someEduApp.edu/shared/" + UUID.randomUUID().toString())
+                .annotated(Frame.builder()
+                    .id(chapter.getId())
+                    .name(chapter.getName())
+                    .isPartOf(chapter.getIsPartOf())
+                    .version(chapter.getVersion())
+                    .index(1)
+                    .build())
+                .withAgents(Lists.<Agent>newArrayList(
+                    Person.builder()
+                        .id("https://some-university.edu/students/657585")
+                        .dateCreated(SampleTime.getDefaultDateCreated())
+                        .dateModified(SampleTime.getDefaultDateModified())
+                        .build(),
+                    Person.builder()
+                        .id("https://some-university.edu/students/667788")
+                        .dateCreated(SampleTime.getDefaultDateCreated())
+                        .dateModified(SampleTime.getDefaultDateModified())
+                        .build()))
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(440))
+            .edApp(courseSmart)
+            .group(organization)
+            .membership(membership)
+            .build();
 
+        // Process event
         eventSender.send(annoEvent);
 
         output.append("Generated Shared AnnotationEvent \n");
-        output.append("actor : " + ((Person) annoEvent.getActor()).getId() + "\n");
-        output.append("action : " + annoEvent.getAction() + "\n");
+        output.append("actor : " + annoEvent.getActor().getId() + "\n");
+        output.append("action : " + annoEvent.getAction().getValue() + "\n");
         output.append("object : " + ((Frame) annoEvent.getObject()).getId() + "\n");
         output.append("generated : " + ((SharedAnnotation) annoEvent.getGenerated()).getId()  + "\n");
 
         // Retrieve agents
         SharedAnnotation shared = (SharedAnnotation) annoEvent.getGenerated();
         for (Agent agent: shared.getWithAgents()) {
-            output.append("Shared with: " + ((Person) agent).getId() + "\n");
+            output.append("Shared with: " + agent.getId() + "\n");
         }
         output.append("\n");
 
-        // Session Event: logged out of Canvas LMS
-        canvas = CaliperSampleAssets.buildCanvasLearningContext();
-
+        // SessionEvent: logged out of Canvas LMS
         sessionEvent = SessionEvent.builder()
-                .edApp(canvas.getEdApp())
-                .actor((Person) canvas.getAgent())
-                .action(Action.LOGGED_OUT)
-                .object(canvas.getEdApp())
-                .target(CaliperSampleAssets.buildSessionEnd())
-                .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-                .endedAtTime(CaliperSampleAssets.getDefaultEndedAtTime())
-                .duration("PT3000S")
-                .build();
+            .actor(actor)
+            .action(Action.LOGGED_OUT)
+            .object(canvas)
+            .target(SampleSessionEntities.buildSessionEnd(actor))
+            .startedAtTime(SampleTime.getDefaultStartedAtTime())
+            .endedAtTime(SampleTime.getDefaultEndedAtTime())
+            .duration("PT3000S")
+            .edApp(canvas)
+            .group(organization)
+            .membership(membership)
+            .build();
 
+        // Process event
         eventSender.send(sessionEvent);
 
         output.append("Generated SessionEvent \n");
-        output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
-        output.append("action : " + sessionEvent.getAction() + "\n");
+        output.append("actor : " + sessionEvent.getActor().getId() + "\n");
+        output.append("action : " + sessionEvent.getAction().getValue() + "\n");
         output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Session) sessionEvent.getTarget()).getId() + "\n\n");
 
@@ -684,369 +783,348 @@ public class SequenceGenerator {
         output.append(now + "\n\n");
         output.append("Sending events  . . .\n\n");
 
-        // Session Event: logged in to Canvas LMS
-        LearningContext canvas = CaliperSampleAssets.buildCanvasLearningContext();
-        DigitalResource reading = CaliperSampleAssets.buildEpubSubChap43();
-        DateTime incrementTime = CaliperSampleAssets.getDefaultStartedAtTime();
+        // EdApp, Agent, Organization (CourseSection), Membership
+        SoftwareApplication canvas = SampleAgentEntities.buildCanvas();
+        Person actor = SampleAgentEntities.buildStudent554433();
+        Organization organization = SampleLISEntities.buildAmRev101CourseSection();
+        Membership membership = SampleLISEntities.buildAmRev101Membership(actor, organization, Role.LEARNER, Status.ACTIVE);
 
         SessionEvent sessionEvent = SessionEvent.builder()
-                .edApp(canvas.getEdApp())
-                .actor(canvas.getAgent())
-                .action(Action.LOGGED_IN)
-                .object(canvas.getEdApp())
-                .target(reading)
-                .generated(CaliperSampleAssets.buildSessionStart())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.LOGGED_IN)
+            .object(canvas)
+            .target(SampleReadingEntities.buildAmRev101LandingPage())
+            .generated(SampleSessionEntities.buildSessionStart(actor))
+            .startedAtTime(SampleTime.getDefaultStartedAtTime())
+            .edApp(canvas)
+            .group(organization)
+            .membership(membership)
+            .build();
 
+        // Process event
         eventSender.send(sessionEvent);
 
         output.append("Generated SessionEvent \n");
-        output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
-        output.append("action : " + sessionEvent.getAction() + "\n");
+        output.append("actor : " + sessionEvent.getActor().getId() + "\n");
+        output.append("action : " + sessionEvent.getAction().getValue() + "\n");
         output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
         output.append("target : " + ((DigitalResource) sessionEvent.getTarget()).getId() + "\n");
         output.append("generated : " + ((Session) sessionEvent.getGenerated()).getId() + "\n\n");
 
         //NavigationEvent: navigated to assessment
-        LearningContext learningContext = CaliperSampleAssets.buildCanvasLearningContext();
-        Assessment assessment = CaliperSampleAssets.buildAssessment();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(200);
+        SoftwareApplication quizEngine = SampleAgentEntities.buildQuizEngine();
+        Assessment assessment = SampleAssessmentEntities.buildAssessment();
         NavigationEvent navEvent = NavigationEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(assessment)
-                .action(Action.NAVIGATED_TO)
-                .fromResource(CaliperSampleAssets.buildAmRev101LandingPage())
-                .target(Frame.builder()
-                        .id(assessment.getId())
-                        .index(0)
-                        .build())
-                .startedAtTime(incrementTime)
+            .actor(actor)
+            .action(Action.NAVIGATED_TO)
+            .object(assessment)
+            .fromResource(SampleReadingEntities.buildAmRev101LandingPage())
+            .target(Frame.builder()
+                .id(assessment.getId())
+                .name(assessment.getName())
+                .index(0)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(60))
+            .edApp(quizEngine)
+            .group(organization)
+            .membership(membership)
                 .build();
 
-        // Process Event
+        // Process event
         eventSender.send(navEvent);
 
         output.append("Generated NavigationEvent \n");
-        output.append("actor : " + ((Person) navEvent.getActor()).getId() + "\n");
-        output.append("action : " + navEvent.getAction() + "\n");
+        output.append("actor : " + navEvent.getActor().getId() + "\n");
+        output.append("action : " + navEvent.getAction().getValue() + "\n");
         output.append("object : " + ((Assessment) navEvent.getObject()).getId() + "\n");
-        output.append("fromResource : " + ((WebPage) navEvent.getFromResource()).getId() + "\n\n");
+        output.append("fromResource : " + navEvent.getFromResource().getId() + "\n\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
+        // Assessment Attempt
+        Attempt assessAttempt = Attempt.builder()
+            .id(assessment.getId() + "/attempt1")
+            .assignable(assessment)
+            .actor(actor)
+            .count(1) // First attempt
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(90))
+            .build();
+
         // AssessmentEvent: started assessment
-        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
-        assessment = CaliperSampleAssets.buildAssessment();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(210);
         AssessmentEvent assessmentEvent = AssessmentEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(assessment)
-                .action(Action.STARTED)
-                .generated(Attempt.builder()
-                        .id(assessment.getId() + "/attempt1")
-                        .assignable(assessment)
-                        .actor(learningContext.getAgent())
-                        .count(1) // First attempt
-                        .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-                        .build())
-                .startedAtTime(incrementTime)
+            .actor(actor)
+            .action(Action.STARTED)
+            .object(assessment)
+            .generated(assessAttempt)
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(90))
+            .edApp(quizEngine)
+            .group(organization)
+            .membership(membership)
                 .build();
 
-        // Process Event
+        // Process event
         eventSender.send(assessmentEvent);
 
         output.append("Generated AssessmentEvent \n");
-        output.append("actor : " + ((Person) assessmentEvent.getActor()).getId() + "\n");
-        output.append("action : " + assessmentEvent.getAction() + "\n");
+        output.append("actor : " + assessmentEvent.getActor().getId() + "\n");
+        output.append("action : " + assessmentEvent.getAction().getValue() + "\n");
         output.append("object : " + ((Assessment) assessmentEvent.getObject()).getId() + "\n");
         output.append("generated attempt count : " + Integer.toString(((Attempt) assessmentEvent.getGenerated()).getCount()) + "\n\n");
 
         // AssessmentItem Event: started item 01
-        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
-        assessment = CaliperSampleAssets.buildAssessment();
-        AssessmentItem item = assessment.getAssessmentItems().get(0);
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(220);
-        AssessmentItemEvent itemEvent = AssessmentItemEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(item)
-                .action(Action.STARTED)
-                .generated(Attempt.builder()
-                        .id(assessment.getId() + "/item1/attempt1")
-                        .actor(learningContext.getAgent())
-                        .assignable(item)
-                        .count(1)
-                        .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+        AssessmentItem item01 = SampleAssessmentEntities.buildAssessmentItems(assessment).get(0);
 
-        // Process Event
+        // Item01 Attempt
+        Attempt item01Attempt = Attempt.builder()
+            .id(assessment.getId() + "/item1/attempt1")
+            .actor(actor)
+            .assignable(item01)
+            .count(1)
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(120))
+            .build();
+
+        AssessmentItemEvent itemEvent = AssessmentItemEvent.builder()
+            .actor(actor)
+            .object(item01)
+            .action(Action.STARTED)
+            .generated(item01Attempt)
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(120))
+            .edApp(quizEngine)
+            .group(organization)
+            .membership(membership)
+            .build();
+
+        // Process event
         eventSender.send(itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
-        output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
-        output.append("action : " + itemEvent.getAction() + "\n");
+        output.append("actor : " + itemEvent.getActor().getId() + "\n");
+        output.append("action : " + itemEvent.getAction().getValue() + "\n");
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated attempt count : " + Integer.toString(((Attempt) itemEvent.getGenerated()).getCount()) + "\n\n");
 
         // AssessmentItemEvent: completed item 01
-        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
-        assessment = CaliperSampleAssets.buildAssessment();
-        item = assessment.getAssessmentItems().get(0);
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(225);
         itemEvent = AssessmentItemEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(item)
-                .action(Action.COMPLETED)
-                .generated(MultipleChoiceResponse.builder()
-                        .id(item.getId())
-                        .assignable(assessment)
-                        .actor(learningContext.getAgent())
-                        .attempt(Attempt.builder()
-                                .id(assessment.getId() + "/item1/attempt1")
-                                .actor(learningContext.getAgent())
-                                .assignable(item)
-                                .count(1)
-                                .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-                                .build())
-                        .value("A")
-                        .startedAtTime(incrementTime)
-                        .build())
-                .startedAtTime(incrementTime)
+            .actor(actor)
+            .action(Action.COMPLETED)
+            .object(item01)
+            .generated(MultipleChoiceResponse.builder()
+                .id(item01.getId())
+                .assignable(assessment)
+                .actor(actor)
+                .attempt(item01Attempt)
+                .value("A")
+                .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(150))
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(150))
+            .edApp(quizEngine)
+            .group(organization)
+            .membership(membership)
                 .build();
 
         // Process Event
         eventSender.send(itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
-        output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
-        output.append("action : " + itemEvent.getAction() + "\n");
+        output.append("actor : " + itemEvent.getActor().getId() + "\n");
+        output.append("action : " + itemEvent.getAction().getValue() + "\n");
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated response : " + ((MultipleChoiceResponse) itemEvent.getGenerated()).getValue() + "\n\n");
 
         // AssessmentItemEvent: started item 02
-        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
-        assessment = CaliperSampleAssets.buildAssessment();
-        item = assessment.getAssessmentItems().get(1);
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(230);
-        itemEvent = AssessmentItemEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(item)
-                .action(Action.STARTED)
-                .generated(Attempt.builder()
-                        .id(assessment.getId() + "/item2/attempt1")
-                        .actor((learningContext.getAgent()))
-                        .assignable(item)
-                        .count(1)
-                        .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+        AssessmentItem item02 = SampleAssessmentEntities.buildAssessmentItems(assessment).get(1);
 
-        // Process Event
+        // Item02 attempt
+        Attempt item02Attempt = Attempt.builder()
+            .id(assessment.getId() + "/item2/attempt1")
+            .actor(actor)
+            .assignable(item02)
+            .count(1)
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(180))
+            .build();
+
+        itemEvent = AssessmentItemEvent.builder()
+            .actor(actor)
+            .action(Action.STARTED)
+            .object(item02)
+            .generated(item02Attempt)
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(180))
+            .edApp(quizEngine)
+            .group(organization)
+            .membership(membership)
+            .build();
+
+        // Process event
         eventSender.send(itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
-        output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
-        output.append("action : " + itemEvent.getAction() + "\n");
+        output.append("actor : " + itemEvent.getActor().getId() + "\n");
+        output.append("action : " + itemEvent.getAction().getValue() + "\n");
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated attempt count : " + Integer.toString(((Attempt) itemEvent.getGenerated()).getCount()) + "\n\n");
 
         // AssessmentItemEvent: completed item 02
-        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
-        assessment = CaliperSampleAssets.buildAssessment();
-        item = assessment.getAssessmentItems().get(1);
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(240);
         itemEvent = AssessmentItemEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(item)
-                .action(Action.COMPLETED)
-                .generated(MultipleChoiceResponse.builder()
-                        .id(item.getId())
-                        .assignable(assessment)
-                        .actor(learningContext.getAgent())
-                        .attempt(Attempt.builder()
-                                .id(assessment.getId() + "/item2/attempt1")
-                                .actor(learningContext.getAgent())
-                                .assignable(item)
-                                .count(1)
-                                .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-                                .build())
-                        .value("C")
-                        .startedAtTime(incrementTime)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.COMPLETED)
+            .object(item02)
+            .generated(MultipleChoiceResponse.builder()
+                .id(item02.getId())
+                .assignable(assessment)
+                .actor(actor)
+                .attempt(item02Attempt)
+                .value("C")
+                .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(210))
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(210))
+            .edApp(quizEngine)
+            .group(organization)
+            .membership(membership)
+            .build();
 
-        // Process Event
+        // Process event
         eventSender.send(itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
-        output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
-        output.append("action : " + itemEvent.getAction() + "\n");
+        output.append("actor : " + itemEvent.getActor().getId() + "\n");
+        output.append("action : " + itemEvent.getAction().getValue() + "\n");
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated response : " + ((MultipleChoiceResponse) itemEvent.getGenerated()).getValue() + "\n\n");
 
         // AssessmentItemEvent: started item 03
-        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
-        assessment = CaliperSampleAssets.buildAssessment();
-        item = assessment.getAssessmentItems().get(2);
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(250);
-        itemEvent = AssessmentItemEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(item)
-                .action(Action.STARTED)
-                .generated(Attempt.builder()
-                        .id(assessment.getId() + "/item3/attempt1")
-                        .actor(learningContext.getAgent())
-                        .assignable(item)
-                        .count(1)
-                        .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+        AssessmentItem item03 = SampleAssessmentEntities.buildAssessmentItems(assessment).get(2);
 
-        // Process Event
+        // Item02 attempt
+        Attempt item03Attempt = Attempt.builder()
+            .id(assessment.getId() + "/item3/attempt1")
+            .actor(actor)
+            .assignable(item03)
+            .count(1)
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(240))
+            .build();
+
+        itemEvent = AssessmentItemEvent.builder()
+            .actor(actor)
+            .action(Action.STARTED)
+            .object(item03)
+            .generated(item03Attempt)
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(240))
+            .edApp(quizEngine)
+            .group(organization)
+            .membership(membership)
+            .build();
+
+        // Process event
         eventSender.send(itemEvent);
 
         output.append("Generated AssessmentItemEvent \n");
-        output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
-        output.append("action : " + itemEvent.getAction() + "\n");
+        output.append("actor : " + itemEvent.getActor().getId() + "\n");
+        output.append("action : " + itemEvent.getAction().getValue() + "\n");
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated attempt count : " + Integer.toString(((Attempt) itemEvent.getGenerated()).getCount()) + "\n\n");
 
         // AssessmentItemEvent: completed item 03
-        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
-        assessment = CaliperSampleAssets.buildAssessment();
-        item = assessment.getAssessmentItems().get(2);
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(260);
         itemEvent = AssessmentItemEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(item)
-                .action(Action.COMPLETED)
-                .generated(MultipleChoiceResponse.builder()
-                        .id(item.getId())
-                        .assignable(assessment)
-                        .actor(learningContext.getAgent())
-                        .attempt(Attempt.builder()
-                                .id(assessment.getId() + "/item3/attempt1")
-                                .actor(learningContext.getAgent())
-                                .assignable(item)
-                                .count(1)
-                                .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-                                .build())
-                        .value("B")
-                        .startedAtTime(incrementTime)
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.COMPLETED)
+            .object(item03)
+            .generated(MultipleChoiceResponse.builder()
+                .id(item03.getId())
+                .assignable(assessment)
+                .actor(actor)
+                .attempt(item03Attempt)
+                .value("B")
+                .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(270))
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(270))
+            .edApp(quizEngine)
+            .group(organization)
+            .membership(membership)
+            .build();
 
-        // Process Event
+        // Process event
         eventSender.send(navEvent);
 
         output.append("Generated AssessmentItemEvent \n");
-        output.append("actor : " + ((Person) itemEvent.getActor()).getId() + "\n");
-        output.append("action : " + itemEvent.getAction() + "\n");
+        output.append("actor : " + itemEvent.getActor().getId() + "\n");
+        output.append("action : " + itemEvent.getAction().getValue() + "\n");
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated response : " + ((MultipleChoiceResponse) itemEvent.getGenerated()).getValue() + "\n\n");
 
         // AssessmentEvent: submitted assessment
-        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
-        assessment = CaliperSampleAssets.buildAssessment();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(270);
         assessmentEvent = AssessmentEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor((Person) learningContext.getAgent())
-                .object(assessment)
-                .action(Action.SUBMITTED)
-                .generated(Attempt.builder()
-                        .id(assessment.getId() + "/attempt1")
-                        .assignable(assessment)
-                        .actor(learningContext.getAgent())
-                        .count(1) // First attempt
-                        .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(actor)
+            .action(Action.SUBMITTED)
+            .object(assessment)
+            .generated(assessAttempt)
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(60))
+            .endedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(280))
+            .edApp(quizEngine)
+            .group(organization)
+            .membership(membership)
+            .build();
 
-        // Process Event
+        // Process event
         eventSender.send(assessmentEvent);
 
         output.append("Generated AssessmentEvent \n");
-        output.append("actor : " + ((Person) assessmentEvent.getActor()).getId() + "\n");
-        output.append("action : " + assessmentEvent.getAction() + "\n");
+        output.append("actor : " + assessmentEvent.getActor().getId() + "\n");
+        output.append("action : " + assessmentEvent.getAction().getValue() + "\n");
         output.append("object : " + ((Assessment) assessmentEvent.getObject()).getId() + "\n");
         output.append("generated attempt : " + Integer.toString(((Attempt) assessmentEvent.getGenerated()).getCount()) + "\n\n");
 
-        // Session Event: logged out of Canvas LMS
-        canvas = CaliperSampleAssets.buildCanvasLearningContext();
-
-        sessionEvent = SessionEvent.builder()
-                .edApp(canvas.getEdApp())
-                .actor((Person) canvas.getAgent())
-                .action(Action.LOGGED_OUT)
-                .object(canvas.getEdApp())
-                .target(CaliperSampleAssets.buildSessionEnd())
-                .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-                .endedAtTime(CaliperSampleAssets.getDefaultEndedAtTime())
-                .duration("PT3000S")
-                .build();
-
-        eventSender.send(sessionEvent);
-
-        output.append("Generated SessionEvent \n");
-        output.append("actor : " + ((Person) sessionEvent.getActor()).getId() + "\n");
-        output.append("action : " + sessionEvent.getAction() + "\n");
-        output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
-        output.append("target : " + ((Session) sessionEvent.getTarget()).getId() + "\n\n");
-
         // OutcomeEvent: generated result
-        learningContext = CaliperSampleAssets.buildSuperAssessmentToolLearningContext();
-        assessment = CaliperSampleAssets.buildAssessment();
-        Agent gradingEngine = learningContext.getEdApp();
-        incrementTime = CaliperSampleAssets.getDefaultStartedAtTime().plusSeconds(280);
         OutcomeEvent outcomeEvent = OutcomeEvent.builder()
-                .edApp(learningContext.getEdApp())
-                .actor(learningContext.getAgent())
-                .object(Attempt.builder()
-                        .id(assessment.getId() + "/attempt1")
-                        .assignable(assessment)
-                        .actor(learningContext.getAgent())
-                        .count(1) // First attempt
-                        .startedAtTime(CaliperSampleAssets.getDefaultStartedAtTime())
-                        .build())
-                .action(Action.GRADED)
-                .generated(Result.builder()
-                        .id("https://some-university.edu/politicalScience/2014/american-revolution-101/activityContext1/attempt1/result")
-                        .totalScore(4.2d)
-                        .normalScore(4.2d)
-                        .scoredBy(gradingEngine)
-                        .assignable(CaliperSampleAssets.buildDigitalResource())
-                        .actor(CaliperSampleAssets.buildStudent554433())
-                        .build())
-                .startedAtTime(incrementTime)
-                .build();
+            .actor(quizEngine)
+            .action(Action.GRADED)
+            .object(assessAttempt)
+            .generated(Result.builder()
+                .id("https://some-university.edu/politicalScience/2014/american-revolution-101/activityContext1/attempt1/result")
+                .totalScore(4.2d)
+                .normalScore(4.2d)
+                .assignable(assessment)
+                .actor(actor)
+                .scoredBy(quizEngine)
+                .build())
+            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(281))
+            .endedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(285))
+            .edApp(quizEngine)
+            .group(organization)
+            .build();
 
-        // Process Event
+        // Process event
         eventSender.send(outcomeEvent);
 
         output.append("Generated OutcomeEvent \n");
-        output.append("actor : " + ((Person) outcomeEvent.getActor()).getId() + "\n");
-        output.append("action : " + outcomeEvent.getAction() + "\n");
+        output.append("actor : " + outcomeEvent.getActor().getId() + "\n");
+        output.append("action : " + outcomeEvent.getAction().getValue() + "\n");
         output.append("object : " + ((Attempt) outcomeEvent.getObject()).getId() + "\n");
         output.append("attempt count : " + Integer.toString(((Attempt) outcomeEvent.getObject()).getCount()) + "\n");
         output.append("generated outcome : " + String.valueOf(((Result) outcomeEvent.getGenerated()).getTotalScore()) + "\n");
         output.append("scored by : " + ((Result) outcomeEvent.getGenerated()).getScoredBy() + "\n\n");
 
+        // Session Event: logged out of Canvas LMS
+        sessionEvent = SessionEvent.builder()
+            .actor(actor)
+            .action(Action.LOGGED_OUT)
+            .object(canvas)
+            .target(SampleSessionEntities.buildSessionEnd(actor))
+            .startedAtTime(SampleTime.getDefaultStartedAtTime())
+            .endedAtTime(SampleTime.getDefaultEndedAtTime())
+            .duration("PT3000S")
+            .edApp(canvas)
+            .group(organization)
+            .membership(membership)
+            .build();
+
+        // Process event
+        eventSender.send(sessionEvent);
+
+        output.append("Generated SessionEvent \n");
+        output.append("actor : " + sessionEvent.getActor().getId() + "\n");
+        output.append("action : " + sessionEvent.getAction().getValue() + "\n");
+        output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
+        output.append("target : " + ((Session) sessionEvent.getTarget()).getId() + "\n\n");
+
         output.append("FINIS\n\n");
     }
-
 }
