@@ -718,12 +718,12 @@ public class SequenceGenerator {
                     .build())
                 .withAgents(Lists.<Agent>newArrayList(
                     Person.builder()
-                        .id("https://some-university.edu/students/657585")
+                        .id("https://example.edu/user/657585")
                         .dateCreated(SampleTime.getDefaultDateCreated())
                         .dateModified(SampleTime.getDefaultDateModified())
                         .build(),
                     Person.builder()
-                        .id("https://some-university.edu/students/667788")
+                        .id("https://example.edu/user/667788")
                         .dateCreated(SampleTime.getDefaultDateCreated())
                         .dateModified(SampleTime.getDefaultDateModified())
                         .build()))
@@ -842,7 +842,7 @@ public class SequenceGenerator {
 
         // Assessment Attempt
         Attempt assessAttempt = Attempt.builder()
-            .id(assessment.getId() + "/attempt1")
+            .id(assessment.getId() + "/attempt/001")
             .assignable(assessment)
             .actor(actor)
             .count(1) // First attempt
@@ -875,7 +875,7 @@ public class SequenceGenerator {
 
         // Item01 Attempt
         Attempt item01Attempt = Attempt.builder()
-            .id(assessment.getId() + "/item1/attempt1")
+            .id(assessment.getId() + "/item/001/attempt/001")
             .actor(actor)
             .assignable(item01)
             .count(1)
@@ -935,7 +935,7 @@ public class SequenceGenerator {
 
         // Item02 attempt
         Attempt item02Attempt = Attempt.builder()
-            .id(assessment.getId() + "/item2/attempt1")
+            .id(assessment.getId() + "//item/002/attempt/001")
             .actor(actor)
             .assignable(item02)
             .count(1)
@@ -995,7 +995,7 @@ public class SequenceGenerator {
 
         // Item02 attempt
         Attempt item03Attempt = Attempt.builder()
-            .id(assessment.getId() + "/item3/attempt1")
+            .id(assessment.getId() + "/item/003/attempt/001")
             .actor(actor)
             .assignable(item03)
             .count(1)
@@ -1078,7 +1078,7 @@ public class SequenceGenerator {
             .action(Action.GRADED)
             .object(assessAttempt)
             .generated(Result.builder()
-                .id("https://some-university.edu/politicalScience/2014/american-revolution-101/activityContext1/attempt1/result")
+                .id("https://example.edu/politicalScience/2014/american-revolution-101/activityContext1/attempt/001/result")
                 .totalScore(4.2d)
                 .normalScore(4.2d)
                 .assignable(assessment)

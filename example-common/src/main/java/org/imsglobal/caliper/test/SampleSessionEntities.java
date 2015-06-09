@@ -10,7 +10,7 @@ public class SampleSessionEntities {
      */
     public static Session buildSessionStart(Person actor) {
         return Session.builder()
-            .id("https://univ.instructure.com/session-123456789")
+            .id("https://example.edu/session-123456789")
             .name("session-123456789")
             .actor(actor)
             .dateCreated(SampleTime.getDefaultDateCreated())
@@ -24,7 +24,7 @@ public class SampleSessionEntities {
      */
     public static Session buildSessionEnd(Person actor) {
         return Session.builder()
-            .id("https://univ.instructure.com/session-123456789")
+            .id("https://example.edu/session-123456789")
             .name("session-123456789")
             .actor(actor)
             .dateCreated(SampleTime.getDefaultDateCreated())

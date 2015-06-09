@@ -44,7 +44,7 @@ public class SampleReadingEntities {
      */
     public static final EpubVolume buildEpubGloriousCauseVolume() {
         return EpubVolume.builder()
-            .id("https://github.com/readium/readium-js-viewer/book/34843")
+            .id("https://example.com/viewer/book/34843")
             .name("The Glorious Cause: The American Revolution, 1763-1789 (Oxford History of the United States)")
             .version("1st ed.")
             .dateCreated(SampleTime.getDefaultDateCreated())
@@ -58,7 +58,7 @@ public class SampleReadingEntities {
      */
     public static final EpubSubChapter buildEpubGloriousCauseSubChap43() {
         return EpubSubChapter.builder()
-            .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3)")
+            .id("https://example.com/viewer/book/34843#epubcfi(/4/3)")
             .name("Key Figures")
             .isPartOf(buildEpubGloriousCauseVolume())
             .version(buildEpubGloriousCauseVolume().getVersion())
@@ -73,7 +73,7 @@ public class SampleReadingEntities {
      */
     public static final EpubPart buildEpubGloriousCausePart431() {
         return EpubPart.builder()
-            .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3/1)")
+            .id("https://example.com/viewer/book/34843#epubcfi(/4/3/1)")
             .name("Key Figures: George Washington")
             .isPartOf(buildEpubGloriousCauseSubChap43())
             .version(buildEpubGloriousCauseSubChap43().getVersion())
@@ -88,7 +88,7 @@ public class SampleReadingEntities {
      */
     public static final EpubPart buildEpubGloriousCausePart432() {
         return EpubPart.builder()
-            .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3/2)")
+            .id("https://example.com/viewer/book/34843#epubcfi(/4/3/2)")
             .name("Key Figures: Lord North")
             .isPartOf(buildEpubGloriousCauseSubChap43())
             .version(buildEpubGloriousCauseSubChap43().getVersion())
@@ -103,7 +103,7 @@ public class SampleReadingEntities {
      */
     public static final EpubPart buildEpubGloriousCausePart433() {
         return EpubPart.builder()
-            .id("https://github.com/readium/readium-js-viewer/book/34843#epubcfi(/4/3/3)")
+            .id("https://example.com/viewer/book/34843#epubcfi(/4/3/3)")
             .name("Key Figures: John Adams")
             .isPartOf(buildEpubGloriousCauseSubChap43())
             .version(buildEpubGloriousCauseSubChap43().getVersion())
@@ -118,10 +118,10 @@ public class SampleReadingEntities {
      */
     public static final WebPage buildAmRev101LandingPage() {
         return WebPage.builder()
-            .id("https://some-university.edu/politicalScience/2014/american-revolution-101/index.html")
+            .id("https://example.edu/politicalScience/2014/american-revolution-101/index.html")
             .name("American Revolution 101 Landing Page")
             .isPartOf(SoftwareApplication.builder()
-                .id("https://canvas.instructure.com")
+                .id("https://example.com/lms")
                 .dateCreated(SampleTime.getDefaultDateCreated())
                 .dateModified(SampleTime.getDefaultDateModified())
                 .build())
