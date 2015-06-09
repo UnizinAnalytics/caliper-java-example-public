@@ -19,7 +19,7 @@ public class SampleAssessmentEntities {
      */
     public static final Assessment buildAssessment() {
         return Assessment.builder()
-            .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1")
+            .id("https://example.edu/politicalScience/2014/american-revolution-101/assessment/001")
             .name("American Revolution - Key Figures Assessment")
             .dateCreated(SampleTime.getDefaultDateCreated())
             .datePublished(SampleTime.getDefaultDatePublished())
@@ -40,17 +40,17 @@ public class SampleAssessmentEntities {
 
         return ImmutableList.<AssessmentItem>builder()
             .add(AssessmentItem.builder()
-                .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item1")
+                .id("https://example.edu/politicalScience/2014/american-revolution-101/assessment/001/item/001")
                 .name("Assessment Item 1")
                 .isPartOf(parent)
                 .build())
             .add(AssessmentItem.builder()
-                .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item2")
+                .id("https://example.edu/politicalScience/2014/american-revolution-101/assessment/001//item/002")
                 .name("Assessment Item 2")
                 .isPartOf(parent)
                 .build())
             .add(AssessmentItem.builder()
-                .id("https://some-university.edu/politicalScience/2014/american-revolution-101/assessment1/item3")
+                .id("https://example.edu/politicalScience/2014/american-revolution-101/assessment/001/item/003")
                 .name("Assessment Item 3")
                 .isPartOf(parent)
                 .build())
@@ -59,7 +59,7 @@ public class SampleAssessmentEntities {
 
     public static final Attempt buildAttempt(Person actor, AssignableDigitalResource assignable) {
         return Attempt.builder()
-            .id("https://some-university.edu/politicalScience/2014/american-revolution-101/attempt1")
+            .id("https://example.edu/politicalScience/2014/american-revolution-101/attempt/001")
             .name("American Revolution - Key Figures Assessment")
             .dateCreated(SampleTime.getDefaultDateCreated())
             .startedAtTime(SampleTime.getDefaultStartedAtTime())
@@ -71,7 +71,7 @@ public class SampleAssessmentEntities {
 
     public static final Response buildResponse(Person actor, AssignableDigitalResource assignable, Attempt attempt) {
         return SelectTextResponse.builder()
-            .id("https://some-university.edu/politicalScience/2014/american-revolution-101/response1")
+            .id("https://example.edu/politicalScience/2014/american-revolution-101/response/789")
             .name("American Revolution - Key Figures Assessment")
             .dateCreated(SampleTime.getDefaultDateCreated())
             .startedAtTime(SampleTime.getDefaultStartedAtTime())

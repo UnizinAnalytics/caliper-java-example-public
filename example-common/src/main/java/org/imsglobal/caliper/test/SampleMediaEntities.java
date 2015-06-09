@@ -11,10 +11,10 @@ public class SampleMediaEntities {
      */
     public static final VideoObject buildVideoWithLearningObjective() {
         return VideoObject.builder()
-            .id("https://com.sat/super-media-tool/video/video1")
+            .id("https://example.com/super-media-tool/video/1225")
             .name("American Revolution - Key Figures Video")
             .learningObjective(LearningObjective.builder()
-                .id("http://americanrevolution.com/personalities/learn")
+                .id("https://example.edu/american-revolution-101/personalities/learn")
                 .build())
             .duration(1420)
             .build();

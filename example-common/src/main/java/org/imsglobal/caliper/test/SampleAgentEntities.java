@@ -11,7 +11,7 @@ public class SampleAgentEntities {
      */
     public static final SoftwareApplication buildCanvas() {
         return SoftwareApplication.builder()
-            .id("https://canvas.instructure.com")
+            .id("https://example.com/lms")
             .dateCreated(SampleTime.getDefaultDateCreated())
             .dateModified(SampleTime.getDefaultDateModified())
             .build();
@@ -19,7 +19,7 @@ public class SampleAgentEntities {
 
     public static final SoftwareApplication buildCourseSmartReader() {
         return SoftwareApplication.builder()
-            .id("http://www.coursesmart.com/reader")
+            .id("example.com/reader")
             .dateCreated(SampleTime.getDefaultDateCreated())
             .dateModified(SampleTime.getDefaultDateModified())
             .build();
@@ -31,7 +31,7 @@ public class SampleAgentEntities {
      */
     public static final SoftwareApplication buildMediaTool() {
         return SoftwareApplication.builder()
-            .id("https://com.sat/super-media-tool")
+            .id("https://example.com/super-media-tool")
             .dateCreated(SampleTime.getDefaultDateCreated())
             .dateModified(SampleTime.getDefaultDateModified())
             .build();
@@ -43,7 +43,7 @@ public class SampleAgentEntities {
      */
     public static final SoftwareApplication buildReadium() {
         return SoftwareApplication.builder()
-            .id("https://github.com/readium/readium-js-viewer")
+            .id("https://example.com/viewer")
             .dateCreated(SampleTime.getDefaultDateCreated())
             .dateModified(SampleTime.getDefaultDateModified())
             .build();
@@ -55,7 +55,7 @@ public class SampleAgentEntities {
      */
     public static final SoftwareApplication buildQuizEngine() {
         return SoftwareApplication.builder()
-            .id("https://com.sat/quiz-engine-tool")
+            .id("https://example.com/quiz-engine-tool")
             .dateCreated(SampleTime.getDefaultDateCreated())
             .dateModified(SampleTime.getDefaultDateModified())
             .build();
@@ -67,7 +67,7 @@ public class SampleAgentEntities {
      */
     public static final Person buildStudent554433() {
         return Person.builder()
-            .id("https://some-university.edu/students/554433")
+            .id("https://example.edu/user/554433")
             .dateCreated(SampleTime.getDefaultDateCreated())
             .dateModified(SampleTime.getDefaultDateModified())
             .name("Student 1")

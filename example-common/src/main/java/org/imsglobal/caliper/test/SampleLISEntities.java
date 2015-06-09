@@ -15,7 +15,7 @@ public class SampleLISEntities {
      */
     public static final CourseSection buildAmRev101CourseSection() {
         return CourseSection.builder()
-            .id("https://some-university.edu/politicalScience/2014/american-revolution-101")
+            .id("https://example.edu/politicalScience/2014/american-revolution-101")
             .academicSession("Spring-2014")
             .courseNumber("AmRev-101")
             .name("American Revolution 101")
@@ -30,7 +30,7 @@ public class SampleLISEntities {
      */
     public static final Membership buildAmRev101Membership(Person member, Organization organization, Role role, Status status) {
         return Membership.builder()
-            .id("https://some-university.edu/politicalScience/2015/american-revolution-101/roster/554433")
+            .id("https://example.edu/politicalScience/2015/american-revolution-101/roster/554433")
             .name("American Revolution 101")
             .description("Roster entry")
             .member(member)
