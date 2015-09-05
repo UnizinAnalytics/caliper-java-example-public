@@ -63,8 +63,14 @@ public class SequenceGenerator {
             .action(Action.LOGGED_IN)
             .object(edApp)
             .target(video)
-            .generated(SampleSessionEntities.buildSessionStart(actor))
-            .startedAtTime(SampleTime.getDefaultStartedAtTime())
+            .generated(Session.builder()
+                .id("https://example.edu/session-123456789")
+                .name("session-123456789")
+                .actor(actor)
+                .dateCreated(SampleTime.getDefaultDateCreated())
+                .startedAtTime(SampleTime.getDefaultStartedAtTime())
+                .build())
+            .eventTime(SampleTime.getDefaultEventTime())
             .edApp(edApp)
             .group(organization)
             .membership(membership)
@@ -89,7 +95,7 @@ public class SequenceGenerator {
             .target(MediaLocation.builder()
                 .id(video.getId()) // Don't forget to set the Id
                 .currentTime(0).build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(10))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(10))
             .edApp(edApp)
             .group(organization)
             .membership(membership)
@@ -113,7 +119,7 @@ public class SequenceGenerator {
                 .id(video.getId())
                 .currentTime(0)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(20))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(20))
             .edApp(edApp)
             .group(organization)
             .membership(membership)
@@ -136,7 +142,7 @@ public class SequenceGenerator {
                 .id(video.getId())
                 .currentTime(710)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(730))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(730))
             .edApp(edApp)
             .group(organization)
             .membership(membership)
@@ -160,7 +166,7 @@ public class SequenceGenerator {
                 .id(video.getId()) // Don't forget to set the Id
                 .currentTime(710)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(750))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(750))
             .edApp(edApp)
             .group(organization)
             .membership(membership)
@@ -184,7 +190,7 @@ public class SequenceGenerator {
                 .id(video.getId()) // Don't forget to set the Id
                 .currentTime(1420)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(2170))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(2170))
             .edApp(edApp)
             .group(organization)
             .membership(membership)
@@ -204,10 +210,16 @@ public class SequenceGenerator {
             .actor(actor)
             .action(Action.LOGGED_OUT)
             .object(edApp)
-            .target(SampleSessionEntities.buildSessionEnd(actor))
-            .startedAtTime(SampleTime.getDefaultStartedAtTime())
-            .endedAtTime(SampleTime.getDefaultEndedAtTime())
-            .duration("PT3000S")
+            .target(Session.builder()
+                .id("https://example.edu/session-123456789")
+                .name("session-123456789")
+                .actor(actor)
+                .dateCreated(SampleTime.getDefaultDateCreated())
+                .startedAtTime(SampleTime.getDefaultStartedAtTime())
+                .endedAtTime(SampleTime.getDefaultEventTime().plusSeconds(2175))
+                .duration("PT2175S")
+                .build())
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(2175))
             .edApp(edApp)
             .group(organization)
             .membership(membership)
@@ -243,8 +255,14 @@ public class SequenceGenerator {
             .action(Action.LOGGED_IN)
             .object(canvas)
             .target(SampleReadingEntities.buildAmRev101LandingPage())
-            .generated(SampleSessionEntities.buildSessionStart(actor))
-            .startedAtTime(SampleTime.getDefaultStartedAtTime())
+            .generated(Session.builder()
+                .id("https://example.edu/session-123456789")
+                .name("session-123456789")
+                .actor(actor)
+                .dateCreated(SampleTime.getDefaultDateCreated())
+                .startedAtTime(SampleTime.getDefaultStartedAtTime())
+                .build())
+            .eventTime(SampleTime.getDefaultEventTime())
             .edApp(canvas)
             .group(organization)
             .membership(membership)
@@ -275,7 +293,7 @@ public class SequenceGenerator {
                 .name(chapter.getName())
                 .index(0)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(10))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(10))
             .edApp(readium)
             .group(organization)
             .membership(membership)
@@ -302,7 +320,7 @@ public class SequenceGenerator {
                 .isPartOf(chapter.getIsPartOf())
                 .index(0)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(60))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(60))
             .edApp(readium)
             .group(organization)
             .membership(membership)
@@ -335,7 +353,7 @@ public class SequenceGenerator {
                 .isPartOf(part431.getIsPartOf())
                 .index(1)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(15))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(15))
             .edApp(readium)
             .group(organization)
             .membership(membership)
@@ -362,7 +380,7 @@ public class SequenceGenerator {
                 .isPartOf(part431.getIsPartOf())
                 .index(1)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(60))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(60))
             .edApp(readium)
             .group(organization)
             .membership(membership)
@@ -395,7 +413,7 @@ public class SequenceGenerator {
                 .isPartOf(part432.getIsPartOf())
                 .index(2)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(65))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(65))
             .edApp(readium)
             .group(organization)
             .membership(membership)
@@ -422,7 +440,7 @@ public class SequenceGenerator {
                 .isPartOf(part432.getIsPartOf())
                 .index(2)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(230))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(230))
             .edApp(readium)
             .group(organization)
             .membership(membership)
@@ -459,7 +477,7 @@ public class SequenceGenerator {
                 .selectionEnd(Integer.toString(489))
                 .selectionText("Life, Liberty and the pursuit of Happiness")
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(240))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(240))
             .edApp(readium)
             .group(organization)
             .membership(membership)
@@ -493,7 +511,7 @@ public class SequenceGenerator {
                 .isPartOf(part433.getIsPartOf())
                 .index(3)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(250))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(250))
             .edApp(readium)
             .group(organization)
             .membership(membership)
@@ -520,7 +538,7 @@ public class SequenceGenerator {
                 .isPartOf(part433.getIsPartOf())
                 .index(3)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(320))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(320))
             .edApp(readium)
             .group(organization)
             .membership(membership)
@@ -555,7 +573,7 @@ public class SequenceGenerator {
                     .build())
                 .bookmarkNotes("The Intolerable Acts (1774)--bad idea Lord North")
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(325))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(325))
             .edApp(readium)
             .group(organization)
             .membership(membership)
@@ -585,7 +603,7 @@ public class SequenceGenerator {
                 .name(volume.getName())
                 .index(0)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(330))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(330))
             .edApp(courseSmart)
             .group(organization)
             .membership(membership)
@@ -617,7 +635,7 @@ public class SequenceGenerator {
                 .isPartOf(chapter.getIsPartOf())
                 .index(1)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(340))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(340))
             .edApp(courseSmart)
             .group(organization)
             .membership(membership)
@@ -644,7 +662,7 @@ public class SequenceGenerator {
                 .version(chapter.getVersion())
                 .index(1)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(400))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(400))
             .edApp(courseSmart)
             .group(organization)
             .membership(membership)
@@ -680,7 +698,7 @@ public class SequenceGenerator {
                     .build())
                 .tags(Lists.newArrayList("to-read", "1776", "shared-with-project-team"))
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(420))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(420))
             .edApp(courseSmart)
             .group(organization)
             .membership(membership)
@@ -728,7 +746,7 @@ public class SequenceGenerator {
                         .dateModified(SampleTime.getDefaultDateModified())
                         .build()))
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(440))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(440))
             .edApp(courseSmart)
             .group(organization)
             .membership(membership)
@@ -755,10 +773,16 @@ public class SequenceGenerator {
             .actor(actor)
             .action(Action.LOGGED_OUT)
             .object(canvas)
-            .target(SampleSessionEntities.buildSessionEnd(actor))
-            .startedAtTime(SampleTime.getDefaultStartedAtTime())
-            .endedAtTime(SampleTime.getDefaultEndedAtTime())
-            .duration("PT3000S")
+            .target(Session.builder()
+                .id("https://example.edu/session-123456789")
+                .name("session-123456789")
+                .actor(actor)
+                .dateCreated(SampleTime.getDefaultDateCreated())
+                .startedAtTime(SampleTime.getDefaultStartedAtTime())
+                .endedAtTime(SampleTime.getDefaultEventTime().plusSeconds(445))
+                .duration("PT445S")
+                .build())
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(445))
             .edApp(canvas)
             .group(organization)
             .membership(membership)
@@ -794,8 +818,14 @@ public class SequenceGenerator {
             .action(Action.LOGGED_IN)
             .object(canvas)
             .target(SampleReadingEntities.buildAmRev101LandingPage())
-            .generated(SampleSessionEntities.buildSessionStart(actor))
-            .startedAtTime(SampleTime.getDefaultStartedAtTime())
+            .generated(Session.builder()
+                .id("https://example.edu/session-123456789")
+                .name("session-123456789")
+                .actor(actor)
+                .dateCreated(SampleTime.getDefaultDateCreated())
+                .startedAtTime(SampleTime.getDefaultStartedAtTime())
+                .build())
+            .eventTime(SampleTime.getDefaultEventTime())
             .edApp(canvas)
             .group(organization)
             .membership(membership)
@@ -824,7 +854,7 @@ public class SequenceGenerator {
                 .name(assessment.getName())
                 .index(0)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(60))
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(60))
             .edApp(quizEngine)
             .group(organization)
             .membership(membership)
@@ -837,10 +867,10 @@ public class SequenceGenerator {
         output.append("actor : " + navEvent.getActor().getId() + "\n");
         output.append("action : " + navEvent.getAction().getValue() + "\n");
         output.append("object : " + ((Assessment) navEvent.getObject()).getId() + "\n");
-        output.append("fromResource : " + navEvent.getFromResource().getId() + "\n\n");
+        output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
 
-        // Assessment Attempt
+        // Assessment Attempt (90 sec)
         Attempt assessAttempt = Attempt.builder()
             .id(assessment.getId() + "/attempt/001")
             .assignable(assessment)
@@ -855,7 +885,7 @@ public class SequenceGenerator {
             .action(Action.STARTED)
             .object(assessment)
             .generated(assessAttempt)
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(90))
+            .eventTime(assessAttempt.getStartedAtTime())
             .edApp(quizEngine)
             .group(organization)
             .membership(membership)
@@ -870,16 +900,16 @@ public class SequenceGenerator {
         output.append("object : " + ((Assessment) assessmentEvent.getObject()).getId() + "\n");
         output.append("generated attempt count : " + Integer.toString(((Attempt) assessmentEvent.getGenerated()).getCount()) + "\n\n");
 
-        // AssessmentItem Event: started item 01
+        // AssessmentItem Event: started item 01 (95 sec)
         AssessmentItem item01 = SampleAssessmentEntities.buildAssessmentItems(assessment).get(0);
 
-        // Item01 Attempt
+        // Item01 Attempt (120 sec)
         Attempt item01Attempt = Attempt.builder()
             .id(assessment.getId() + "/item/001/attempt/001")
             .actor(actor)
             .assignable(item01)
             .count(1)
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(120))
+            .startedAtTime(assessAttempt.getStartedAtTime().plusSeconds(5))
             .build();
 
         AssessmentItemEvent itemEvent = AssessmentItemEvent.builder()
@@ -887,7 +917,7 @@ public class SequenceGenerator {
             .object(item01)
             .action(Action.STARTED)
             .generated(item01Attempt)
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(120))
+            .eventTime(item01Attempt.getStartedAtTime())
             .edApp(quizEngine)
             .group(organization)
             .membership(membership)
@@ -902,7 +932,7 @@ public class SequenceGenerator {
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated attempt count : " + Integer.toString(((Attempt) itemEvent.getGenerated()).getCount()) + "\n\n");
 
-        // AssessmentItemEvent: completed item 01
+        // AssessmentItemEvent: completed item 01 (95 - 120 secs)
         itemEvent = AssessmentItemEvent.builder()
             .actor(actor)
             .action(Action.COMPLETED)
@@ -913,9 +943,11 @@ public class SequenceGenerator {
                 .actor(actor)
                 .attempt(item01Attempt)
                 .value("A")
-                .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(150))
+                .startedAtTime(item01Attempt.getStartedAtTime())
+                .endedAtTime(item01Attempt.getStartedAtTime().plusSeconds(25))
+                .duration("PT25S")
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(150))
+            .eventTime(item01Attempt.getStartedAtTime().plusSeconds(25))
             .edApp(quizEngine)
             .group(organization)
             .membership(membership)
@@ -930,7 +962,7 @@ public class SequenceGenerator {
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated response : " + ((MultipleChoiceResponse) itemEvent.getGenerated()).getValue() + "\n\n");
 
-        // AssessmentItemEvent: started item 02
+        // AssessmentItemEvent: started item 02 (121 sec)
         AssessmentItem item02 = SampleAssessmentEntities.buildAssessmentItems(assessment).get(1);
 
         // Item02 attempt
@@ -939,7 +971,7 @@ public class SequenceGenerator {
             .actor(actor)
             .assignable(item02)
             .count(1)
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(180))
+            .startedAtTime(assessAttempt.getStartedAtTime().plusSeconds(31))
             .build();
 
         itemEvent = AssessmentItemEvent.builder()
@@ -947,7 +979,7 @@ public class SequenceGenerator {
             .action(Action.STARTED)
             .object(item02)
             .generated(item02Attempt)
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(180))
+            .eventTime(item02Attempt.getStartedAtTime())
             .edApp(quizEngine)
             .group(organization)
             .membership(membership)
@@ -962,7 +994,7 @@ public class SequenceGenerator {
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated attempt count : " + Integer.toString(((Attempt) itemEvent.getGenerated()).getCount()) + "\n\n");
 
-        // AssessmentItemEvent: completed item 02
+        // AssessmentItemEvent: completed item 02 (121 - 150 secs)
         itemEvent = AssessmentItemEvent.builder()
             .actor(actor)
             .action(Action.COMPLETED)
@@ -973,9 +1005,11 @@ public class SequenceGenerator {
                 .actor(actor)
                 .attempt(item02Attempt)
                 .value("C")
-                .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(210))
+                .startedAtTime(item02Attempt.getStartedAtTime())
+                .endedAtTime(item02Attempt.getStartedAtTime().plusSeconds(29))
+                .duration("PT29S")
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(210))
+            .eventTime(item02Attempt.getStartedAtTime().plusSeconds(29))
             .edApp(quizEngine)
             .group(organization)
             .membership(membership)
@@ -990,16 +1024,16 @@ public class SequenceGenerator {
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated response : " + ((MultipleChoiceResponse) itemEvent.getGenerated()).getValue() + "\n\n");
 
-        // AssessmentItemEvent: started item 03
+        // AssessmentItemEvent: started item 03 (151 sec)
         AssessmentItem item03 = SampleAssessmentEntities.buildAssessmentItems(assessment).get(2);
 
-        // Item02 attempt
+        // Item03 attempt
         Attempt item03Attempt = Attempt.builder()
             .id(assessment.getId() + "/item/003/attempt/001")
             .actor(actor)
             .assignable(item03)
             .count(1)
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(240))
+            .startedAtTime(assessAttempt.getStartedAtTime().plusSeconds(61))
             .build();
 
         itemEvent = AssessmentItemEvent.builder()
@@ -1007,7 +1041,7 @@ public class SequenceGenerator {
             .action(Action.STARTED)
             .object(item03)
             .generated(item03Attempt)
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(240))
+            .eventTime(item03Attempt.getStartedAtTime())
             .edApp(quizEngine)
             .group(organization)
             .membership(membership)
@@ -1022,7 +1056,7 @@ public class SequenceGenerator {
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated attempt count : " + Integer.toString(((Attempt) itemEvent.getGenerated()).getCount()) + "\n\n");
 
-        // AssessmentItemEvent: completed item 03
+        // AssessmentItemEvent: completed item 03 (151 - 180 secs)
         itemEvent = AssessmentItemEvent.builder()
             .actor(actor)
             .action(Action.COMPLETED)
@@ -1033,9 +1067,11 @@ public class SequenceGenerator {
                 .actor(actor)
                 .attempt(item03Attempt)
                 .value("B")
-                .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(270))
+                .startedAtTime(item03Attempt.getStartedAtTime())
+                .endedAtTime(item03Attempt.getStartedAtTime().plusSeconds(29))
+                .duration("PT29S")
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(270))
+            .eventTime(item03Attempt.getStartedAtTime().plusSeconds(29))
             .edApp(quizEngine)
             .group(organization)
             .membership(membership)
@@ -1050,14 +1086,13 @@ public class SequenceGenerator {
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated response : " + ((MultipleChoiceResponse) itemEvent.getGenerated()).getValue() + "\n\n");
 
-        // AssessmentEvent: submitted assessment
+        // AssessmentEvent: submitted assessment (181 sec)
         assessmentEvent = AssessmentEvent.builder()
             .actor(actor)
             .action(Action.SUBMITTED)
             .object(assessment)
             .generated(assessAttempt)
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(60))
-            .endedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(280))
+            .eventTime(assessAttempt.getStartedAtTime().plusSeconds(91))
             .edApp(quizEngine)
             .group(organization)
             .membership(membership)
@@ -1072,7 +1107,7 @@ public class SequenceGenerator {
         output.append("object : " + ((Assessment) assessmentEvent.getObject()).getId() + "\n");
         output.append("generated attempt : " + Integer.toString(((Attempt) assessmentEvent.getGenerated()).getCount()) + "\n\n");
 
-        // OutcomeEvent: generated result
+        // OutcomeEvent: generated result (182 sec)
         OutcomeEvent outcomeEvent = OutcomeEvent.builder()
             .actor(quizEngine)
             .action(Action.GRADED)
@@ -1085,8 +1120,7 @@ public class SequenceGenerator {
                 .actor(actor)
                 .scoredBy(quizEngine)
                 .build())
-            .startedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(281))
-            .endedAtTime(SampleTime.getDefaultStartedAtTime().plusSeconds(285))
+            .eventTime(assessAttempt.getStartedAtTime().plusSeconds(92))
             .edApp(quizEngine)
             .group(organization)
             .build();
@@ -1102,15 +1136,21 @@ public class SequenceGenerator {
         output.append("generated outcome : " + String.valueOf(((Result) outcomeEvent.getGenerated()).getTotalScore()) + "\n");
         output.append("scored by : " + ((Result) outcomeEvent.getGenerated()).getScoredBy() + "\n\n");
 
-        // Session Event: logged out of Canvas LMS
+        // Session Event: logged out of Canvas LMS (185 sec)
         sessionEvent = SessionEvent.builder()
             .actor(actor)
             .action(Action.LOGGED_OUT)
             .object(canvas)
-            .target(SampleSessionEntities.buildSessionEnd(actor))
-            .startedAtTime(SampleTime.getDefaultStartedAtTime())
-            .endedAtTime(SampleTime.getDefaultEndedAtTime())
-            .duration("PT3000S")
+            .target(Session.builder()
+                .id("https://example.edu/session-123456789")
+                .name("session-123456789")
+                .actor(actor)
+                .dateCreated(SampleTime.getDefaultDateCreated())
+                .startedAtTime(SampleTime.getDefaultStartedAtTime())
+                .endedAtTime(SampleTime.getDefaultEventTime().plusSeconds(95))
+                .duration("PT185S")
+                .build())
+            .eventTime(SampleTime.getDefaultEventTime().plusSeconds(95))
             .edApp(canvas)
             .group(organization)
             .membership(membership)
