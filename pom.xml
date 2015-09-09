@@ -2,10 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <groupId>org.imsglobal.caliper</groupId>
     <artifactId>caliper-java-example</artifactId>
-    <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <modules>
         <module>example-common</module>
@@ -14,12 +15,6 @@
     </modules>
 
     <name>Caliper Java Example</name>
-
-    <scm>
-        <connection>scm:git:https://github.com/IMSGlobal/caliper-java-example.git</connection>
-        <developerConnection>scm:git:https://github.com/IMSGlobal/caliper-java-example.git</developerConnection>
-        <url>https://github.com/IMSGlobal/caliper-java-example.git</url>
-    </scm>
 
     <organization>
         <name>IMS Global</name>
@@ -44,6 +39,22 @@
             <email>arwhyte@umich.edu</email>
         </developer>
     </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/IMSGlobal/caliper-java-example.git</connection>
+        <developerConnection>scm:git:https://github.com/IMSGlobal/caliper-java-example.git</developerConnection>
+        <url>https://github.com/IMSGlobal/caliper-java-example.git</url>
+    </scm>
+
+    <prerequisites>
+        <maven>3.0.5</maven>
+    </prerequisites>
+
+    <properties>
+        <caliper.jdk.version>1.8</caliper.jdk.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <arguments />
+    </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -76,13 +87,35 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <!-- compile for Java 1.7 -->
+                <version>3.3</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>${caliper.jdk.version}</source>
+                    <target>${caliper.jdk.version}</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.4.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.0.5</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>${caliper.jdk.version}</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

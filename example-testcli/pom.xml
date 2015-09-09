@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.typesafe.sbt</groupId>
             <artifactId>incremental-compiler</artifactId>
-            <version>0.13.8</version>
+            <version>0.13.9</version>
         </dependency>
         <dependency>
             <groupId>org.imsglobal.caliper</groupId>
