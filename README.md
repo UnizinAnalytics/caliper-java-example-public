@@ -6,11 +6,11 @@ This is a sample WebApp that utilizes the Caliper Java sensor.
 
 ## Installation
 
-* Install Java 7 on your machine
-* Download a binary distribution of the core module: apache-tomcat-7.0.47.tar.gz from http://tomcat.apache.org/download-70.cgi
+* Install Java 8 on your machine
+* Download a binary distribution of the core module: apache-tomcat-7.0.64.tar.gz from http://tomcat.apache.org/download-70.cgi
 * Install Tomcat - this involves uncompressing the archive and moving it to an appropriate location. E.g.:
 ```
-sudo mv ~/Downloads/apache-tomcat-7.0.47 /usr/local/tomcat
+sudo mv ~/Downloads/apache-tomcat-7.0.64 /usr/local/tomcat
 ```
 * Make all scripts executable:
 ```
@@ -45,4 +45,4 @@ cp ./example-webapp/target/caliper-java-example.war /usr/local/tomcat/webapps/
 
 
 
-©2014 IMS Global Learning Consortium, Inc. All Rights Reserved.  Trademark Information - http://www.imsglobal.org/copyright.html
+©2015 IMS Global Learning Consortium, Inc. All Rights Reserved.  Trademark Information - http://www.imsglobal.org/copyright.html
