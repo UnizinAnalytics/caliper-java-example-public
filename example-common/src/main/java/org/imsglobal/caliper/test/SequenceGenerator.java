@@ -60,7 +60,7 @@ public class SequenceGenerator {
         // SessionEvent: logged in to Media tool
         SessionEvent sessionEvent = SessionEvent.builder()
             .actor(actor)
-            .action(Action.LOGGED_IN)
+            .action(Action.LOGGED_IN.getValue())
             .object(edApp)
             .target(video)
             .generated(Session.builder()
@@ -81,7 +81,7 @@ public class SequenceGenerator {
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + sessionEvent.getActor().getId() + "\n");
-        output.append("action : " + sessionEvent.getAction().getValue() + "\n");
+        output.append("action : " + sessionEvent.getAction() + "\n");
         output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
         output.append("target : " + ((DigitalResource) sessionEvent.getTarget()).getId() + "\n");
         output.append("generated : " + ((Session) sessionEvent.getGenerated()).getId() + "\n\n");
@@ -89,7 +89,7 @@ public class SequenceGenerator {
         // NavigationEvent: navigated to media content
         NavigationEvent navEvent = NavigationEvent.builder()
             .actor(actor)
-            .action(Action.NAVIGATED_TO)
+            .action(Action.NAVIGATED_TO.getValue())
             .object(video)
             .fromResource(SampleReadingEntities.buildAmRev101LandingPage())
             .target(MediaLocation.builder()
@@ -106,14 +106,14 @@ public class SequenceGenerator {
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + navEvent.getActor().getId() + "\n");
-        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("action : " + navEvent.getAction() + "\n");
         output.append("object : " + ((DigitalResource) navEvent.getObject()).getId() + "\n");
         output.append("target media location : " + ((MediaLocation) navEvent.getTarget()).getCurrentTime() + "\n\n");
 
         // MediaEvent: started video
         MediaEvent mediaEvent = MediaEvent.builder()
             .actor(actor)
-            .action(Action.STARTED)
+            .action(Action.STARTED.getValue())
             .object(video)
             .target(MediaLocation.builder()
                 .id(video.getId())
@@ -129,14 +129,14 @@ public class SequenceGenerator {
 
         output.append("Generated MediaEvent \n");
         output.append("actor : " + mediaEvent.getActor().getId() + "\n");
-        output.append("action : " + mediaEvent.getAction().getValue() + "\n");
+        output.append("action : " + mediaEvent.getAction() + "\n");
         output.append("object : " + ((DigitalResource) mediaEvent.getObject()).getId() + "\n");
         output.append("target media location : " + ((MediaLocation) mediaEvent.getTarget()).getCurrentTime() + "\n\n");
 
         // MediaEvent: paused video
         mediaEvent = MediaEvent.builder()
             .actor(actor)
-            .action(Action.PAUSED)
+            .action(Action.PAUSED.getValue())
             .object(video)
             .target(MediaLocation.builder()
                 .id(video.getId())
@@ -153,14 +153,14 @@ public class SequenceGenerator {
 
         output.append("Generated MediaEvent \n");
         output.append("actor : " + mediaEvent.getActor().getId() + "\n");
-        output.append("action : " + mediaEvent.getAction().getValue() + "\n");
+        output.append("action : " + mediaEvent.getAction() + "\n");
         output.append("object : " + ((DigitalResource) mediaEvent.getObject()).getId() + "\n");
         output.append("target media location : " + ((MediaLocation) mediaEvent.getTarget()).getCurrentTime() + "\n\n");
 
         // MediaEvent: resume video
         mediaEvent = MediaEvent.builder()
             .actor(actor)
-            .action(Action.RESUMED)
+            .action(Action.RESUMED.getValue())
             .object(video)
             .target(MediaLocation.builder()
                 .id(video.getId()) // Don't forget to set the Id
@@ -177,14 +177,14 @@ public class SequenceGenerator {
 
         output.append("Generated MediaEvent \n");
         output.append("actor : " + mediaEvent.getActor().getId() + "\n");
-        output.append("action : " + mediaEvent.getAction().getValue() + "\n");
+        output.append("action : " + mediaEvent.getAction() + "\n");
         output.append("object : " + ((DigitalResource) mediaEvent.getObject()).getId() + "\n");
         output.append("target media location : " + ((MediaLocation) mediaEvent.getTarget()).getCurrentTime() + "\n\n");
 
         // MediaEvent: completed video
         mediaEvent = MediaEvent.builder()
             .actor(actor)
-            .action(Action.ENDED)
+            .action(Action.ENDED.getValue())
             .object(video)
             .target(MediaLocation.builder()
                 .id(video.getId()) // Don't forget to set the Id
@@ -201,14 +201,14 @@ public class SequenceGenerator {
 
         output.append("Generated MediaEvent \n");
         output.append("actor : " + mediaEvent.getActor().getId() + "\n");
-        output.append("action : " + mediaEvent.getAction().getValue() + "\n");
+        output.append("action : " + mediaEvent.getAction() + "\n");
         output.append("object : " + ((DigitalResource) mediaEvent.getObject()).getId() + "\n");
         output.append("target media location : " + ((MediaLocation) mediaEvent.getTarget()).getCurrentTime() + "\n\n");
 
         // SessionEvent: logged out
         sessionEvent = SessionEvent.builder()
             .actor(actor)
-            .action(Action.LOGGED_OUT)
+            .action(Action.LOGGED_OUT.getValue())
             .object(edApp)
             .target(Session.builder()
                 .id("https://example.edu/session-123456789")
@@ -230,7 +230,7 @@ public class SequenceGenerator {
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + sessionEvent.getActor().getId() + "\n");
-        output.append("action : " + sessionEvent.getAction().getValue() + "\n");
+        output.append("action : " + sessionEvent.getAction() + "\n");
         output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Session) sessionEvent.getTarget()).getId() + "\n\n");
 
@@ -252,7 +252,7 @@ public class SequenceGenerator {
         // SessionEvent: logged in to Canvas
         SessionEvent sessionEvent = SessionEvent.builder()
             .actor(actor)
-            .action(Action.LOGGED_IN)
+            .action(Action.LOGGED_IN.getValue())
             .object(canvas)
             .target(SampleReadingEntities.buildAmRev101LandingPage())
             .generated(Session.builder()
@@ -273,7 +273,7 @@ public class SequenceGenerator {
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + sessionEvent.getActor().getId() + "\n");
-        output.append("action : " + sessionEvent.getAction().getValue() + "\n");
+        output.append("action : " + sessionEvent.getAction() + "\n");
         output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
         output.append("target : " + ((DigitalResource) sessionEvent.getTarget()).getId() + "\n");
         output.append("generated : " + ((Session) sessionEvent.getGenerated()).getId() + "\n\n");
@@ -285,7 +285,7 @@ public class SequenceGenerator {
         DigitalResource chapter = SampleReadingEntities.buildEpubGloriousCauseSubChap43();
         NavigationEvent navEvent = NavigationEvent.builder()
             .actor(actor)
-            .action(Action.NAVIGATED_TO)
+            .action(Action.NAVIGATED_TO.getValue())
             .object(chapter)
             .fromResource(SampleReadingEntities.buildAmRev101LandingPage())
             .target(Frame.builder()
@@ -304,7 +304,7 @@ public class SequenceGenerator {
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + navEvent.getActor().getId() + "\n");
-        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("action : " + navEvent.getAction() + "\n");
         output.append("object : " + ((DigitalResource) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
@@ -312,7 +312,7 @@ public class SequenceGenerator {
         // ViewEvent: viewed #epubcfi(/4/3)
         ReadingEvent readEvent = ReadingEvent.builder()
             .actor(actor)
-            .action(Action.VIEWED)
+            .action(Action.VIEWED.getValue())
             .object(chapter)
             .target(Frame.builder()
                 .id(chapter.getId())
@@ -331,7 +331,7 @@ public class SequenceGenerator {
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + readEvent.getActor().getId() + "\n");
-        output.append("action : " + readEvent.getAction().getValue() + "\n");
+        output.append("action : " + readEvent.getAction() + "\n");
         output.append("object : " + ((EpubSubChapter) readEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Frame) readEvent.getTarget()).getId() + "\n\n");
 
@@ -339,7 +339,7 @@ public class SequenceGenerator {
         DigitalResource part431 = SampleReadingEntities.buildEpubGloriousCausePart431();
         navEvent = NavigationEvent.builder()
             .actor(actor)
-            .action(Action.NAVIGATED_TO)
+            .action(Action.NAVIGATED_TO.getValue())
             .object(part431)
             .fromResource(Frame.builder()
                 .id(chapter.getId())
@@ -364,7 +364,7 @@ public class SequenceGenerator {
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + navEvent.getActor().getId() + "\n");
-        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("action : " + navEvent.getAction() + "\n");
         output.append("object : " + ((EpubPart) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
@@ -372,7 +372,7 @@ public class SequenceGenerator {
         // View Event: viewed #epubcfi(/4/3/1) (George Washington)
         readEvent = ReadingEvent.builder()
             .actor(actor)
-            .action(Action.VIEWED)
+            .action(Action.VIEWED.getValue())
             .object(part431)
             .target(Frame.builder()
                 .id(part431.getId())
@@ -391,7 +391,7 @@ public class SequenceGenerator {
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + readEvent.getActor().getId() + "\n");
-        output.append("action : " + readEvent.getAction().getValue() + "\n");
+        output.append("action : " + readEvent.getAction() + "\n");
         output.append("object : " + ((EpubPart) readEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Frame) readEvent.getTarget()).getId() + "\n\n");
 
@@ -399,7 +399,7 @@ public class SequenceGenerator {
         DigitalResource part432 = SampleReadingEntities.buildEpubGloriousCausePart432();
         navEvent = NavigationEvent.builder()
             .actor(actor)
-            .action(Action.NAVIGATED_TO)
+            .action(Action.NAVIGATED_TO.getValue())
             .object(part432)
             .fromResource(Frame.builder()
                 .id(part431.getId())
@@ -424,7 +424,7 @@ public class SequenceGenerator {
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + navEvent.getActor().getId() + "\n");
-        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("action : " + navEvent.getAction() + "\n");
         output.append("object : " + ((EpubPart) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
@@ -432,7 +432,7 @@ public class SequenceGenerator {
         // ViewEvent: viewed #epubcfi(/4/3/2) (Lord Cornwallis)
         readEvent = ReadingEvent.builder()
             .actor(actor)
-            .action(Action.VIEWED)
+            .action(Action.VIEWED.getValue())
             .object(part432)
             .target(Frame.builder()
                 .id(part432.getId())
@@ -451,14 +451,14 @@ public class SequenceGenerator {
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + readEvent.getActor().getId() + "\n");
-        output.append("action : " + readEvent.getAction().getValue() + "\n");
+        output.append("action : " + readEvent.getAction() + "\n");
         output.append("object : " + ((EpubPart) readEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Frame) readEvent.getTarget()).getId() + "\n\n");
 
         // AnnotationEvent: highlighted text
         AnnotationEvent annoEvent = AnnotationEvent.builder()
             .actor(actor)
-            .action(Action.HIGHLIGHTED)
+            .action(Action.HIGHLIGHTED.getValue())
             .object(Frame.builder()
                 .id(part432.getId())
                 .name(part432.getName())
@@ -488,7 +488,7 @@ public class SequenceGenerator {
 
         output.append("Generated Highlight AnnotationEvent \n");
         output.append("actor : " + annoEvent.getActor().getId() + "\n");
-        output.append("action : " + annoEvent.getAction().getValue() + "\n");
+        output.append("action : " + annoEvent.getAction() + "\n");
         output.append("object : " + ((Frame) annoEvent.getObject()).getId() + "\n");
         output.append("generated : " + ((HighlightAnnotation) annoEvent.getGenerated()).getId()  + "\n");
         output.append("highlighted : " + ((HighlightAnnotation) annoEvent.getGenerated()).getSelectionText() + "\n\n");
@@ -497,7 +497,7 @@ public class SequenceGenerator {
         DigitalResource part433 = SampleReadingEntities.buildEpubGloriousCausePart433();
         navEvent = NavigationEvent.builder()
             .actor(actor)
-            .action(Action.NAVIGATED_TO)
+            .action(Action.NAVIGATED_TO.getValue())
             .object(part433)
             .fromResource(Frame.builder()
                 .id(part432.getId())
@@ -522,7 +522,7 @@ public class SequenceGenerator {
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + navEvent.getActor().getId() + "\n");
-        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("action : " + navEvent.getAction() + "\n");
         output.append("object : " + ((EpubPart) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
@@ -530,7 +530,7 @@ public class SequenceGenerator {
         // ViewEvent: viewed #epubcfi(/4/3/3) (Paul Revere)
         readEvent = ReadingEvent.builder()
             .actor(actor)
-            .action(Action.VIEWED)
+            .action(Action.VIEWED.getValue())
             .object(part433)
             .target(Frame.builder()
                 .id(part433.getId())
@@ -549,14 +549,14 @@ public class SequenceGenerator {
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + navEvent.getActor().getId() + "\n");
-        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("action : " + navEvent.getAction() + "\n");
         output.append("object : " + ((EpubPart) readEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Frame) readEvent.getTarget()).getId() + "\n\n");
 
         // BookmarkAnnotationEvent: bookmarked the reading with a note
         annoEvent = AnnotationEvent.builder()
             .actor(actor)
-            .action(Action.BOOKMARKED)
+            .action(Action.BOOKMARKED.getValue())
             .object(Frame.builder()
                 .id(part433.getId())
                 .name(part433.getName())
@@ -583,7 +583,7 @@ public class SequenceGenerator {
 
         output.append("Generated Bookmark AnnotationEvent \n");
         output.append("actor : " + annoEvent.getActor().getId() + "\n");
-        output.append("action : " + annoEvent.getAction().getValue() + "\n");
+        output.append("action : " + annoEvent.getAction() + "\n");
         output.append("object : " + ((Frame) annoEvent.getObject()).getId() + "\n");
         output.append("generated : " + ((BookmarkAnnotation) annoEvent.getGenerated()).getId()  + "\n");
         output.append("bookmark notes : " + ((BookmarkAnnotation) annoEvent.getGenerated()).getBookmarkNotes() + "\n\n");
@@ -595,7 +595,7 @@ public class SequenceGenerator {
 
         navEvent = NavigationEvent.builder()
             .actor(actor)
-            .action(Action.NAVIGATED_TO)
+            .action(Action.NAVIGATED_TO.getValue())
             .object(volume)
             .fromResource(fromResource)
             .target(Frame.builder()
@@ -614,7 +614,7 @@ public class SequenceGenerator {
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + navEvent.getActor().getId() + "\n");
-        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("action : " + navEvent.getAction() + "\n");
         output.append("object : " + ((EpubVolume) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
@@ -623,7 +623,7 @@ public class SequenceGenerator {
         chapter = SampleReadingEntities.buildEpubAllisonAmRevSubChapter();
         navEvent = NavigationEvent.builder()
             .actor(actor)
-            .action(Action.NAVIGATED_TO)
+            .action(Action.NAVIGATED_TO.getValue())
             .object(chapter)
             .fromResource(Frame.builder()
                 .id(volume.getId())
@@ -645,7 +645,7 @@ public class SequenceGenerator {
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + navEvent.getActor().getId() + "\n");
-        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("action : " + navEvent.getAction() + "\n");
         output.append("object : " + ((EpubSubChapter) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
@@ -653,7 +653,7 @@ public class SequenceGenerator {
         // ViewEvent: viewed aXfsadf12
         readEvent = ReadingEvent.builder()
             .actor(actor)
-            .action(Action.VIEWED)
+            .action(Action.VIEWED.getValue())
             .object(chapter)
             .target(Frame.builder()
                 .id(chapter.getId())
@@ -672,14 +672,14 @@ public class SequenceGenerator {
 
         output.append("Generated ViewEvent \n");
         output.append("actor : " + readEvent.getActor().getId() + "\n");
-        output.append("action : " + readEvent.getAction().getValue() + "\n");
+        output.append("action : " + readEvent.getAction() + "\n");
         output.append("object : " + ((EpubSubChapter) readEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Frame) readEvent.getTarget()).getId() + "\n\n");
 
         // Tag AnnotationEvent: tagged reading
         annoEvent = AnnotationEvent.builder()
             .actor(actor)
-            .action(Action.TAGGED)
+            .action(Action.TAGGED.getValue())
             .object(Frame.builder()
                 .id(chapter.getId())
                 .name(chapter.getName())
@@ -709,7 +709,7 @@ public class SequenceGenerator {
 
         output.append("Generated Tag AnnotationEvent \n");
         output.append("actor : " + annoEvent.getActor().getId() + "\n");
-        output.append("action : " + annoEvent.getAction().getValue() + "\n");
+        output.append("action : " + annoEvent.getAction() + "\n");
         output.append("object : " + ((Frame) annoEvent.getObject()).getId() + "\n");
         output.append("generated : " + ((TagAnnotation) annoEvent.getGenerated()).getId()  + "\n");
         output.append("tags : " + ((TagAnnotation) annoEvent.getGenerated()).getTags().toString() + "\n\n");
@@ -717,7 +717,7 @@ public class SequenceGenerator {
         // Shared AnnotationEvent: shared reading with other students
         annoEvent = AnnotationEvent.builder()
             .actor(actor)
-            .action(Action.SHARED)
+            .action(Action.SHARED.getValue())
             .object(Frame.builder()
                 .id(chapter.getId())
                 .name(chapter.getName())
@@ -757,7 +757,7 @@ public class SequenceGenerator {
 
         output.append("Generated Shared AnnotationEvent \n");
         output.append("actor : " + annoEvent.getActor().getId() + "\n");
-        output.append("action : " + annoEvent.getAction().getValue() + "\n");
+        output.append("action : " + annoEvent.getAction() + "\n");
         output.append("object : " + ((Frame) annoEvent.getObject()).getId() + "\n");
         output.append("generated : " + ((SharedAnnotation) annoEvent.getGenerated()).getId()  + "\n");
 
@@ -771,7 +771,7 @@ public class SequenceGenerator {
         // SessionEvent: logged out of Canvas LMS
         sessionEvent = SessionEvent.builder()
             .actor(actor)
-            .action(Action.LOGGED_OUT)
+            .action(Action.LOGGED_OUT.getValue())
             .object(canvas)
             .target(Session.builder()
                 .id("https://example.edu/session-123456789")
@@ -793,7 +793,7 @@ public class SequenceGenerator {
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + sessionEvent.getActor().getId() + "\n");
-        output.append("action : " + sessionEvent.getAction().getValue() + "\n");
+        output.append("action : " + sessionEvent.getAction() + "\n");
         output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Session) sessionEvent.getTarget()).getId() + "\n\n");
 
@@ -815,7 +815,7 @@ public class SequenceGenerator {
 
         SessionEvent sessionEvent = SessionEvent.builder()
             .actor(actor)
-            .action(Action.LOGGED_IN)
+            .action(Action.LOGGED_IN.getValue())
             .object(canvas)
             .target(SampleReadingEntities.buildAmRev101LandingPage())
             .generated(Session.builder()
@@ -836,7 +836,7 @@ public class SequenceGenerator {
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + sessionEvent.getActor().getId() + "\n");
-        output.append("action : " + sessionEvent.getAction().getValue() + "\n");
+        output.append("action : " + sessionEvent.getAction() + "\n");
         output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
         output.append("target : " + ((DigitalResource) sessionEvent.getTarget()).getId() + "\n");
         output.append("generated : " + ((Session) sessionEvent.getGenerated()).getId() + "\n\n");
@@ -846,7 +846,7 @@ public class SequenceGenerator {
         Assessment assessment = SampleAssessmentEntities.buildAssessment();
         NavigationEvent navEvent = NavigationEvent.builder()
             .actor(actor)
-            .action(Action.NAVIGATED_TO)
+            .action(Action.NAVIGATED_TO.getValue())
             .object(assessment)
             .fromResource(SampleReadingEntities.buildAmRev101LandingPage())
             .target(Frame.builder()
@@ -865,7 +865,7 @@ public class SequenceGenerator {
 
         output.append("Generated NavigationEvent \n");
         output.append("actor : " + navEvent.getActor().getId() + "\n");
-        output.append("action : " + navEvent.getAction().getValue() + "\n");
+        output.append("action : " + navEvent.getAction() + "\n");
         output.append("object : " + ((Assessment) navEvent.getObject()).getId() + "\n");
         output.append("fromResource : " + navEvent.getFromResource().getId() + "\n");
         output.append("target : " + ((Frame) navEvent.getTarget()).getId() + "\n\n");
@@ -882,7 +882,7 @@ public class SequenceGenerator {
         // AssessmentEvent: started assessment
         AssessmentEvent assessmentEvent = AssessmentEvent.builder()
             .actor(actor)
-            .action(Action.STARTED)
+            .action(Action.STARTED.getValue())
             .object(assessment)
             .generated(assessAttempt)
             .eventTime(assessAttempt.getStartedAtTime())
@@ -896,7 +896,7 @@ public class SequenceGenerator {
 
         output.append("Generated AssessmentEvent \n");
         output.append("actor : " + assessmentEvent.getActor().getId() + "\n");
-        output.append("action : " + assessmentEvent.getAction().getValue() + "\n");
+        output.append("action : " + assessmentEvent.getAction() + "\n");
         output.append("object : " + ((Assessment) assessmentEvent.getObject()).getId() + "\n");
         output.append("generated attempt count : " + Integer.toString(((Attempt) assessmentEvent.getGenerated()).getCount()) + "\n\n");
 
@@ -915,7 +915,7 @@ public class SequenceGenerator {
         AssessmentItemEvent itemEvent = AssessmentItemEvent.builder()
             .actor(actor)
             .object(item01)
-            .action(Action.STARTED)
+            .action(Action.STARTED.getValue())
             .generated(item01Attempt)
             .eventTime(item01Attempt.getStartedAtTime())
             .edApp(quizEngine)
@@ -928,14 +928,14 @@ public class SequenceGenerator {
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + itemEvent.getActor().getId() + "\n");
-        output.append("action : " + itemEvent.getAction().getValue() + "\n");
+        output.append("action : " + itemEvent.getAction() + "\n");
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated attempt count : " + Integer.toString(((Attempt) itemEvent.getGenerated()).getCount()) + "\n\n");
 
         // AssessmentItemEvent: completed item 01 (95 - 120 secs)
         itemEvent = AssessmentItemEvent.builder()
             .actor(actor)
-            .action(Action.COMPLETED)
+            .action(Action.COMPLETED.getValue())
             .object(item01)
             .generated(MultipleChoiceResponse.builder()
                 .id(item01.getId())
@@ -958,7 +958,7 @@ public class SequenceGenerator {
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + itemEvent.getActor().getId() + "\n");
-        output.append("action : " + itemEvent.getAction().getValue() + "\n");
+        output.append("action : " + itemEvent.getAction() + "\n");
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated response : " + ((MultipleChoiceResponse) itemEvent.getGenerated()).getValue() + "\n\n");
 
@@ -976,7 +976,7 @@ public class SequenceGenerator {
 
         itemEvent = AssessmentItemEvent.builder()
             .actor(actor)
-            .action(Action.STARTED)
+            .action(Action.STARTED.getValue())
             .object(item02)
             .generated(item02Attempt)
             .eventTime(item02Attempt.getStartedAtTime())
@@ -990,14 +990,14 @@ public class SequenceGenerator {
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + itemEvent.getActor().getId() + "\n");
-        output.append("action : " + itemEvent.getAction().getValue() + "\n");
+        output.append("action : " + itemEvent.getAction() + "\n");
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated attempt count : " + Integer.toString(((Attempt) itemEvent.getGenerated()).getCount()) + "\n\n");
 
         // AssessmentItemEvent: completed item 02 (121 - 150 secs)
         itemEvent = AssessmentItemEvent.builder()
             .actor(actor)
-            .action(Action.COMPLETED)
+            .action(Action.COMPLETED.getValue())
             .object(item02)
             .generated(MultipleChoiceResponse.builder()
                 .id(item02.getId())
@@ -1020,7 +1020,7 @@ public class SequenceGenerator {
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + itemEvent.getActor().getId() + "\n");
-        output.append("action : " + itemEvent.getAction().getValue() + "\n");
+        output.append("action : " + itemEvent.getAction() + "\n");
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated response : " + ((MultipleChoiceResponse) itemEvent.getGenerated()).getValue() + "\n\n");
 
@@ -1038,7 +1038,7 @@ public class SequenceGenerator {
 
         itemEvent = AssessmentItemEvent.builder()
             .actor(actor)
-            .action(Action.STARTED)
+            .action(Action.STARTED.getValue())
             .object(item03)
             .generated(item03Attempt)
             .eventTime(item03Attempt.getStartedAtTime())
@@ -1052,14 +1052,14 @@ public class SequenceGenerator {
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + itemEvent.getActor().getId() + "\n");
-        output.append("action : " + itemEvent.getAction().getValue() + "\n");
+        output.append("action : " + itemEvent.getAction() + "\n");
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated attempt count : " + Integer.toString(((Attempt) itemEvent.getGenerated()).getCount()) + "\n\n");
 
         // AssessmentItemEvent: completed item 03 (151 - 180 secs)
         itemEvent = AssessmentItemEvent.builder()
             .actor(actor)
-            .action(Action.COMPLETED)
+            .action(Action.COMPLETED.getValue())
             .object(item03)
             .generated(MultipleChoiceResponse.builder()
                 .id(item03.getId())
@@ -1082,14 +1082,14 @@ public class SequenceGenerator {
 
         output.append("Generated AssessmentItemEvent \n");
         output.append("actor : " + itemEvent.getActor().getId() + "\n");
-        output.append("action : " + itemEvent.getAction().getValue() + "\n");
+        output.append("action : " + itemEvent.getAction() + "\n");
         output.append("object : " + ((AssessmentItem) itemEvent.getObject()).getId() + "\n");
         output.append("generated response : " + ((MultipleChoiceResponse) itemEvent.getGenerated()).getValue() + "\n\n");
 
         // AssessmentEvent: submitted assessment (181 sec)
         assessmentEvent = AssessmentEvent.builder()
             .actor(actor)
-            .action(Action.SUBMITTED)
+            .action(Action.SUBMITTED.getValue())
             .object(assessment)
             .generated(assessAttempt)
             .eventTime(assessAttempt.getStartedAtTime().plusSeconds(91))
@@ -1103,14 +1103,14 @@ public class SequenceGenerator {
 
         output.append("Generated AssessmentEvent \n");
         output.append("actor : " + assessmentEvent.getActor().getId() + "\n");
-        output.append("action : " + assessmentEvent.getAction().getValue() + "\n");
+        output.append("action : " + assessmentEvent.getAction() + "\n");
         output.append("object : " + ((Assessment) assessmentEvent.getObject()).getId() + "\n");
         output.append("generated attempt : " + Integer.toString(((Attempt) assessmentEvent.getGenerated()).getCount()) + "\n\n");
 
         // OutcomeEvent: generated result (182 sec)
         OutcomeEvent outcomeEvent = OutcomeEvent.builder()
             .actor(quizEngine)
-            .action(Action.GRADED)
+            .action(Action.GRADED.getValue())
             .object(assessAttempt)
             .generated(Result.builder()
                 .id("https://example.edu/politicalScience/2014/american-revolution-101/activityContext1/attempt/001/result")
@@ -1130,7 +1130,7 @@ public class SequenceGenerator {
 
         output.append("Generated OutcomeEvent \n");
         output.append("actor : " + outcomeEvent.getActor().getId() + "\n");
-        output.append("action : " + outcomeEvent.getAction().getValue() + "\n");
+        output.append("action : " + outcomeEvent.getAction() + "\n");
         output.append("object : " + ((Attempt) outcomeEvent.getObject()).getId() + "\n");
         output.append("attempt count : " + Integer.toString(((Attempt) outcomeEvent.getObject()).getCount()) + "\n");
         output.append("generated outcome : " + String.valueOf(((Result) outcomeEvent.getGenerated()).getTotalScore()) + "\n");
@@ -1139,7 +1139,7 @@ public class SequenceGenerator {
         // Session Event: logged out of Canvas LMS (185 sec)
         sessionEvent = SessionEvent.builder()
             .actor(actor)
-            .action(Action.LOGGED_OUT)
+            .action(Action.LOGGED_OUT.getValue())
             .object(canvas)
             .target(Session.builder()
                 .id("https://example.edu/session-123456789")
@@ -1161,7 +1161,7 @@ public class SequenceGenerator {
 
         output.append("Generated SessionEvent \n");
         output.append("actor : " + sessionEvent.getActor().getId() + "\n");
-        output.append("action : " + sessionEvent.getAction().getValue() + "\n");
+        output.append("action : " + sessionEvent.getAction() + "\n");
         output.append("object : " + ((SoftwareApplication) sessionEvent.getObject()).getId() + "\n");
         output.append("target : " + ((Session) sessionEvent.getTarget()).getId() + "\n\n");
 
