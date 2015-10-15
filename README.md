@@ -1,8 +1,6 @@
 caliper-java-example
 ====================
-NOTE: THESE MATERIALS ARE FOR IMS CONTRIBUTING MEMBERS ONLY. THEY MAY NOT BE RELEASED UNTIL APPROVED BY IMS GLOBAL.
-
-This is a sample WebApp that utilizes the Caliper Java sensor.
+This is a sample WebApp that utilizes the Caliper Java SensorAPI (TM).
 
 ## Installation
 
@@ -43,6 +41,7 @@ cp ./example-webapp/target/caliper-java-example.war /usr/local/tomcat/webapps/
 
 (Note: Assumes your Tomcat is running on port 9090)
 
+©2015 IMS Global Learning Consortium, Inc. All Rights Reserved.  
+Trademark Information - http://www.imsglobal.org/copyright.html
 
-
-©2015 IMS Global Learning Consortium, Inc. All Rights Reserved.  Trademark Information - http://www.imsglobal.org/copyright.html
+For license information contact, info@imsglobal.org
